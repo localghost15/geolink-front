@@ -1,43 +1,48 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-
+import { Routes, Route} from 'react-router-dom';
 import { Homepage } from './pages/Homepage';
-import { About } from './pages/Aboutpage';
-import { Blogpage } from './pages/Blogpage';
-import { Createpost } from './pages/Createpost';
-import { Editpost } from './pages/Editpost';
-import { Singlepage } from './pages/Singlepage';
 import { Notfoundpage } from './pages/Notfoundpage';
-import { LoginPage } from './pages/Loginpage';
-
 import { Layout } from './components/Layout'
-
-import { RequireAuth } from './hoc/RequireAuth'
-import { AuthProvider } from './hoc/AuthProvider'
+import Roles from './pages/Roles';
+import Patients from './pages/Patients/Patients.';
+import Doctors from './pages/Doctors/Doctors';
+import Services from './pages/Services';
+import Partners from './pages/Partners';
+import EpidemiologicalHistory from './pages/EpidemiologicalHistory/EpidemiologicalHistory';
+import Mkb10 from './pages/Mkb10';
+import Payments from './pages/Payments/Payments';
+import DeptsLists from './pages/DeptsLists/DeptsLists';
+import Admissions from './pages/Admissions/Admissions';
+import PatientDetails from './pages/PatientDetails';
+import 'suneditor/dist/css/suneditor.min.css';
+import NewAdmissions from './pages/NewAdmissions/NewAdmissions';
+import ReAdmissions from './pages/ReAdmissions/ReAdmissions';
+import ListOfDisponser from './pages/ListOfDisponser/ListOfDisponser';
+import Login from './auth/Login';
 
 function App() {
   return (
-    <AuthProvider>
       <Routes>
+        <Route path="login" index element={<Login />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<Homepage />} />
-          <Route path="about" element={<About />}>
-            <Route path="contacts" element={<p>Our contact</p>} />
-            <Route path="team" element={<p>Our team</p>} />
-          </Route>
-          <Route path="about-us" element={<Navigate to="/about" replace />} />
-          <Route path="posts" element={<Blogpage />} />
-          <Route path="posts/:id" element={<Singlepage />} />
-          <Route path="posts/:id/edit" element={<Editpost />} />
-          <Route path="posts/new" element={
-            <RequireAuth>
-              <Createpost />
-            </RequireAuth>
-          } />
-          <Route path="login" element={<LoginPage />} />
+          <Route path="roles" element={<Roles />} />
+          <Route path="patients"  element={<Patients/>} />
+          <Route path="/patient/:index" element={<PatientDetails />} />
+          <Route path="doctors"  element={<Doctors/>} />
+          <Route path="services" element={<Services/>} />
+          <Route path="partners" element={<Partners/>} />
+          <Route path="epidemiological_history"  element={<EpidemiologicalHistory/>} />
+          <Route path="international-classification-of-diseases"  element={<Mkb10/>} />
+          <Route path="payments"  element={<Payments/>} />
+          <Route path="depts_lists"  element={<DeptsLists/>} />
+          <Route path="admissions"  element={<Admissions/>} />
+          <Route path="new_admissions"  element={<NewAdmissions/>} />
+          <Route path="re_admissions"  element={<ReAdmissions/>} />
+          <Route path="list_of_disponser"  element={<ListOfDisponser/>} />
           <Route path="*" element={<Notfoundpage />} />
         </Route>
       </Routes>
-    </AuthProvider>
+
   );
 }
 
