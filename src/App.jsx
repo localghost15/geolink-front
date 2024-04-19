@@ -1,4 +1,5 @@
-import { Routes, Route} from 'react-router-dom';
+import { useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate} from 'react-router-dom';
 import { Homepage } from './pages/Homepage';
 import { Notfoundpage } from './pages/Notfoundpage';
 import { Layout } from './components/Layout'
@@ -18,30 +19,54 @@ import NewAdmissions from './pages/NewAdmissions/NewAdmissions';
 import ReAdmissions from './pages/ReAdmissions/ReAdmissions';
 import ListOfDisponser from './pages/ListOfDisponser/ListOfDisponser';
 import Login from './auth/Login';
+import { isLoggedIn } from './services/authServices';
+
+function PrivateRoute({ children }) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!isLoggedIn()) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  return children;
+}
+
+function PublicRoute({ children }) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isLoggedIn()) {
+      navigate('/');
+    }
+  }, [navigate]);
+
+  return children;
+}
 
 function App() {
+  
   return (
-      <Routes>
-        <Route path="login" index element={<Login />} />
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Homepage />} />
-          <Route path="roles" element={<Roles />} />
-          <Route path="patients"  element={<Patients/>} />
-          <Route path="/patient/:index" element={<PatientDetails />} />
-          <Route path="doctors"  element={<Doctors/>} />
-          <Route path="services" element={<Services/>} />
-          <Route path="partners" element={<Partners/>} />
-          <Route path="epidemiological_history"  element={<EpidemiologicalHistory/>} />
-          <Route path="international-classification-of-diseases"  element={<Mkb10/>} />
-          <Route path="payments"  element={<Payments/>} />
-          <Route path="depts_lists"  element={<DeptsLists/>} />
-          <Route path="admissions"  element={<Admissions/>} />
-          <Route path="new_admissions"  element={<NewAdmissions/>} />
-          <Route path="re_admissions"  element={<ReAdmissions/>} />
-          <Route path="list_of_disponser"  element={<ListOfDisponser/>} />
-          <Route path="*" element={<Notfoundpage />} />
-        </Route>
-      </Routes>
+    <Routes>
+    <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+    <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+      <Route index element={<Homepage />} />
+      <Route path="roles" element={<Roles />} />
+      <Route path="patients" element={<Patients />} />
+      <Route path="/patient/:index" element={<PatientDetails />} />
+      <Route path="doctors" element={<Doctors />} />
+      <Route path="services" element={<Services />} />
+      <Route path="partners" element={<Partners />} />
+      <Route path="epidemiological_history" element={<EpidemiologicalHistory />} />
+      <Route path="international-classification-of-diseases" element={<Mkb10 />} />
+      <Route path="payments" element={<Payments />} />
+      <Route path="depts_lists" element={<DeptsLists />} />
+      <Route path="admissions" element={<Admissions />} />
+      <Route path="new_admissions" element={<NewAdmissions />} />
+      <Route path="re_admissions" element={<ReAdmissions />} />
+      <Route path="list_of_disponser" element={<ListOfDisponser />} />
+      <Route path="*" element={<Notfoundpage />} />
+    </Route>
+  </Routes>
 
   );
 }

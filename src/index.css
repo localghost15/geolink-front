@@ -7,6 +7,20 @@
   font-family: "Inter", sans-serif;
 }
 
+#province {
+  background-color: #fff !important;
+
+}
+
+#province > div {
+  width: 272px !important;
+
+
+}
+#district > div {
+  background-color: #fff !important;
+  width: 272px !important;
+}
 
 .fc-today-button, .fc-prev-button, .fc-next-button {
 background-color: #161616 !important;

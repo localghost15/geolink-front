@@ -1,61 +1,68 @@
-import { useState, useEffect } from "react";
-import { Select, Option } from "@material-tailwind/react";
-import { GetState, GetCity } from "react-country-state-city";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Select from 'react-select';
 
-export default function LocationSelect() {
-  const countryid = 236; 
-  const [stateName, setStateName] = useState("");
-  const [cityName, setCityName] = useState("");
+const LocationSelect = () => {
+  const axiosInstance = axios.create({
+    baseURL: 'https://back.geolink.uz/api/v1'
+  });
 
-  const [stateList, setStateList] = useState([]);
-  const [cityList, setCityList] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [selectedProvince, setSelectedProvince] = useState(null);
+  const [districts, setDistricts] = useState([]);
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
 
   useEffect(() => {
-    GetState(countryid).then((result) => {
-      setStateList(result);
-      if (result.length > 0) {
-        setStateName(result[0].name);
-        GetCity(countryid, result[0].id).then((result) => {
-          setCityList(result);
-        });
-      }
-    });
+    fetchProvinces();
   }, []);
 
-  return (
-    <div className="flex gap-x-4 col-span-2">
-      <select
-        className="peer w-full h-full bg-transparent text-blue-gray-700 font-sans font-normal outline outline-0 focus:outline-0 disabled:bg-blue-gray-50 disabled:border-0 disabled:cursor-not-allowed transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 border   placeholder:opacity-0 focus:placeholder:opacity-100 text-sm px-3 py-3 rounded-md border-blue-gray-200 "
-        onChange={(e) => {
-          const state = stateList.find(item => item.name === e.target.value);
-          setStateName(state.name);
-          GetCity(countryid, state.id).then((result) => {
-            setCityList(result);
-          });
-        }}
-        value={stateName}
-      >
-        {stateList.map((item) => (
-          <option key={item.id} value={item.name}>
-            {item.name}
-          </option>
-        ))}
-      </select>
+  const fetchProvinces = async () => {
+    try {
+      const response = await axiosInstance.get('/global/province');
+      setProvinces(response.data.data.map(province => ({ value: province.id, label: province.name })));
+    } catch (error) {
+      console.error('Error fetching provinces:', error);
+    }
+  };
 
-      <select
-        className="peer w-full h-full bg-transparent text-blue-gray-700 font-sans font-normal outline outline-0 focus:outline-0 disabled:bg-blue-gray-50 disabled:border-0 disabled:cursor-not-allowed transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 border   placeholder:opacity-0 focus:placeholder:opacity-100 text-sm px-3 py-3 rounded-md border-blue-gray-200 "
-        onChange={(e) => {
-          const city = cityList.find(item => item.name === e.target.value);
-          setCityName(city.name);
-        }}
-        value={cityName}
-      >
-        {cityList.map((item) => (
-          <option key={item.id} value={item.name}>
-            {item.name}
-          </option>
-        ))}
-      </select>
+  const fetchDistricts = async (id) => {
+    try {
+      const response = await axiosInstance.get(`/global/province/${id}`);
+      setDistricts(response.data.data.districts.map(district => ({ value: district.id, label: district.name })));
+    } catch (error) {
+      console.error('Error fetching districts:', error);
+    }
+  };
+
+  const handleProvinceChange = (selectedOption) => {
+    setSelectedProvince(selectedOption);
+    fetchDistricts(selectedOption.value);
+  };
+
+  const handleDistrictChange = (selectedOption) => {
+    setSelectedDistrict(selectedOption);
+  };
+
+  return (
+    <div className='flex col-span-2 w-full gap-x-4 '>
+      <Select 
+      className='text-sm'
+        id="province" 
+        value={selectedProvince} 
+        onChange={handleProvinceChange} 
+        options={provinces} 
+        placeholder="Вилоят" 
+      />
+      <Select 
+      className='text-sm'
+        id="district" 
+        value={selectedDistrict} 
+        onChange={handleDistrictChange} 
+        options={districts} 
+        placeholder="Шаҳар, туман" 
+      />
     </div>
   );
-}
+};
+
+export default LocationSelect;

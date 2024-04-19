@@ -111,8 +111,8 @@ export default function PatientsDialog(props) {
                                             <Input label="Ким юборди: *" size="lg" value={newPatient.referredBy} onChange={(e) => setNewPatient({ ...newPatient, referredBy: e.target.value })} />
                                         </div>
                                         <div className="mt-4 flex gap-4">
-                                            <Dropzone onFilesChange={(file) => setNewPatient({ ...newPatient, files: file })} />
                                             <Textarea className='w-max-content' fullWidth label="Изоҳ:" value={newPatient.comment} onChange={(e) => setNewPatient({ ...newPatient, comment: e.target.value })} />
+                                            <Dropzone onFilesChange={(file) => setNewPatient({ ...newPatient, files: file })} />
                                         </div>
                                     </div>
 

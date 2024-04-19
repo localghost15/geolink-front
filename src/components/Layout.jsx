@@ -1,4 +1,5 @@
-import { Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import {
   HomeIcon,
@@ -15,8 +16,24 @@ import {
     MenuItem,
     Button,
   } from "@material-tailwind/react";
+  import { logout, isLoggedIn , getUserRole } from '../services/authServices';
 
 const Layout = () => {
+  const [userRole, setUserRole] = useState(null);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const role = await getUserRole();
+      setUserRole(role);
+    };
+
+    fetchUserRole();
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login')
+  };
     return (
         <>
         <div className="min-h-screen flex flex-row bg-white">
@@ -106,7 +123,7 @@ const Layout = () => {
         {/* Profile dropdown */}
         <div className="relative ml-3">
           <div>
-          <IconButton>
+          <IconButton onClick={handleLogout}>
           <PowerIcon className="h-5 w-5" />
         </IconButton>
           </div>
