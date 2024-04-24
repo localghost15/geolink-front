@@ -12,10 +12,20 @@
 
 }
 
+.layout-bg {
+  background-image: url('/public/Home\ \(1\).svg');
+  background-size: cover;
+  background-repeat: no-repeat;
+
+}
+
+
+#doctors > div {
+  width: 272px !important;
+}
+
 #province > div {
   width: 272px !important;
-
-
 }
 #district > div {
   background-color: #fff !important;

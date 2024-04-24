@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Input, Button, Typography } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
-import { login, isLoggedIn } from '../services/authServices';
+import { login, isLoggedIn, getUserRole  } from '../services/authServices';
 import toast from 'react-hot-toast';
 
 function Login() {
@@ -23,8 +23,14 @@ function Login() {
     } else {
       console.error(response.message);
       toast.error('Кириш маълумотлари нотўғри!');
-
     }
+
+    const userRole = await getUserRole();
+  if (userRole) {
+    console.log('Роль пользователя:', userRole);
+  } else {
+    console.error('Не удалось получить роль пользователя');
+  }
   };
 
   return (
@@ -66,15 +72,10 @@ function Login() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                           />
-                          <Button
-                            color="lightBlue"
-                            buttonType="filled"
-                            size="lg"
-                            ripple="dark"
-                            onClick={handleLogin}
-                          >
-                            Войти
-                          </Button>
+
+                          <button type='button' onClick={handleLogin} className='inline-flex h-12 animate-background-shine items-center justify-center rounded-md border border-gray-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-50'>
+                          Кириш
+                        </button>
                         </div>
                       </form>
                     </Card>

@@ -1,28 +1,47 @@
-import React, { Fragment, useState } from 'react';
-import { Card, Typography, Input, Button } from "@material-tailwind/react";
+import React, { Fragment, useState, useEffect } from 'react';
+import { Card, Typography, Input, Button, IconButton } from "@material-tailwind/react";
 import { Dialog, Transition } from '@headlessui/react';
-import { PlusCircleIcon, PencilIcon } from "@heroicons/react/24/solid";
+import { PlusCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import axios from 'axios';
+
+
 
 const TABLE_HEAD = ["Номланиши", "Харакат"];
-
-const TABLE_ROWS = [
-  {
-    name: "Doktor",
-  },
-  {
-    name: "Hamshira",
-  },
-  {
-    name: "Bosh shifokor",
-  },
-  {
-    name: "Tish shifokori",
-  },
-];
 
 export default function Roles() {
   const [isOpen, setIsOpen] = useState(false);
   const [newRole, setNewRole] = useState('');
+  const [roles, setRoles] = useState([]);
+
+  const axiosInstance = axios.create({
+    baseURL: 'https://back.geolink.uz/api/v1'
+  });
+
+  axiosInstance.interceptors.request.use(
+    config => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    error => {
+      return Promise.reject(error);
+    }
+  );
+
+  useEffect(() => {
+    fetchRoles();
+  }, []); 
+
+  const fetchRoles = async () => {
+    try {
+      const response = await axiosInstance.get("/admin/roles");
+      setRoles(response.data.data);
+    } catch (error) {
+      console.error("Ошибка при получении списка ролей:", error);
+    }
+  };
 
   const closeModal = () => {
     setIsOpen(false);
@@ -33,11 +52,23 @@ export default function Roles() {
     setIsOpen(true);
   };
 
-  const handleSave = () => {
-    if (newRole.trim() !== '') {
-      TABLE_ROWS.push({ name: newRole });
+  const handleSave = async () => {
+    try {
+      await axiosInstance.post("/admin/roles", { name: newRole });
+      fetchRoles(); 
+      closeModal();
+    } catch (error) {
+      console.error("Ошибка при сохранении роли:", error);
     }
-    closeModal();
+  };
+
+  const handleDelete = async (roleId) => {
+    try {
+      await axiosInstance.delete(`/admin/roles/${roleId}`);
+      fetchRoles(); // После удаления роли обновляем список ролей
+    } catch (error) {
+      console.error("Ошибка при удалении роли:", error);
+    }
   };
 
   return (
@@ -118,26 +149,21 @@ export default function Roles() {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS.map(({ name }, index) => {
-              const isLast = index === TABLE_ROWS.length - 1;
-              const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
+            {roles.map((role) => (
+              <tr key={role.id}>
+                <td className="p-4">
+                  <Typography variant="small" color="blue-gray" className="font-normal">
+                    {role.name}
+                  </Typography>
+                </td>
 
-              return (
-                <tr key={name}>
-                  <td className={classes}>
-                    <Typography variant="small" color="blue-gray" className="font-normal">
-                      {name}
-                    </Typography>
-                  </td>
-
-                  <td className={`${classes} bg-blue-gray-50/50`}>
-                    <Typography as="a" href="#" variant="small" color="blue-gray" className="font-medium flex items-center gap-x-3">
-                      <PencilIcon className="h-4 w-4" /> Ўзгартириш
-                    </Typography>
-                  </td>
-                </tr>
-              );
-            })}
+                <td className="p-4 bg-blue-gray-50/50">
+                <IconButton onClick={() => handleDelete(role.id)}>
+                <TrashIcon className="h-5 w-5 text-white" />
+                  </IconButton>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </Card>

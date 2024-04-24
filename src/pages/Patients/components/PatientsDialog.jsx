@@ -5,6 +5,7 @@ import { UserPlusIcon } from "@heroicons/react/24/solid";
 import DatePicker from '../../../components/DatePicker';
 import LocationSelect from '../../../components/LocationSelect';
 import Dropzone from '../../../components/Dropzone';
+import DoctorsSelect from './DoctorsList';
 
 export default function PatientsDialog(props) {
     const [isOpen, setIsOpen] = useState(false);
@@ -103,12 +104,14 @@ export default function PatientsDialog(props) {
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
                                             <LocationSelect value={newPatient.country} onChange={(country) => setNewPatient({ ...newPatient, country })} />
-                                            <Input label="Яшаш манзили:" size="lg" value={newPatient.address} onChange={(e) => setNewPatient({ ...newPatient, address: e.target.value })} />
+                                            <DoctorsSelect/>
+                                           
+                                            
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
                                             <Input label="Касби:" size="lg" value={newPatient.profession} onChange={(e) => setNewPatient({ ...newPatient, profession: e.target.value })} />
                                             <Input label="Телефон номер:" size="lg" value={newPatient.phoneNumber} onChange={(e) => setNewPatient({ ...newPatient, phoneNumber: e.target.value })} />
-                                            <Input label="Ким юборди: *" size="lg" value={newPatient.referredBy} onChange={(e) => setNewPatient({ ...newPatient, referredBy: e.target.value })} />
+                                            <Input label="Яшаш манзили:" size="lg" value={newPatient.address} onChange={(e) => setNewPatient({ ...newPatient, address: e.target.value })} />
                                         </div>
                                         <div className="mt-4 flex gap-4">
                                             <Textarea className='w-max-content' fullWidth label="Изоҳ:" value={newPatient.comment} onChange={(e) => setNewPatient({ ...newPatient, comment: e.target.value })} />

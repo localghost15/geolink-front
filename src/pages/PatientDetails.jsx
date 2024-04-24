@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { Avatar, Typography,Accordion,AccordionHeader,AccordionBody,} from "@material-tailwind/react";
 import { useParams } from 'react-router-dom';
 import PatientDetailTabs from '../components/PatientDetailTabs';
+import axios from 'axios';
 
 function Icon({ id, open }) {
     return (
@@ -19,27 +20,60 @@ function Icon({ id, open }) {
   }
 
 export default function PatientDetails() {
-    const { index } = useParams();
-     const [open, setOpen] = React.useState(0);
-     const handleOpen = (value) => setOpen(open === value ? 0 : value);
+  const { index } = useParams();
+  const [patient, setPatient] = useState(null);
+  const [open, setOpen] = useState(0);
+  const [partnerName, setPartnerName] = useState(null);
+  const [districtName, setDistrictName] = useState(null);
+  const [provinceName, setProvinceName] = useState(null);
 
-    const patients = [
-        { id: 0, name: 'John Doe', age: 30, diagnosis: 'Hypertension' },
-        { id: 1, name: 'John Doe', age: 30, diagnosis: 'Hypertension' },
-        { id: 2, name: 'Jane Smith', age: 25, diagnosis: 'Diabetes' },
-    ];
+  const handleOpen = (value) => setOpen(open === value ? 0 : value);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const fetchPatient = async () => {
+      try {
+        const response = await axios.get(`https://back.geolink.uz/api/v1/patients/${index}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        });
+        setPatient(response.data.data);
+        // Проверяем наличие партнера у пациента
+        if (response.data.data.partner_id) {
+          const partnerResponse = await axios.get(`https://back.geolink.uz/api/v1/partners/${response.data.data.partner_id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          });
+          setPartnerName(partnerResponse.data.data.name);
+        }
+        if (response.data.data.district_id) {
+          const districtResponse = await axios.get(`https://back.geolink.uz/api/v1/global/district/${response.data.data.district_id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          });
+          setProvinceName(districtResponse.data.data.province.name);
+          setDistrictName(districtResponse.data.data.name);
+        }
+      } catch (error) {
+        console.error("Ошибка при получении информации о пациенте:", error);
+      }
+    };
 
-    const patient = patients.find(patient => patient.id === parseInt(index, 10));
+    fetchPatient();
+  }, [index]);
 
-    const CUSTOM_ANIMATION = {
-        mount: { scale: 1 },
-        unmount: { scale: 0.9 },
-      };
+  const CUSTOM_ANIMATION = {
+    mount: { scale: 1 },
+    unmount: { scale: 0.9 },
+  };
+  
+  if (!patient) {
+      return <div>Загрузка...</div>;
+  }
 
-    if (!patient) {
-        return <div>Пациент не найден</div>;
-    }
 
     return (
        <div className="grid grid-cols-3 space-x-10">
@@ -51,20 +85,20 @@ export default function PatientDetails() {
         <dl className="divide-y divide-gray-100">
           <div className="px-4 py-3 sm:grid sm:grid-cols-1 sm:gap-1 sm:px-0">
           <div className="flex items-center gap-4">
-        <Avatar src="https://docs.material-tailwind.com/img/face-2.jpg" size="xl" alt="avatar" variant="rounded" />
-        <div>
+        <Avatar src={`${patient.avatar}`} size="xl" alt="avatar" variant="rounded" />
+        {/* <div>
           <Typography variant="h6">Tania Andrew</Typography>
           <Typography variant="small" color="gray" className="font-normal">
             Web Developer
           </Typography>
-        </div>
+        </div> */}
       </div>
-        <h3 className="text-base font-semibold leading-7 text-gray-900">Олимов Я.Б</h3>
+        <h3 className="text-base font-semibold leading-7 text-gray-900">{patient.name}</h3>
         <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
           </div>
           <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">Иш жойи:</dt>
-            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">Програмист</dd>
+            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{patient.work_address}</dd>
           </div>
           <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">Туғилган сана:</dt>
@@ -72,42 +106,42 @@ export default function PatientDetails() {
           </div>
           <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">Манзил:</dt>
-            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">Nurafshon 10</dd>
+            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{patient.home_address}</dd>
           </div>
           <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">Телефон номер:</dt>
             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-            +998500032202
+            {patient.phone}
             </dd>
           </div>
           <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">Вилоят:</dt>
             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-            Bukhara Region
+            {provinceName ? provinceName : 'Нет данных о районе'}
             </dd>
           </div>
           <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">Шаҳар/туман:</dt>
             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-            Bukhara
+            {districtName ? districtName : 'Нет данных о районе'}
             </dd>
           </div>
           <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">Касби:</dt>
             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-            Футболист
+            {patient.profession}
             </dd>
           </div>
           <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">Ким юборди:</dt>
             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-            Alisher Jumaev
+            {partnerName ? partnerName : 'Нет данных о партнере'}
             </dd>
           </div>
           <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">Изоҳ:</dt>
             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-            gvbhnghg
+            {patient.remark}
             </dd>
           </div> 
           <div className="px-4 py-1 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-0">

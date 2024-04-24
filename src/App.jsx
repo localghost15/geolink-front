@@ -19,7 +19,7 @@ import NewAdmissions from './pages/NewAdmissions/NewAdmissions';
 import ReAdmissions from './pages/ReAdmissions/ReAdmissions';
 import ListOfDisponser from './pages/ListOfDisponser/ListOfDisponser';
 import Login from './auth/Login';
-import { isLoggedIn } from './services/authServices';
+import { isLoggedIn, getUserRole } from './services/authServices';
 
 function PrivateRoute({ children }) {
   const navigate = useNavigate();
@@ -27,6 +27,23 @@ function PrivateRoute({ children }) {
     if (!isLoggedIn()) {
       navigate('/login');
     }
+  }, [navigate]);
+
+  return children;
+}
+
+function AdminRoute({ children }) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const userRole = await getUserRole();
+      if (!userRole || !userRole.includes("admin")) {
+        navigate('/');
+      }
+    };
+
+    checkAdmin();
   }, [navigate]);
 
   return children;
@@ -47,10 +64,12 @@ function App() {
   
   return (
     <Routes>
-    <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+    <Route path="/login" name="login" element={<PublicRoute><Login /></PublicRoute>} />
     <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
       <Route index element={<Homepage />} />
-      <Route path="roles" element={<Roles />} />
+      {isLoggedIn() && (
+        <Route path="roles" element={<AdminRoute><Roles /></AdminRoute>} />
+      )}
       <Route path="patients" element={<Patients />} />
       <Route path="/patient/:index" element={<PatientDetails />} />
       <Route path="doctors" element={<Doctors />} />

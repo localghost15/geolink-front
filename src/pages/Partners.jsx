@@ -1,32 +1,95 @@
-import React,{ Fragment, useState } from 'react'
-import { useCountries } from "use-react-countries";
-import {ChevronUpDownIcon} from "@heroicons/react/24/outline";
-import { Dialog, Transition } from '@headlessui/react'
-import { PencilIcon, TrashIcon, UserPlusIcon } from "@heroicons/react/24/solid";
-import {Card,Typography, Button, CardBody, CardFooter, IconButton, Tooltip, Input, Menu, MenuHandler, MenuList, MenuItem,} from "@material-tailwind/react";
-   
-const TABLE_HEAD = ["ФИО", "Телефон рақами", "Харакат"];
+import React, { Fragment, useState, useEffect } from 'react';
+import axios from 'axios';
+import { useCountries } from 'use-react-countries';
+import { ChevronUpDownIcon } from '@heroicons/react/24/outline';
+import { Dialog, Transition } from '@headlessui/react';
+import { PencilIcon, TrashIcon, UserPlusIcon } from '@heroicons/react/24/solid';
+import { Card, Typography, Button, CardBody, CardFooter, IconButton, Tooltip, Input, Menu, MenuHandler, MenuList, MenuItem } from '@material-tailwind/react';
 
-const TABLE_ROWS = [
-  { name: "Alisher Jumaev", phone: "+998500032202" },
-];
+const TABLE_HEAD = ['ФИО', 'Телефон рақами', 'Харакат'];
 
 export default function Partners() {
   const { countries } = useCountries();
-  const [country, setCountry] = React.useState(177);
+  const [country, setCountry] = useState(177);
   const { name, flags, countryCallingCode } = countries[country];
+  const [partners, setPartners] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [newPartnerName, setNewPartnerName] = useState('');
+  const [newPartnerPhone, setNewPartnerPhone] = useState('');
 
   const closeModal = () => setIsOpen(false);
   const openModal = () => setIsOpen(true);
 
+  const fetchPartners = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('https://back.geolink.uz/api/v1/partners', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setPartners(response.data.data);
+    } catch (error) {
+      console.error('Error fetching partners:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPartners();
+  }, []);
+
+  const deletePartner = async (partnerId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`https://back.geolink.uz/api/v1/partners/${partnerId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // Update partners list after successful deletion
+      setPartners(partners.filter(partner => partner.id !== partnerId));
+    } catch (error) {
+      console.error('Error deleting partner:', error);
+    }
+  };
+
+  const addPartner = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        'https://back.geolink.uz/api/v1/partners',
+        {
+          name: newPartnerName,
+          phone: newPartnerPhone,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // Update partners list with the new partner
+      setPartners([...partners, response.data]);
+      closeModal(); // Close the dialog after successful addition
+      // Reset input values for new partner
+      setNewPartnerName('');
+      setNewPartnerPhone('');
+      // Fetch partners again to update the list
+      fetchPartners();
+    } catch (error) {
+      console.error('Error adding partner:', error);
+    }
+  };
+
   return (
     <Card className="h-full w-full rounded-none pt-5">
       <div className="flex mx-8 items-center justify-between gap-8">
-        <Typography className="mx-8 mb-2" variant="h3" color="black">Барча ҳамкорлар</Typography>
+        <Typography className="mx-8 mb-2" variant="h3" color="black">
+          Барча ҳамкорлар
+        </Typography>
         <div className="flex items-center shrink-0 flex-col gap-2 sm:flex-row">
           <Button onClick={openModal} className="flex h-12 items-center gap-3 normal-case font-normal" size="sm">
-            <UserPlusIcon strokeWidth={2} className="h-5 w-5" /> Янги  қўшиш
+            <UserPlusIcon strokeWidth={2} className="h-5 w-5" /> Янги қўшиш
           </Button>
           <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-10" onClose={closeModal}>
@@ -58,7 +121,7 @@ export default function Partners() {
                       </Dialog.Title>
                       <div className="mt-2">
                         <div className="grid grid-cols-1 gap-4">
-                          <Input label="ФИО *" size="lg" />
+                          <Input label="ФИО *" size="lg" value={newPartnerName} onChange={(e) => setNewPartnerName(e.target.value)} />
                         </div>
                         <div className="flex mt-4">
                           <Menu placement="bottom-start">
@@ -84,11 +147,13 @@ export default function Partners() {
                             className="rounded-md rounded-l-none !border-t-blue-gray-200 focus:!border-t-gray-900"
                             labelProps={{ className: "before:content-none after:content-none" }}
                             containerProps={{ className: "min-w-0" }}
+                            value={newPartnerPhone}
+                            onChange={(e) => setNewPartnerPhone(e.target.value)}
                           />
                         </div>
                       </div>
                       <div className="mt-4">
-                        <Button onClick={closeModal} variant="gradient" fullWidth>Сақлаш</Button>
+                        <Button onClick={addPartner} variant="gradient" fullWidth>Сақлаш</Button>
                       </div>
                     </Dialog.Panel>
                   </Transition.Child>
@@ -112,7 +177,7 @@ export default function Partners() {
                     color="blue-gray"
                     className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
                   >
-                    {head}{" "}
+                    {head}{' '}
                     {index !== TABLE_HEAD.length - 1 && (
                       <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
                     )}
@@ -122,11 +187,11 @@ export default function Partners() {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS.map(({ name, phone }, index) => {
-              const isLast = index === TABLE_ROWS.length - 1;
-              const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
+            {partners.map(({ id, name, phone }, index) => {
+              const isLast = index === partners.length - 1;
+              const classes = isLast ? 'p-4' : 'p-4 border-b border-blue-gray-50';
               return (
-                <tr key={name}>
+                <tr key={id}>
                   <td className={classes}>
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col">
@@ -144,7 +209,7 @@ export default function Partners() {
                       <IconButton variant="text"><PencilIcon className="h-4 w-4" /></IconButton>
                     </Tooltip>
                     <Tooltip content="Ўчириш">
-                      <IconButton variant="text"><TrashIcon className="h-4 w-4" /></IconButton>
+                      <IconButton onClick={() => deletePartner(id)} variant="text"><TrashIcon className="h-4 w-4" /></IconButton>
                     </Tooltip>
                   </td>
                 </tr>
@@ -154,7 +219,7 @@ export default function Partners() {
         </table>
       </CardBody>
       <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-        <Typography variant="small" color="blue-gray" className="font-normal">Сахифа 1/10</Typography>
+        <Typography variant="small" color="blue-gray" className="font-normal">Саҳифа 1/10</Typography>
         <div className="flex gap-2">
           <Button variant="outlined" size="sm">Олдинги</Button>
           <Button variant="outlined" size="sm">Кейингиси</Button>

@@ -19,6 +19,7 @@
     "@material-tailwind/react": "^2.1.9",
     "axios": "^1.6.8",
     "bootswatch": "^5.3.3",
+    "chroma-js": "^2.4.2",
     "date-fns": "^3.6.0",
     "react": "18.2.0",
     "react-country-state-city": "^1.1.0",
@@ -31,7 +32,8 @@
     "react-select": "^5.8.0",
     "suneditor": "^2.45.1",
     "suneditor-react": "^3.6.1",
-    "use-react-countries": "^2.0.0"
+    "use-react-countries": "^2.0.0",
+    "vaul": "^0.9.0"
   },
   "scripts": {
     "start": "set PORT=3100 && react-scripts start",

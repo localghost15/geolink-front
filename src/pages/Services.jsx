@@ -1,21 +1,76 @@
-import React,{ Fragment, useState } from 'react'
-import {ChevronUpDownIcon,} from "@heroicons/react/24/outline";
-  import { Dialog, Transition } from '@headlessui/react'
-  import { PencilIcon, TrashIcon, UserPlusIcon } from "@heroicons/react/24/solid";
-  import {Card, Typography, Button, CardBody, CardFooter, IconButton, Tooltip, Input, Checkbox,} from "@material-tailwind/react";
+import React, { useState, useEffect } from 'react';
+import { ChevronUpDownIcon, PencilIcon, TrashIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import { Dialog, Transition } from '@headlessui/react';
+import { Card, Typography, Button, CardBody, CardFooter, IconButton, Tooltip, Input } from "@material-tailwind/react";
+import axios from 'axios';
 
-  const TABLE_HEAD = ["Номланиши", "Нархи", "Харакат"];
-
-const TABLE_ROWS = [
-  { name: "Капельница", price: "80 000" },
-  { name: "Прием", price: "50 000" },
-];
+const TABLE_HEAD = ["Номланиши", "Нархи", "Процедура вакти" , "Харакат"];
 
 export default function Services() {
   const [isOpen, setIsOpen] = useState(false);
+  const [services, setServices] = useState([]);
+  const [newServiceName, setNewServiceName] = useState('');
+  const [newServicePrice, setNewServicePrice] = useState('');
+  const [newServiceTime, setNewServiceTime] = useState('');
+  const axiosInstance = axios.create({
+    baseURL: 'https://back.geolink.uz/api/v1'
+  });
 
-  const closeModal = () => setIsOpen(false);
-  const openModal = () => setIsOpen(true);
+  axiosInstance.interceptors.request.use(
+    config => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    error => {
+      return Promise.reject(error);
+    }
+  );
+
+  useEffect(() => {
+    fetchServices();
+  }, []); 
+
+  const fetchServices = async () => {
+    try {
+      const response = await axiosInstance.get("/admin/service");
+      setServices(response.data.data);
+    } catch (error) {
+      console.error("Ошибка при получении списка сервисов:", error);
+    }
+  };
+
+  const closeModal = () => {
+    setIsOpen(false);
+    setNewServiceName('');
+    setNewServicePrice('');
+    setNewServiceTime('');
+  };
+
+  const openModal = () => {
+    setIsOpen(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      await axiosInstance.post("/admin/service", { name: newServiceName, price: newServicePrice, time: newServiceTime });
+      fetchServices(); 
+      closeModal();
+    } catch (error) {
+      console.error("Ошибка при сохранении сервиса:", error);
+    }
+  };
+
+  const handleDelete = async (serviceId) => {
+    try {
+      await axiosInstance.delete(`/admin/service/${serviceId}`);
+      fetchServices(); 
+    } catch (error) {
+      console.error("Ошибка при удалении сервиса:", error);
+    }
+  };
 
   return (
     <Card className="h-full w-full rounded-none pt-5">
@@ -25,10 +80,10 @@ export default function Services() {
           <Button onClick={openModal} className="flex h-12 items-center gap-3 normal-case font-normal" size="sm">
             <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Янги  қўшиш
           </Button>
-          <Transition appear show={isOpen} as={Fragment}>
+          <Transition appear show={isOpen} as={React.Fragment}>
             <Dialog as="div" className="relative z-10" onClose={closeModal}>
               <Transition.Child
-                as={Fragment}
+                as={React.Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0"
                 enterTo="opacity-100"
@@ -41,7 +96,7 @@ export default function Services() {
               <div className="fixed inset-0 overflow-y-auto">
                 <div className="flex min-h-full items-center justify-center p-4 text-center">
                   <Transition.Child
-                    as={Fragment}
+                    as={React.Fragment}
                     enter="ease-out duration-300"
                     enterFrom="opacity-0 scale-95"
                     enterTo="opacity-100 scale-100"
@@ -55,15 +110,13 @@ export default function Services() {
                       </Dialog.Title>
                       <div className="mt-2">
                         <div className="grid grid-cols-1 gap-4">
-                          <Input label="Хизмат номи: *" size="lg" />
-                          <Input label="Нархи: *" size="lg" />
-                        </div>
-                        <div className="-ml-2.5 mt-3">
-                          <Checkbox label="Дастлабки қабулда кўринсин" />
+                          <Input label="Хизмат номи: *" size="lg" value={newServiceName} onChange={(e) => setNewServiceName(e.target.value)} />
+                          <Input label="Нархи: *" size="lg" value={newServicePrice} onChange={(e) => setNewServicePrice(e.target.value)} />
+                          <Input label="Процедура вакти (минут): *" type="number" size="lg" value={newServiceTime} onChange={(e) => setNewServiceTime(e.target.value)} />
                         </div>
                       </div>
                       <div className="mt-4">
-                        <Button onClick={closeModal} variant="gradient" fullWidth>Сақлаш</Button>
+                        <Button onClick={handleSave} variant="gradient" fullWidth>Сақлаш</Button>
                       </div>
                     </Dialog.Panel>
                   </Transition.Child>
@@ -87,34 +140,21 @@ export default function Services() {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS.map(({ name, price }, index) => {
-              const isLast = index === TABLE_ROWS.length - 1;
-              const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
-              return (
-                <tr key={name}>
-                  <td className={classes}>
-                    <div className="flex items-center gap-3">
-                      <div className="flex flex-col">
-                        <Typography variant="small" color="blue-gray" className="font-normal">{name}</Typography>
-                      </div>
-                    </div>
-                  </td>
-                  <td className={classes}>
-                    <div className="flex flex-col">
-                      <Typography variant="small" color="blue-gray" className="font-normal">{price} сум</Typography>
-                    </div>
-                  </td>
-                  <td className={classes}>
-                    <Tooltip content="Ўзгартириш">
-                      <IconButton variant="text"><PencilIcon className="h-4 w-4" /></IconButton>
-                    </Tooltip>
-                    <Tooltip content="Ўчириш">
-                      <IconButton variant="text"><TrashIcon className="h-4 w-4" /></IconButton>
-                    </Tooltip>
-                  </td>
-                </tr>
-              );
-            })}
+            {services.map(({ id, name, price, time }) => (
+              <tr key={id} className="transition-colors hover:bg-blue-gray-50">
+                <td className="p-4">{name}</td>
+                <td className="p-4">{price} сум</td>
+                <td className="p-4">{time} минут</td>
+                <td className="p-4">
+                  <Tooltip content="Ўзгартириш">
+                    <IconButton onClick={() => console.log("Edit:", id)} variant="text"><PencilIcon className="h-4 w-4" /></IconButton>
+                  </Tooltip>
+                  <Tooltip content="Ўчириш">
+                    <IconButton onClick={() => handleDelete(id)} variant="text"><TrashIcon className="h-4 w-4" /></IconButton>
+                  </Tooltip>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </CardBody>
