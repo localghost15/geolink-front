@@ -9,7 +9,7 @@ import Doctors from './pages/Doctors/Doctors';
 import Services from './pages/Services';
 import Partners from './pages/Partners';
 import EpidemiologicalHistory from './pages/EpidemiologicalHistory/EpidemiologicalHistory';
-import Mkb10 from './pages/Mkb10';
+import Mkb10 from './pages/Mkb10/Mkb10';
 import Payments from './pages/Payments/Payments';
 import DeptsLists from './pages/DeptsLists/DeptsLists';
 import Admissions from './pages/Admissions/Admissions';

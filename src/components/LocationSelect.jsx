@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Select from 'react-select';
 
-const LocationSelect = () => {
+const LocationSelect = ({ value, onChange }) => {
   const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
   });
@@ -37,10 +37,16 @@ const LocationSelect = () => {
   const handleProvinceChange = (selectedOption) => {
     setSelectedProvince(selectedOption);
     fetchDistricts(selectedOption.value);
+    // Reset selected district when province changes
+    setSelectedDistrict(null);
+    // Pass the selected province value back to the parent component
+    onChange({ province_id: selectedOption.value });
   };
 
   const handleDistrictChange = (selectedOption) => {
     setSelectedDistrict(selectedOption);
+    // Pass the selected district value back to the parent component
+    onChange({ district_id: selectedOption.value });
   };
 
   return (
@@ -64,5 +70,6 @@ const LocationSelect = () => {
     </div>
   );
 };
+
 
 export default LocationSelect;

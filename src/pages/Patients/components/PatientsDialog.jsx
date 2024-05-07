@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from 'react';
-import { Button, Input, Textarea } from "@material-tailwind/react";
+import { Button, Input, Radio, Textarea, Typography } from "@material-tailwind/react";
 import { Dialog, Transition } from '@headlessui/react';
 import { UserPlusIcon } from "@heroicons/react/24/solid";
 import DatePicker from '../../../components/DatePicker';
@@ -10,49 +10,77 @@ import DoctorsSelect from './DoctorsList';
 export default function PatientsDialog(props) {
     const [isOpen, setIsOpen] = useState(false);
     
-    const [newPatient, setNewPatient] = useState({
-        fullName: '',
-        workPlace: '',
-        birthDate: '',
-        address: '',
-        profession: '',
-        country: '',
-        phoneNumber: '',
-        referredBy: '',
-        comment: '',
-        files: null,
+    const [patientData, setPatientData] = useState({
+      name: "",
+      pinfl: "",
+      home_address: "",
+      work_address: "",
+      remark: "",
+      phone: "",
+      profession: "",
+      district_id: "",
+      partner_id: "",
+      gender: "",
+      birth_at: "",
+      file: null,
     });
-
-    
 
     const closeModal = () => {
         setIsOpen(false);
-        setNewPatient({
-            fullName: '',
-            workPlace: '',
-            birthDate: '',
-            address: '',
-            profession: '',
-            country: '',
-            phoneNumber: '',
-            referredBy: '',
-            comment: '',
-            files: null,
-        });
     };
 
     const openModal = () => {
         setIsOpen(true);
     };
-    const handleSave = () => {
-      // Проверка наличия имени пациента перед добавлением
-      if (newPatient.fullName.trim() !== '') {
-        console.log("New Patient:", newPatient);
-          // Вызов обработчика onAddPatient с новым пациентом
-          props.onAddPatient(newPatient);
+    
+    const handleChange = (e) => {
+      if (e.target) {
+        const { name, value } = e.target;
+        setPatientData((prevData) => ({
+          ...prevData,
+          [name]: value,
+        }));
+      } else {
+        // Handle the case when handleChange is called with a value directly
+        setPatientData((prevData) => ({
+          ...prevData,
+          birth_at: e, // Assuming e is the selected date value
+        }));
       }
-      closeModal();
-  };
+    };
+
+    const handleFileChange = (file) => {
+      setPatientData((prevData) => ({
+        ...prevData,
+        file: file, // Сохраняем выбранный файл в состоянии
+      }));
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+  
+      const token = localStorage.getItem("token");
+  
+      const formData = new FormData();
+      Object.keys(patientData).forEach((key) => {
+        formData.append(key, patientData[key]);
+      });
+  
+      try {
+        const response = await fetch("https://back.geolink.uz/api/v1/patients", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+  
+        const responseData = await response.json();
+        console.log(JSON.stringify(responseData));
+      } catch (error) {
+        console.error("Ошибка:", error);
+      }
+    };
   
 
     return (
@@ -98,29 +126,47 @@ export default function PatientsDialog(props) {
                                     </Dialog.Title>
                                     <div className="mt-2">
                                         <div className="grid grid-cols-3 gap-4">
-                                            <Input label="ФИО: *" size="lg" value={newPatient.fullName} onChange={(e) => setNewPatient({ ...newPatient, fullName: e.target.value })} />
-                                            <Input label="Иш жойи" size="lg" value={newPatient.workPlace} onChange={(e) => setNewPatient({ ...newPatient, workPlace: e.target.value })} />
-                                            <DatePicker value={newPatient.birthDate} onChange={(date) => setNewPatient({ ...newPatient, birthDate: date })}  />
+                                            <Input label="ФИО: *" size="lg" name="name" value={patientData.name} onChange={handleChange} />
+                                            <Input label="Иш жойи" size="lg" name="work_address" value={patientData.work_address} onChange={handleChange} />
+                                            <DatePicker label="Туғилган кун" value={patientData.birth_at} onChange={handleChange}  />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
-                                            <LocationSelect value={newPatient.country} onChange={(country) => setNewPatient({ ...newPatient, country })} />
-                                            <DoctorsSelect/>
-                                           
-                                            
+                                            <LocationSelect label="Туман"  onChange={(selectedValues) => setPatientData({ ...patientData, ...selectedValues })} />
+                                            <DoctorsSelect 
+  label="Ҳамкор"  
+  onChange={(partnerId) => setPatientData({ ...patientData, partner_id: partnerId })}
+/>
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
-                                            <Input label="Касби:" size="lg" value={newPatient.profession} onChange={(e) => setNewPatient({ ...newPatient, profession: e.target.value })} />
-                                            <Input label="Телефон номер:" size="lg" value={newPatient.phoneNumber} onChange={(e) => setNewPatient({ ...newPatient, phoneNumber: e.target.value })} />
-                                            <Input label="Яшаш манзили:" size="lg" value={newPatient.address} onChange={(e) => setNewPatient({ ...newPatient, address: e.target.value })} />
+                                            <Input label="Касби:" size="lg" name="profession" value={patientData.profession} onChange={handleChange} />
+                                            <Input label="Телефон номер:" size="lg" name="phone" value={patientData.phone} onChange={handleChange} />
+                                            <Input label="Яшаш манзили:" size="lg" name="home_address" value={patientData.home_address} onChange={handleChange} />
+                                        </div>
+                                        <div className="mt-4 grid grid-cols-3 gap-4">
+                                        <Radio
+                                      name="gender"
+                                      value="men"
+                                      checked={patientData.gender === 'men'}
+                                      onChange={() => handleChange({ target: { name: 'gender', value: 'men' } })}
+                                      label="Еркак"
+                                    />
+                                    <Radio
+                                      name="gender"
+                                      value="female"
+                                      checked={patientData.gender === 'women'}
+                                      onChange={() => handleChange({ target: { name: 'gender', value: 'women' } })}
+                                      label="Айол"
+                                    />
+                                            <Input label="ПИНФЛ:" size="lg" name="pinfl" value={patientData.pinfl} onChange={handleChange} />
                                         </div>
                                         <div className="mt-4 flex gap-4">
-                                            <Textarea className='w-max-content' fullWidth label="Изоҳ:" value={newPatient.comment} onChange={(e) => setNewPatient({ ...newPatient, comment: e.target.value })} />
-                                            <Dropzone onFilesChange={(file) => setNewPatient({ ...newPatient, files: file })} />
+                                            <Textarea label="Изоҳ:" fullWidth name="remark" value={patientData.remark} onChange={handleChange} />
+                                            <Dropzone onFilesChange={(file) => setPatientData({ ...patientData, file: file })} />
                                         </div>
                                     </div>
 
                                     <div className="mt-4">
-                                        <Button onClick={handleSave} variant="gradient" fullWidth>
+                                        <Button onClick={handleSubmit} variant="gradient" fullWidth>
                                             Сақлаш
                                         </Button>
                                     </div>

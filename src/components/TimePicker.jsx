@@ -1,48 +1,29 @@
 import React, { useState } from 'react';
 
-export default function TimePicker() {
-  const [selectedTime, setSelectedTime] = useState('00:00');
+export default function TimePicker({ selectedTime, onTimeChange, error }) {
 
   const handleTimeChange = (event) => {
-    setSelectedTime(event.target.value);
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Handle selectedTime, you can use it to add the event to the calendar or perform any other action
-    console.log('Selected Time:', selectedTime);
+    onTimeChange(event.target.value);
   };
 
   return (
-    <form className="w-full mx-auto" onSubmit={handleSubmit}>
-
-      <div className="relative">
-        <div className="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-          <svg
-            className="w-4 h-4 text-gray-500 dark:text-gray-400"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              fillRule="evenodd"
-              d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </div>
-        <input
-          type="time"
-          id="time"
-          className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          min="09:00"
-          max="18:00"
-          value={selectedTime}
-          onChange={handleTimeChange}
-          required
-        />
-      </div>
-    </form>
+    <div className="mb-4">
+      <label htmlFor="time" className="block text-sm font-medium text-gray-700">
+        Келиш вақти:
+      </label>
+      <input
+        type="time"
+        id="time"
+        className={`mt-1 p-2.5 block w-full border ${
+          error ? 'border-red-500' : 'border-gray-300'
+        } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+        min="09:00"
+        max="18:00"
+        value={selectedTime}
+        onChange={handleTimeChange}
+        required
+      />
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+    </div>
   );
 }

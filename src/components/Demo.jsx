@@ -119,74 +119,19 @@ export default function Calendar() {
     setEventTitle(event.title);
     setEventNumber(event.extendedProps.phone);
   
+    // Установите selectedService на основе выбранного события
     const selectedService = services.find(service => service.id === event.extendedProps.service.id);
     setSelectedService(selectedService ? { value: selectedService.id, label: selectedService.name } : '');
   
     if (event.start) {
-      const date = event.start.toISOString().split('T')[0];
-      let hours = event.start.getHours();
-      let minutes = event.start.getMinutes();
-
-      hours = hours < 10 ? `0${hours}` : hours;
-      minutes = minutes < 10 ? `0${minutes}` : minutes;
-  
-      setSelectedDate(date);
+      const hours = event.start.getHours();
+      const minutes = event.start.getMinutes();
       setSelectedTime(`${hours}:${minutes}`);
     }
-    setSelectedType(event.extendedProps.type || '');
   
     setOpenDialog(true);
     setSelectedEvent(event);
   };
-
-  const handleDeleteEvent = async () => {
-    try {
-      const response = await axiosInstance.delete(`/calendar/${selectedEvent.id}`);
-      if (response.status === 200) {
-        fetchEvents(); 
-        setOpenDialog(false); 
-        setEventTitle('');
-        setEventNumber('');
-      } else {
-        console.error("Ошибка при удалении события:", response);
-      }
-    } catch (error) {
-      console.error("Ошибка при удалении события:", error);
-    }
-  };
-
-  const handleUpdateEvent = async () => {
-    if (validateFields()) {
-      return;
-    }
-
-    const date = new Date(selectedEvent.start);
-    const [hours, minutes] = selectedTime.split(':');
-    date.setHours(hours, minutes);
-  
-    const updatedEventData = {
-      title: eventTitle,
-      phone: eventNumber,
-      start_at: date.toISOString(),
-      service_id: selectedService.value,
-      type: selectedType
-    };
-  
-    try {
-      const response = await axiosInstance.put(`/calendar/${selectedEvent.id}`, updatedEventData);
-      if (response.status === 200) {
-        fetchEvents(); 
-        setOpenDialog(false); 
-        setEventTitle('');
-        setEventNumber('');
-      } else {
-        console.error("Ошибка при обновлении события:", response);
-      }
-    } catch (error) {
-      console.error("Ошибка при обновлении события:", error);
-    }
-  };
-  
   
   
 
@@ -215,17 +160,41 @@ export default function Calendar() {
       console.error("Error creating event:", error);
     }
   };
+  const handleUpdateEvent = async () => {
+    if (!selectedEvent || validateFields()) {
+      return;
+    }
+  
+    const eventData = {
+      id: selectedEvent.id,
+      type: selectedType,
+      start_at: `${selectedDate}T${selectedTime}`,
+    };
+  
+    try {
+      const response = await axiosInstance.put(`/calendar/${selectedEvent.id}`, eventData);
+      const updatedEvent = response.data.data;
+      const updatedEvents = events.map((ev) => (ev.id === updatedEvent.id ? updatedEvent : ev));
+      setEvents(updatedEvents);
+      setOpenDialog(false);
+      setEventTitle('');
+      setEventNumber('');
+    } catch (error) {
+      console.error("Error updating event:", error);
+      // Handle error, show error message, etc.
+    }
+  };
 
   const renderEventContent = (eventInfo) => {
     const { title, phone } = eventInfo.event.extendedProps;
     const startTime = eventInfo.event.start ? eventInfo.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
     return (
       <div>
-        <p className='flex font-semibold items-center text-xs gap-1'>
+        <p className='flex font-semibold items-center text-sm gap-1'>
           <img src="/watch2.png" className='h-4 w-4' alt="" /> {startTime}
         </p>
-        <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'> <img src="/patient.png" className='h-4 w-4' alt="" /> {title}</p>
-        <p className='font-medium text-xs flex items-center gap-1 mt-1'> <img src="/mobile4.png" className='h-4 w-4' alt="" /> {phone}</p>
+        <p className='font-bold text-sm flex items-center gap-1 mt-1 capitalize'>{title}</p>
+        {/* <p className='font-medium text-sm flex items-center gap-1 mt-1'><PhoneIcon className='h-4 w-4' /> {phone}</p> */}
       </div>
     );
   };
@@ -311,7 +280,6 @@ export default function Calendar() {
           extendedProps: {
             phone: event.phone,
             title: event.title,
-            start: event.start,
             type: event.type,
             service: event.service,
           },
@@ -441,15 +409,8 @@ export default function Calendar() {
     </div>
         </DialogBody>
         <DialogFooter className='flex gap-x-4'>
-  <Button onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
-    {selectedEvent ? 'Обновить' : 'Сохранить'}
-  </Button>
-  {selectedEvent && (
-    <Button onClick={handleDeleteEvent} color="red">
-      Удалить
-    </Button>
-  )}
-</DialogFooter>
+          <Button onClick={handleConfirmEvent}>Сақлаш</Button>
+        </DialogFooter>
       </Dialog>
     </div>
   );
@@ -471,6 +432,8 @@ function TimePicker({ selectedTime, onTimeChange, error }) {
         className={`mt-1 p-2.5 block w-full border ${
           error ? 'border-red-500' : 'border-gray-300'
         } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+        min="09:00"
+        max="18:00"
         value={selectedTime}
         onChange={handleTimeChange}
         required

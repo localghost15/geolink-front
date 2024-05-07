@@ -110,9 +110,9 @@ const Layout = () => {
       <Badge content="5">
       <MenuHandler >
 
-        <IconButton>
+        <button className='inline-flex h-10 animate-background-shine items-center justify-center rounded-md border border-gray-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-3 font-medium text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-50'>
           <BellIcon className="h-5 w-5" />
-        </IconButton>
+        </button>
       </MenuHandler>
 
       </Badge>
@@ -123,9 +123,9 @@ const Layout = () => {
         {/* Profile dropdown */}
         <div className="relative ml-3">
           <div>
-          <IconButton onClick={handleLogout}>
+          <button className='inline-flex h-10 animate-background-shine items-center justify-center rounded-md border border-gray-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-3 font-medium text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-50' onClick={handleLogout}>
           <PowerIcon className="h-5 w-5" />
-        </IconButton>
+        </button>
           </div>
 
 

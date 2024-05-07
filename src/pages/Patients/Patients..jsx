@@ -6,10 +6,10 @@ import ListsMenu from "./components/ListsMenu";
 import PatientsDialog from "./components/PatientsDialog";
 import { Link } from "react-router-dom";
 
-const TABLE_HEAD = ["ФИО", "Туғилган санаси", "Телефон", "Идентификатор", "Харакат"];
+const TABLE_HEAD = ["ФИО", "Туғилган санаси", "Телефон", "ПИНФЛ", "Харакат"];
 
 export default function Patients() {
-  const [patients, setPatients] = useState([]);
+  const [patients, setPatients] = useState([]); 
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -28,6 +28,22 @@ export default function Patients() {
 
     fetchPatients();
   }, []);
+
+  const handleRemovePatient = async (patientId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`https://back.geolink.uz/api/v1/patients/${patientId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // Обновляем список пациентов после удаления
+      const updatedPatients = patients.filter(patient => patient.id !== patientId);
+      setPatients(updatedPatients);
+    } catch (error) {
+      console.error("Ошибка при удалении пациента:", error);
+    }
+  };
 
   return (
     <Card className="h-full w-full rounded-none pt-5">
@@ -92,7 +108,7 @@ export default function Patients() {
                         {patient.name}
                       </Typography>
                       <Typography variant="small" color="blue-gray" className="font-normal opacity-70">
-                        {patient.workPlace}
+                        {patient.birth_at}
                       </Typography>
                     </div>
                   </div>
@@ -112,7 +128,7 @@ export default function Patients() {
                 <td className="p-4 border-b border-blue-gray-50">
                   <div className="w-max">
                     <Typography variant="small" color="blue-gray" className="font-normal">
-                      {patient.id}
+                      {patient.pinfl}
                     </Typography>
                   </div>
                 </td>
@@ -131,10 +147,10 @@ export default function Patients() {
                     </Link>
                   </Tooltip>
                   <Tooltip content="Ўчириш">
-                    <IconButton variant="text">
-                      <TrashIcon className="h-4 w-4" />
-                    </IconButton>
-                  </Tooltip>
+                <IconButton variant="text" onClick={() => handleRemovePatient(patient.id)}>
+                  <TrashIcon className="h-4 w-4" />
+                </IconButton>
+                </Tooltip>
                 </td>
               </tr>
             ))}

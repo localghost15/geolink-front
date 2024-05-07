@@ -20,6 +20,11 @@
 }
 
 
+.peer:checked {
+  border-color: #000 !important;
+}
+
+
 #doctors > div {
   width: 272px !important;
 }
@@ -71,9 +76,14 @@ border-radius: 0px !important;
 }
 
 .fc-event {
-    background-color: #1a1a1a !important;
-    border-color:#1a1a1a !important ;
+    border-left: 3px solid #F43F5E;
+    background-color: #FFE4E6 !important;
+    color: #BE123C !important;
+    /* border-left: 3px solid #0EA5E9;
+    background-color: #E0F2FE !important;
+    color: #0369A1 !important; */
     padding: 5px !important;
+    padding-left: 10px !important;
     margin: 10px !important;
 }
 

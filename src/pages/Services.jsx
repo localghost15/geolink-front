@@ -12,6 +12,8 @@ export default function Services() {
   const [newServiceName, setNewServiceName] = useState('');
   const [newServicePrice, setNewServicePrice] = useState('');
   const [newServiceTime, setNewServiceTime] = useState('');
+  const [records, setRecords] = useState([]);
+  
   const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
   });
@@ -141,7 +143,7 @@ export default function Services() {
           </thead>
           <tbody>
             {services.map(({ id, name, price, time }) => (
-              <tr key={id} className="transition-colors hover:bg-blue-gray-50">
+              <tr key={id} className="transition-colors hover:bg-blue-gray-50 text-sm">
                 <td className="p-4">{name}</td>
                 <td className="p-4">{price} сум</td>
                 <td className="p-4">{time} минут</td>

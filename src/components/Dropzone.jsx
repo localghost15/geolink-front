@@ -23,7 +23,6 @@ function Dropzone({ onFilesChange }) {
     handleFileChange(selectedFile);
   };
 
-
   const handleFileChange = (file) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
