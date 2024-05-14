@@ -68,17 +68,21 @@ border-radius: 0px !important;
 }
 
 .fc .fc-daygrid-day.fc-day-today {
-    background-color: #F8F3E3 !important;
+    background-color: #EAF3FB !important;
 }
 
 .fc-daygrid-dot-event {
   color: #fff !important;
 }
 
+
 .fc-event {
-    border-left: 3px solid #F43F5E;
-    background-color: #FFE4E6 !important;
-    color: #BE123C !important;
+    border-left: 4px solid #2A9D8F;
+    background-color: #CFE9E7 !important;
+    color: #1E1D1D !important;
+    /*border-left: 3px solid #F43F5E;*/
+    /*background-color: #FFE4E6 !important;*/
+    /*color: #BE123C !important;*/
     /* border-left: 3px solid #0EA5E9;
     background-color: #E0F2FE !important;
     color: #0369A1 !important; */

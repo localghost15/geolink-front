@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import { Avatar, Typography,Accordion,AccordionHeader,AccordionBody,} from "@material-tailwind/react";
+import {Avatar, Typography, Accordion, AccordionHeader, AccordionBody, Button} from "@material-tailwind/react";
 import { useParams } from 'react-router-dom';
+import Select from 'react-select';
 import PatientDetailTabs from '../components/PatientDetailTabs';
 import axios from 'axios';
 
@@ -26,8 +27,27 @@ export default function PatientDetails() {
   const [partnerName, setPartnerName] = useState(null);
   const [districtName, setDistrictName] = useState(null);
   const [provinceName, setProvinceName] = useState(null);
+  const [epidemData, setEpidemData] = useState([]);
+  const [selectedEpidem, setSelectedEpidem] = useState(null);
 
   const handleOpen = (value) => setOpen(open === value ? 0 : value);
+
+  const axiosInstance = axios.create({
+    baseURL: 'https://back.geolink.uz/api/v1'
+  });
+
+  axiosInstance.interceptors.request.use(
+      config => {
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      error => {
+        return Promise.reject(error);
+      }
+  );
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -39,7 +59,6 @@ export default function PatientDetails() {
           }
         });
         setPatient(response.data.data);
-        // Проверяем наличие партнера у пациента
         if (response.data.data.partner_id) {
           const partnerResponse = await axios.get(`https://back.geolink.uz/api/v1/partners/${response.data.data.partner_id}`, {
             headers: {
@@ -61,9 +80,49 @@ export default function PatientDetails() {
         console.error("Ошибка при получении информации о пациенте:", error);
       }
     };
-
+    fetchRecords();
     fetchPatient();
   }, [index]);
+
+  const fetchRecords = async () => {
+    try {
+      const response = await axiosInstance.get("/epidemiological");
+      setEpidemData(response.data.data);
+      console.log(epidemData)
+    } catch (error) {
+      console.error("Ошибка при получении списка эпидемии:", error);
+    }
+  };
+
+  const sendEpidemData = async (selectedOption) => {
+    if (!selectedOption) {
+      alert("The epidem field is required.");
+      return;
+    }
+
+    // Extract the value from the selected option
+    const epidemId = selectedOption.value;
+
+    const data = { epidem: [epidemId] };
+
+    const config = {
+      method: 'post',
+      url: `https://back.geolink.uz/api/v1/patient/epidem/${index}`,
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      },
+      data: JSON.stringify(data)
+    };
+
+    try {
+      const response = await axios.request(config);
+      console.log("Epidem data sent successfully:", response.data);
+    } catch (error) {
+      console.error("Error sending epidem data:", error);
+    }
+  };
+
 
   const CUSTOM_ANIMATION = {
     mount: { scale: 1 },
@@ -86,12 +145,6 @@ export default function PatientDetails() {
           <div className="px-4 py-3 sm:grid sm:grid-cols-1 sm:gap-1 sm:px-0">
           <div className="flex items-center gap-4">
         <Avatar src={`${patient.avatar}`} size="xl" alt="avatar" variant="rounded" />
-        {/* <div>
-          <Typography variant="h6">Tania Andrew</Typography>
-          <Typography variant="small" color="gray" className="font-normal">
-            Web Developer
-          </Typography>
-        </div> */}
       </div>
         <h3 className="text-base font-semibold leading-7 text-gray-900">{patient.name}</h3>
         <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
@@ -147,17 +200,57 @@ export default function PatientDetails() {
           <div className="px-4 py-1 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-0">
           <Accordion animate={CUSTOM_ANIMATION} open={open === 1} icon={<Icon id={1} open={open} />}>
         <AccordionHeader className='text-sm' onClick={() => handleOpen(1)}>Эпиданамнез</AccordionHeader>
-        <AccordionBody>
-        Эпидемиологик
-        </AccordionBody>
-      </Accordion>
+            <AccordionBody>
+              <div className='flex gap-4'>
+                <Select
+                    options={epidemData.map(item => ({value: item.id, label: item.name}))}
+                    value={selectedEpidem}
+                    onChange={(selectedOption) => setSelectedEpidem(selectedOption)}
+                    placeholder="Выберите эпидемиологическую запись..."
+                />
+                <Button onClick={() => sendEpidemData(selectedEpidem)}>Саклаш</Button>
+              </div>
+              <div className="px-4 py-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:px-0">
+                <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Идентификатор
+                      </th>
+                      <th scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Номланиши
+                      </th>
+                      <th scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Описание
+                      </th>
+                    </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                    {patient.epidem.map((item) => (
+                        <tr key={item.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.id}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.description}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                  </table>
+                </dd>
+              </div>
+
+            </AccordionBody>
+          </Accordion>
           </div>
         </dl>
       </div>
-    </div>
-    <div className="col-span-2 pr-10">
-        <PatientDetailTabs/>
-    </div>
+ </div>
+         <div className="col-span-2 pr-10">
+           <PatientDetailTabs patientName={patient.name} mkb10={patient.mkb10} patientId={index}/>
+         </div>
        </div>
     );
 }

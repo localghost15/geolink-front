@@ -35,6 +35,7 @@
     "suneditor": "^2.45.1",
     "suneditor-react": "^3.6.1",
     "use-react-countries": "^2.0.0",
+    "uuid": "^9.0.1",
     "vaul": "^0.9.0"
   },
   "scripts": {

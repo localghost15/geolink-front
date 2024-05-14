@@ -4,12 +4,17 @@ import { Avatar, Button, Card, CardBody, CardFooter, CardHeader, IconButton, Too
 import { MagnifyingGlassIcon, ChevronUpDownIcon, PencilIcon, EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import ListsMenu from "./components/ListsMenu";
 import PatientsDialog from "./components/PatientsDialog";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const TABLE_HEAD = ["ФИО", "Туғилган санаси", "Телефон", "ПИНФЛ", "Харакат"];
 
 export default function Patients() {
-  const [patients, setPatients] = useState([]); 
+  const [patients, setPatients] = useState([]);
+  const navigate = useNavigate();
+
+  const handleClick = (patientId) => {
+    navigate(`/patient/${patientId}`);
+  };
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -99,7 +104,7 @@ export default function Patients() {
           </thead>
           <tbody>
             {patients.map((patient) => (
-              <tr key={patient.id}>
+              <tr className="cursor-pointer" key={patient.id} onClick={() => handleClick(patient.id)}>
                 <td className="p-4 border-b border-blue-gray-50">
                   <div className="flex items-center gap-3">
                     <Avatar src={`${patient.avatar}`} size="sm" />
@@ -107,16 +112,13 @@ export default function Patients() {
                       <Typography variant="small" color="blue-gray" className="font-normal">
                         {patient.name}
                       </Typography>
-                      <Typography variant="small" color="blue-gray" className="font-normal opacity-70">
-                        {patient.birth_at}
-                      </Typography>
                     </div>
                   </div>
                 </td>
                 <td className="p-4 border-b border-blue-gray-50">
                   <div className="flex flex-col">
                     <Typography variant="small" color="blue-gray" className="font-normal">
-                      {patient.birthDate}
+                      {patient.birth_at}
                     </Typography>
                   </div>
                 </td>
