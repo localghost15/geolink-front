@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import {Avatar, Typography, Accordion, AccordionHeader, AccordionBody, Button} from "@material-tailwind/react";
+import {Avatar, Typography, Accordion, AccordionHeader, AccordionBody, Button, IconButton, Drawer, Input} from "@material-tailwind/react";
 import { useParams } from 'react-router-dom';
 import Select from 'react-select';
 import PatientDetailTabs from '../components/PatientDetailTabs';
 import axios from 'axios';
+import {ArrowPathIcon, ClipboardDocumentCheckIcon} from "@heroicons/react/24/solid";
 
 function Icon({ id, open }) {
     return (
@@ -24,11 +25,50 @@ export default function PatientDetails() {
   const { index } = useParams();
   const [patient, setPatient] = useState(null);
   const [open, setOpen] = useState(0);
+  const [openVisit, setOpenVisit] = React.useState(false);
   const [partnerName, setPartnerName] = useState(null);
   const [districtName, setDistrictName] = useState(null);
   const [provinceName, setProvinceName] = useState(null);
   const [epidemData, setEpidemData] = useState([]);
+  const [doctorId, setDoctorId] = useState('');
   const [selectedEpidem, setSelectedEpidem] = useState(null);
+  const handleDoctorIdChange = (event) => {
+    setDoctorId(event.target.value);
+  };
+
+  const [allServices, setAllServices] = useState([]);
+  // State для отфильтрованных услуг, где primary === 1
+  const [primaryServices, setPrimaryServices] = useState([]);
+  // State для выбранной услуги
+  const [selectedService, setSelectedService] = useState(null);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  // Функция для получения всех услуг
+  const fetchServices = async () => {
+    try {
+      const response = await axiosInstance.get("/admin/service?primary=1");
+      // Сохраняем все полученные услуги
+      setAllServices(response.data.data);
+      // Фильтруем услуги, где primary === 1
+      const primaryServices = response.data.data.filter(service => service.primary === 1);
+      // Сохраняем отфильтрованные услуги
+      setPrimaryServices(response.data.data);
+    } catch (error) {
+      console.error("Ошибка при получении списка услуг:", error);
+    }
+  };
+
+  // Функция для обработки выбора услуги из списка
+  const handleServiceSelect = (selectedOption) => {
+    setSelectedService(selectedOption);
+    // Дополнительная логика при выборе услуги, если необходимо
+  };
+
+  const openDrawer = () => setOpenVisit(true);
+  const closeDrawer = () => setOpenVisit(false);
 
   const handleOpen = (value) => setOpen(open === value ? 0 : value);
 
@@ -48,6 +88,16 @@ export default function PatientDetails() {
         return Promise.reject(error);
       }
   );
+
+  const handleNewVisitSubmit = async () => {
+    try {
+      const response = await axiosInstance.post(`/visit?patient_id=${index}&doctor_id=${doctorId}`);
+      console.log("New visit created:", response.data);
+      setOpenVisit(false); // Close the drawer after successful submission
+    } catch (error) {
+      console.error("Error creating new visit:", error);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -148,6 +198,42 @@ export default function PatientDetails() {
       </div>
         <h3 className="text-base font-semibold leading-7 text-gray-900">{patient.name}</h3>
         <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
+            <Button onClick={openDrawer} className='flex gap-x-1' color="blue"><ClipboardDocumentCheckIcon className='w-4 h-4' /> қабулга қўшиш</Button>
+            <Drawer open={openVisit} onClose={closeDrawer} className="p-4">
+              <div className="mb-6 flex items-center justify-between">
+                <Typography variant="h5" color="blue-gray" className="capitalize">
+                  қабулга қўшиш
+                </Typography>
+                <IconButton variant="text" color="blue-gray" onClick={closeDrawer}>
+                  <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="h-5 w-5"
+                  >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </IconButton>
+              </div>
+              <Select
+                  options={primaryServices.map(service => ({ value: service.id, label: service.name }))}
+                  value={selectedService}
+                  onChange={handleServiceSelect}
+                  placeholder="Выберите услугу..."
+              />
+              <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <Input label="Doctor ID" value={doctorId} onChange={handleDoctorIdChange}/>
+              </div>
+              <div className="px-4 py-3 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-0">
+                <Button onClick={handleNewVisitSubmit}>Янги қабул қушиш</Button>
+              </div>
+            </Drawer>
           </div>
           <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900">Иш жойи:</dt>

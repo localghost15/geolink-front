@@ -7,7 +7,7 @@ import {
     Tab,
     TabPanel,
     Button,
-    Card, Typography, IconButton, Tooltip, Input
+    Card, Typography, IconButton, Tooltip, Input,
 
 } from "@material-tailwind/react";
 import Select from 'react-select';
@@ -283,8 +283,7 @@ function PatientDetailTabs({patientId, mkb10}) {
             label: "Қабулларни кўриш",
             value: 3,
             desc: <>
-                <Input label="Username" value={doctorId} onChange={handleDoctorIdChange} />
-                <Button onClick={handleNewVisitSubmit}>Создать новый прием</Button>
+               On Process...
             </>,
         },
     ];

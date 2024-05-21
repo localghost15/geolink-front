@@ -23,10 +23,12 @@
     "caniuse-lite": "^1.0.30001616",
     "chroma-js": "^2.4.2",
     "date-fns": "^3.6.0",
+    "formik": "^2.4.6",
     "react": "18.2.0",
     "react-country-state-city": "^1.1.0",
     "react-day-picker": "^8.10.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.51.4",
     "react-hot-toast": "^2.4.1",
     "react-papaparse": "^4.4.0",
     "react-router-dom": "6.4.2",
@@ -36,7 +38,8 @@
     "suneditor-react": "^3.6.1",
     "use-react-countries": "^2.0.0",
     "uuid": "^9.0.1",
-    "vaul": "^0.9.0"
+    "vaul": "^0.9.0",
+    "yup": "^1.4.0"
   },
   "scripts": {
     "start": "set PORT=3100 && react-scripts start",

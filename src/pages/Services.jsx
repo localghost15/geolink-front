@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronUpDownIcon, PencilIcon, TrashIcon, UserPlusIcon } from "@heroicons/react/24/solid";
 import { Dialog, Transition } from '@headlessui/react';
-import { Card, Typography, Button, CardBody, CardFooter, IconButton, Tooltip, Input } from "@material-tailwind/react";
+import {
+  Card,
+  Typography,
+  Button,
+  CardBody,
+  CardFooter,
+  IconButton,
+  Tooltip,
+  Input,
+  Switch
+} from "@material-tailwind/react";
 import axios from 'axios';
 
-const TABLE_HEAD = ["Номланиши", "Нархи", "Процедура вакти" , "Харакат"];
+const TABLE_HEAD = ["Номланиши", "Нархи", "Процедура вакти" , "Вид Услуги","Харакат"];
 
 export default function Services() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,7 +22,8 @@ export default function Services() {
   const [newServiceName, setNewServiceName] = useState('');
   const [newServicePrice, setNewServicePrice] = useState('');
   const [newServiceTime, setNewServiceTime] = useState('');
-  const [records, setRecords] = useState([]);
+  const [isPrimary, setIsPrimary] = useState(false);
+  const [editServiceId, setEditServiceId] = useState(null);
   
   const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
@@ -46,9 +57,11 @@ export default function Services() {
 
   const closeModal = () => {
     setIsOpen(false);
+    setEditServiceId(null)
     setNewServiceName('');
     setNewServicePrice('');
     setNewServiceTime('');
+    setIsPrimary(false);
   };
 
   const openModal = () => {
@@ -57,18 +70,41 @@ export default function Services() {
 
   const handleSave = async () => {
     try {
-      await axiosInstance.post("/admin/service", { name: newServiceName, price: newServicePrice, time: newServiceTime });
-      fetchServices(); 
+      if (editServiceId) {
+        await axiosInstance.put(`/admin/service/${editServiceId}`, {
+          name: newServiceName,
+          price: newServicePrice,
+          time: newServiceTime,
+          primary: isPrimary ? 1 : 0
+        });
+      } else {
+        await axiosInstance.post("/admin/service", {
+          name: newServiceName,
+          price: newServicePrice,
+          time: newServiceTime,
+          primary: isPrimary ? 1 : 0
+        });
+      }
+      fetchServices();
       closeModal();
     } catch (error) {
       console.error("Ошибка при сохранении сервиса:", error);
     }
   };
 
+  const handleEdit = (service) => {
+    setEditServiceId(service.id);
+    setNewServiceName(service.name);
+    setNewServicePrice(service.price);
+    setNewServiceTime(service.time);
+    setIsPrimary(service.primary);
+    openModal();
+  };
+
   const handleDelete = async (serviceId) => {
     try {
       await axiosInstance.delete(`/admin/service/${serviceId}`);
-      fetchServices(); 
+      fetchServices();
     } catch (error) {
       console.error("Ошибка при удалении сервиса:", error);
     }
@@ -112,9 +148,25 @@ export default function Services() {
                       </Dialog.Title>
                       <div className="mt-2">
                         <div className="grid grid-cols-1 gap-4">
-                          <Input label="Хизмат номи: *" size="lg" value={newServiceName} onChange={(e) => setNewServiceName(e.target.value)} />
-                          <Input label="Нархи: *" size="lg" value={newServicePrice} onChange={(e) => setNewServicePrice(e.target.value)} />
-                          <Input label="Процедура вакти (минут): *" type="number" size="lg" value={newServiceTime} onChange={(e) => setNewServiceTime(e.target.value)} />
+                          <Input label="Хизмат номи: *" size="lg" value={newServiceName}
+                                 onChange={(e) => setNewServiceName(e.target.value)}/>
+                          <Input label="Нархи: *" size="lg" value={newServicePrice}
+                                 onChange={(e) => setNewServicePrice(e.target.value)}/>
+                          <Input label="Процедура вакти (минут): *" type="number" size="lg" value={newServiceTime}
+                                 onChange={(e) => setNewServiceTime(e.target.value)}/>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <Switch label={isPrimary ? 'Основной' : 'Дополнительный'}
+                              className="h-full w-full checked:bg-[#012c6e]"
+                              containerProps={{
+                                className: "w-11 h-6",
+                              }}
+                              circleProps={{
+                                className: "before:hidden left-0.5 border-none",
+                              }}
+                              checked={isPrimary}
+                              onChange={(e) => setIsPrimary(e.target.checked)}
+                          />
                         </div>
                       </div>
                       <div className="mt-4">
@@ -142,21 +194,28 @@ export default function Services() {
             </tr>
           </thead>
           <tbody>
-            {services.map(({ id, name, price, time }) => (
-              <tr key={id} className="transition-colors hover:bg-blue-gray-50 text-sm">
-                <td className="p-4">{name}</td>
-                <td className="p-4">{price} сум</td>
-                <td className="p-4">{time} минут</td>
+          {services.map((service, index) => (
+              <tr key={service.id} className={`transition-colors hover:bg-blue-gray-50 ${index % 2 === 0 ? "bg-blue-gray-50/50" : ""}`}>
+                <td className="p-4">{service.name}</td>
+                <td className="p-4">{service.price} сум</td>
+                <td className="p-4">{service.time} минут</td>
+                <td className="p-4">{service.primary ? 'Основной' : 'Дополнительный'}</td>
                 <td className="p-4">
-                  <Tooltip content="Ўзгартириш">
-                    <IconButton onClick={() => console.log("Edit:", id)} variant="text"><PencilIcon className="h-4 w-4" /></IconButton>
-                  </Tooltip>
-                  <Tooltip content="Ўчириш">
-                    <IconButton onClick={() => handleDelete(id)} variant="text"><TrashIcon className="h-4 w-4" /></IconButton>
-                  </Tooltip>
+                  <div className="flex items-center gap-4">
+                    <Tooltip content="Ўзгартириш">
+                      <IconButton onClick={() => handleEdit(service)} variant="text">
+                        <PencilIcon className="h-4 w-4"/>
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip content="Ўчириш">
+                      <IconButton onClick={() => handleDelete(service.id)} variant="text">
+                        <TrashIcon className="h-4 w-4"/>
+                      </IconButton>
+                    </Tooltip>
+                  </div>
                 </td>
               </tr>
-            ))}
+          ))}
           </tbody>
         </table>
       </CardBody>

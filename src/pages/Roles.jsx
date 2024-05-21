@@ -158,8 +158,8 @@ export default function Roles() {
                 </td>
 
                 <td className="p-4 bg-blue-gray-50/50">
-                <IconButton onClick={() => handleDelete(role.id)}>
-                <TrashIcon className="h-5 w-5 text-white" />
+                <IconButton size="sm" onClick={() => handleDelete(role.id)}>
+                <TrashIcon className="h-4 w-4 text-white" />
                   </IconButton>
                 </td>
               </tr>
