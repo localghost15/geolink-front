@@ -31,7 +31,24 @@ export default function PatientDetails() {
   const [provinceName, setProvinceName] = useState(null);
   const [epidemData, setEpidemData] = useState([]);
   const [doctorId, setDoctorId] = useState('');
+  const [doctors, setDoctors] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState('');
   const [selectedEpidem, setSelectedEpidem] = useState(null);
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
+
+  const fetchDoctors = async () => {
+    try {
+      const response = await axiosInstance.get("/admin/users");
+      const doctorUsers = response.data.data.filter(user => user.roles.includes('doctor'));
+      setDoctors(doctorUsers);
+    } catch (error) {
+      console.error("Ошибка при получении списка врачей:", error);
+    }
+  };
+
   const handleDoctorIdChange = (event) => {
     setDoctorId(event.target.value);
   };
@@ -91,7 +108,7 @@ export default function PatientDetails() {
 
   const handleNewVisitSubmit = async () => {
     try {
-      const response = await axiosInstance.post(`/visit?patient_id=${index}&doctor_id=${doctorId}`);
+      const response = await axiosInstance.post(`/visit?patient_id=${index}&doctor_id=${selectedDoctor.value}&service_id=${selectedService.value}`);
       console.log("New visit created:", response.data);
       setOpenVisit(false); // Close the drawer after successful submission
     } catch (error) {
@@ -226,10 +243,18 @@ export default function PatientDetails() {
                   value={selectedService}
                   onChange={handleServiceSelect}
                   placeholder="Выберите услугу..."
+                  className="mb-3"
               />
-              <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                <Input label="Doctor ID" value={doctorId} onChange={handleDoctorIdChange}/>
-              </div>
+              {doctors.length > 0 ? (
+                  <Select
+                      options={doctors.map(doctor => ({ value: doctor.id, label: doctor.name }))}
+                      value={selectedDoctor}
+                      onChange={(selectedOption) => setSelectedDoctor(selectedOption)}
+                      placeholder="Доктор"
+                  />
+              ) : (
+                  <p>Нет доступных докторов</p>
+              )}
               <div className="px-4 py-3 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-0">
                 <Button onClick={handleNewVisitSubmit}>Янги қабул қушиш</Button>
               </div>

@@ -70,14 +70,16 @@ import axios from 'axios';
         return Promise.reject(error);
       }
     );
-  
+
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
         const response = await axiosInstance.get("/admin/users");
-        setUsers(response.data.data);
+        // Фильтрация пользователей с ролью "doctor"
+        const doctorUsers = response.data.data.filter(user => user.roles.includes('doctor'));
+        setUsers(doctorUsers);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Ошибка при получении списка врачей:", error);
       } finally {
         setIsLoading(false);
       }

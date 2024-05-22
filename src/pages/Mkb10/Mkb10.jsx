@@ -24,8 +24,7 @@ const TABLE_HEAD = ["Код", "Номланиши", "Харакат"];
 
 export default function Mkb10() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [newName, setNewName] = useState('');
-    const [newDescription, setNewDescription] = useState('');
+
     const [records, setRecords] = useState([]);
     const [editingRecordId, setEditingRecordId] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -65,9 +64,17 @@ export default function Mkb10() {
       }
   };
 
-  const handleSearch = () => {
-    fetchRecords();
-};
+    const handleSearch = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axiosInstance.get(`/mkb10?search=${searchQuery}`);
+            setRecords(response.data.data);
+        } catch (error) {
+            console.error("МКБ10 номларини қидиришда хатолик:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -81,19 +88,7 @@ const handleNextPage = () => {
     }
 };
 
-    const closeModal = () => {
-        setIsOpen(false);
-        setNewName('');
-        setNewDescription('');
-        setEditingRecordId(null);
-    };
 
-    const openModal = (record) => {
-        setIsOpen(true);
-        setNewName(record.name);
-        setNewDescription(record.description);
-        setEditingRecordId(record.id);
-    };
 
     return (
         <Card className="h-full w-full rounded-none pt-5">
@@ -103,17 +98,19 @@ const handleNextPage = () => {
                     className="relative  bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
                     htmlFor="search-bar"
                 >
-                    <Mkb10List />
+                    <Mkb10List/>
                     <input
                         id="search-bar"
                         placeholder="Қидириш"
                         className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <Button size="md" ><MagnifyingGlassIcon className="h-5 w-5" /></Button>
+                    <Button onClick={handleSearch} size="md"><MagnifyingGlassIcon className="h-5 w-5"/></Button>
                 </label>
-          
+
             </div>
-            <CardHeader floated={false} shadow={false} className="rounded-none" />
+            <CardHeader floated={false} shadow={false} className="rounded-none"/>
             <CardBody className="overflow-scroll px-0">
                 <table className="mt-4  w-full min-w-max table-auto text-left">
                     <thead>
@@ -144,7 +141,7 @@ const handleNextPage = () => {
                                 <td className="p-4 text-sm">{record.name}</td>
                                 <td className="p-4 text-sm">
                                 <Tooltip content="Ўзгартириш">
-                                        <IconButton onClick={() => openModal(record)} variant="text">
+                                        <IconButton  variant="text">
                                             <EyeIcon className="h-4 w-4" />
                                         </IconButton>
                                     </Tooltip>

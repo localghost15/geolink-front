@@ -8,6 +8,7 @@ import LocationSelect from '../../../components/LocationSelect';
 import Dropzone from '../../../components/Dropzone';
 import DoctorsSelect from './DoctorsList';
 
+
 export default function PatientsPostDialog({ onAddPatient }) {
     const [isOpen, setIsOpen] = useState(false);
 

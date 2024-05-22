@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import SunEditor from 'suneditor-react';
+import "suneditor/dist/css/suneditor.min.css";
+import plugins from 'suneditor/src/plugins'
 import {
     Tabs,
     TabsHeader,
@@ -8,7 +10,6 @@ import {
     TabPanel,
     Button,
     Card, Typography, IconButton, Tooltip, Input,
-
 } from "@material-tailwind/react";
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
@@ -123,6 +124,18 @@ function AccordionCustomIcon({ patientId, mkb10  }) {
         setSelectedDisease(selectedOptions);
     };
 
+    const templates = [
+        {
+            name: 'Template-1',
+            html: '<p>HTML source1</p>'
+        },
+        {
+            name: 'Template-2',
+            html: '<p>HTML source2</p>'
+        }
+    ];
+
+
     return (
         <>
             <Accordion open={alwaysOpen} icon={<Icon id={1} open={open} />}>
@@ -158,7 +171,27 @@ function AccordionCustomIcon({ patientId, mkb10  }) {
                     Врач хулосаси
                 </AccordionHeader>
                 <AccordionBody>
-                    <SunEditor />
+                    <SunEditor
+                        showToolbar={true}
+                        height="80vh"
+                        setOptions={{
+                            buttonList: [
+                                [
+                                    "bold",
+                                    "underline",
+                                    "italic",
+                                    "strike",
+                                    "list",
+                                    "align",
+                                    "fontSize",
+                                    "formatBlock",
+                                    "table",
+                                    "image",
+                                    "template"
+                                ]
+                            ]
+                        }}
+                    />
                 </AccordionBody>
             </Accordion>
             <Accordion open={open === 5} icon={<Icon id={5} open={open} />}>

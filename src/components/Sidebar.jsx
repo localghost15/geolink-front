@@ -135,6 +135,13 @@ export function Sidebar() {
                 </ListItemPrefix>
                 Докторлар
               </ListItem>
+              </CustomLink><CustomLink to="/users">
+              <ListItem ripple={false}>
+                <ListItemPrefix>
+                  <MinusIcon strokeWidth={3} className="h-3 w-5" />
+                </ListItemPrefix>
+                Фойдаланувчилар
+              </ListItem>
               </CustomLink>
             <CustomLink to="/services">
               <ListItem ripple={false}>
