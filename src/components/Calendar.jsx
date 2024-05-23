@@ -325,37 +325,53 @@ export default function Calendar() {
         <DialogHeader className="text-lg font-medium leading-6 text-gray-900">Бемор қўшиш</DialogHeader>
         <DialogBody>
           <div className="mb-4">
+            <label htmlFor="time" className="block mb-1 text-sm font-medium text-gray-700">
+              ФИО:
+            </label>
             <Input
-              name="name"
-              value={eventTitle}
-              onChange={handleTitleChange}
-              label="ФИО: *"
-              size="lg"
-              error={errors.eventTitle}
+                name="name"
+                value={eventTitle}
+                onChange={handleTitleChange}
+                placeholder="ФИО: *"
+                className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 placeholder:opacity-100 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+                labelProps={{
+                  className: "hidden",
+                }}
+                containerProps={{className: "min-w-[100px]"}}
+                size="lg"
+
+                error={errors.eventTitle}
             />
             {errors.eventTitle && <p className="text-red-500 text-xs mt-1">{errors.eventTitle}</p>}
-            <PhoneInput
-                international={false}
-                defaultCountry="uz"
-                prefix=""
-                value={eventNumber || ''}
-                onChange={(phone) => handleNumberChange(phone)} // Передаем значение телефона напрямую
-                inputClass="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
+            <div className="mt-4">
+              <label htmlFor="time" className="block text-sm mb-1 font-medium text-gray-700">
+                Телефон раками:
+              </label>
+              <PhoneInput
+
+                  label="Static"
+                  international={false}
+                  defaultCountry="uz"
+                  prefix=""
+                  value={eventNumber || ''}
+                  onChange={(phone) => handleNumberChange(phone)} // Передаем значение телефона напрямую
+                  inputClass="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
             {errors.eventNumber && <p className="text-red-500 text-xs mt-1">{errors.eventNumber}</p>}
           </div>
-          <TimePicker selectedTime={selectedTime} onTimeChange={handleTimeChange} error={errors.selectedTime} />
+          <TimePicker selectedTime={selectedTime} onTimeChange={handleTimeChange} error={errors.selectedTime}/>
         </DialogBody>
         <DialogFooter className='flex gap-x-4'>
-  <Button onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
-    {selectedEvent ? 'Обновить' : 'Сохранить'}
-  </Button>
-  {selectedEvent && (
-    <Button onClick={handleDeleteEvent} color="red">
-      Удалить
-    </Button>
-  )}
-</DialogFooter>
+          <Button onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
+            {selectedEvent ? 'Обновить' : 'Сохранить'}
+          </Button>
+          {selectedEvent && (
+            <button onClick={handleDeleteEvent} className='transition-background inline-flex h-10 items-center justify-center rounded-md bg-gradient-to-r from-gray-100 via-[#FFC6C6] to-[#C83333] bg-[length:200%_200%] bg-[0%_0%] px-6 font-medium text-black hover:text-white duration-500 hover:bg-[100%_200%] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-50'>
+            Удалить
+            </button>
+          )}
+        </DialogFooter>
       </Dialog>
     </div>
   );
@@ -371,15 +387,16 @@ function TimePicker({ selectedTime, onTimeChange, error }) {
       <label htmlFor="time" className="block text-sm font-medium text-gray-700">
         Келиш вақти:
       </label>
-      <input
+      <Input
         type="time"
         id="time"
-        className={`mt-1 p-2.5 block w-full border ${
-          error ? 'border-red-500' : 'border-gray-300'
-        } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+        className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 placeholder:opacity-100 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+        labelProps={{
+          className: "hidden",
+        }}
+        containerProps={{ className: "min-w-[100px]" }}
         value={selectedTime}
         onChange={handleTimeChange}
-        required
       />
       {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
     </div>
