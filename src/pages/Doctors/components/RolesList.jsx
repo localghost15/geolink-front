@@ -1,48 +1,51 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { IconButton, Typography } from "@material-tailwind/react";
-import { TrashIcon } from "@heroicons/react/24/solid";
 import axios from 'axios';
 
-export default function RolesList() {
-  const [roles, setRoles] = useState([]);
+export default function RolesList({ value, onChange }) {
+    const [roles, setRoles] = useState([]);
 
-  const axiosInstance = axios.create({
-    baseURL: 'https://back.geolink.uz/api/v1'
-  });
+    const axiosInstance = axios.create({
+        baseURL: 'https://back.geolink.uz/api/v1'
+    });
 
-  axiosInstance.interceptors.request.use(
-    config => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    error => {
-      return Promise.reject(error);
-    }
-  );
+    axiosInstance.interceptors.request.use(
+        config => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            return config;
+        },
+        error => {
+            return Promise.reject(error);
+        }
+    );
 
-  useEffect(() => {
-    fetchRoles();
-  }, []);
+    useEffect(() => {
+        fetchRoles();
+    }, []);
 
-  const fetchRoles = async () => {
-    try {
-      const response = await axiosInstance.get("/admin/roles");
-      setRoles(response.data.data.map(role => ({ label: role.name, value: role.id })));
-    } catch (error) {
-      console.error("Ошибка при получении списка ролей:", error);
-    }
-  };
+    const fetchRoles = async () => {
+        try {
+            const response = await axiosInstance.get("/admin/roles");
+            const rolesData = response.data.data.map(role => ({ label: role.name, value: role.id }));
+            setRoles(rolesData);
+        } catch (error) {
+            console.error("Error fetching roles:", error);
+        }
+    };
 
-  return (
-    <>
-      <Select
-        options={roles}
-        isMulti
-      />
-    </>
-  );
+    const handleChange = selectedOption => {
+        // Преобразуйте выбранный объект в массив
+        onChange(Array.isArray(selectedOption) ? selectedOption : [selectedOption]);
+    };
+
+    return (
+        <Select
+            options={roles}
+            value={value}
+            onChange={handleChange}
+        />
+    );
 }

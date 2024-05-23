@@ -148,7 +148,6 @@ export default function Patients() {
                 <tr className="cursor-pointer" key={patient.id}>
                   <td className="p-4 border-b border-blue-gray-50">
                     <div className="flex items-center gap-3">
-                      <Avatar src={`${patient.avatar}`} size="sm" />
                       <div className="flex flex-col">
                         <Typography variant="small" color="blue-gray" className="font-normal">
                           {patient.name}

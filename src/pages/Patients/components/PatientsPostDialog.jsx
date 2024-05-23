@@ -7,10 +7,13 @@ import DatePicker from '../../../components/DatePicker';
 import LocationSelect from '../../../components/LocationSelect';
 import Dropzone from '../../../components/Dropzone';
 import DoctorsSelect from './DoctorsList';
+import { PhoneInput } from 'react-international-phone';
+import 'react-international-phone/style.css';
 
 
 export default function PatientsPostDialog({ onAddPatient }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [phone, setPhone] = useState('');
 
     const [patientData, setPatientData] = useState({
         name: "",
@@ -64,10 +67,13 @@ export default function PatientsPostDialog({ onAddPatient }) {
 
         const formData = new FormData();
         Object.keys(patientData).forEach((key) => {
-            if (patientData[key] !== undefined && patientData[key] !== null) { // Check if the field is not undefined or null
+            if (patientData[key] !== undefined && patientData[key] !== null) {
                 formData.append(key, patientData[key]);
             }
         });
+
+        // Append phone number to formData
+        formData.append('phone', phone);
 
         try {
             const response = await fetch("https://back.geolink.uz/api/v1/patients", {
@@ -95,6 +101,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
                 birth_at: "",
                 file: null,
             });
+            setPhone(''); // Reset phone state
             closeModal(); // Close the dialog after successful submission
         } catch (error) {
             console.error("Error:", error);
@@ -105,7 +112,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
         <>
             <div className="inset-0 flex items-center justify-center">
                 <Button onClick={openModal} className="flex h-12 items-center gap-3 normal-case font-normal" size="sm">
-                    <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Add New Patient
+                    <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Янги бемор кушиш
                 </Button>
             </div>
 
@@ -144,21 +151,27 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                     </Dialog.Title>
                                     <div className="mt-2">
                                         <div className="grid grid-cols-3 gap-4">
-                                            <Input label="Full Name: *" size="lg" name="name" value={patientData.name} onChange={handleChange} />
-                                            <Input label="Work Address" size="lg" name="work_address" value={patientData.work_address} onChange={handleChange} />
-                                            <DatePicker label="Date of Birth" value={patientData.birth_at} onChange={handleChange}  />
+                                            <Input label="ФИО: *" size="lg" name="name" value={patientData.name} onChange={handleChange} />
+                                            <Input label="Иш Манзили" size="lg" name="work_address" value={patientData.work_address} onChange={handleChange} />
+                                            <DatePicker label="Тугилган куни" value={patientData.birth_at} onChange={handleChange}  />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
                                             <LocationSelect label="District"  onChange={(selectedValues) => setPatientData({ ...patientData, ...selectedValues })} />
                                             <DoctorsSelect
-                                                label="Partner"
+                                                label="Ким йуборилди"
                                                 onChange={(partnerId) => setPatientData({ ...patientData, partner_id: partnerId })}
                                             />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
-                                            <Input label="Profession:" size="lg" name="profession" value={patientData.profession} onChange={handleChange} />
-                                            <Input label="Phone Number:" size="lg" name="phone" value={patientData.phone} onChange={handleChange} />
-                                            <Input label="Home Address:" size="lg" name="home_address" value={patientData.home_address} onChange={handleChange} />
+                                            <Input label="Касби:" size="lg" name="profession" value={patientData.profession} onChange={handleChange} />
+                                            <PhoneInput international = {false}
+                                                defaultCountry="uz"
+                                                prefix=""
+                                                value={patientData.phone}
+                                                onChange={(phone) => setPhone(phone)}
+                                                        inputClass="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            />
+                                            <Input label="Яшаш манзили" size="lg" name="home_address" value={patientData.home_address} onChange={handleChange} />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
                                             <Radio
@@ -166,19 +179,20 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                 value="men"
                                                 checked={patientData.gender === 'men'}
                                                 onChange={() => handleChange({ target: { name: 'gender', value: 'men' } })}
-                                                label="Male"
+                                                label="Еркак"
                                             />
                                             <Radio
                                                 name="gender"
                                                 value="female"
                                                 checked={patientData.gender === 'women'}
                                                 onChange={() => handleChange({ target: { name: 'gender', value: 'women' } })}
-                                                label="Female"
+                                                label="Айол"
                                             />
-                                            <Input label="PINFL:" size="lg" name="pinfl" value={patientData.pinfl} onChange={handleChange} />
+                                            <Input label="ПИНФЛ:" size="lg" name="pinfl" value={patientData.pinfl} onChange={handleChange} />
                                         </div>
+
                                         <div className="mt-4 flex gap-4">
-                                            <Textarea label="Remark:" fullWidth name="remark" value={patientData.remark} onChange={handleChange} />
+                                            <Textarea label="Исох:" fullWidth name="remark" value={patientData.remark} onChange={handleChange} />
                                             <Dropzone onFilesChange={(file) => setPatientData({ ...patientData, file: file })} />
                                         </div>
                                     </div>
