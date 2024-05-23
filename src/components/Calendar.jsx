@@ -4,12 +4,11 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import uzLocale from '@fullcalendar/core/locales/uz';
-import { useCountries } from 'use-react-countries';
-import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Input, Menu, MenuHandler, MenuList, MenuItem, Radio, Typography } from '@material-tailwind/react';
-import { ClockIcon, PhoneIcon } from '@heroicons/react/24/solid';
+import {Button, Dialog, DialogHeader, DialogBody, DialogFooter, Input, IconButton,} from '@material-tailwind/react';
+import {ArrowUpOnSquareIcon, ClockIcon, PhoneIcon, TrashIcon} from '@heroicons/react/24/solid';
 import Select from 'react-select';
 import axios from 'axios';
-import {PhoneInput} from "react-international-phone";
+import {PhoneInput, FlagEmoji, usePhoneInput, defaultCountries, parseCountry} from "react-international-phone";
 
 
 function Icon() {
@@ -29,11 +28,11 @@ function Icon() {
   );
 }
 
+
+
 export default function Calendar() {
   const [services, setServices] = useState([]);
-  const { countries } = useCountries();
   const [country, setCountry] = useState(177);
-  const { name, flags, countryCallingCode } = countries[country];
   const [selectedTime, setSelectedTime] = useState('00:00');
   const [eventTitle, setEventTitle] = useState('');
   const [eventNumber, setEventNumber] = useState('');
@@ -44,6 +43,7 @@ export default function Calendar() {
   const [events, setEvents] = useState([{}]);
   const [openDialog, setOpenDialog] = useState(false);
   const [errors, setErrors] = useState({});
+
   
   const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
@@ -348,14 +348,12 @@ export default function Calendar() {
                 Телефон раками:
               </label>
               <PhoneInput
-
                   label="Static"
                   international={false}
                   defaultCountry="uz"
                   prefix=""
                   value={eventNumber || ''}
                   onChange={(phone) => handleNumberChange(phone)} // Передаем значение телефона напрямую
-                  inputClass="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
             {errors.eventNumber && <p className="text-red-500 text-xs mt-1">{errors.eventNumber}</p>}
@@ -363,14 +361,16 @@ export default function Calendar() {
           <TimePicker selectedTime={selectedTime} onTimeChange={handleTimeChange} error={errors.selectedTime}/>
         </DialogBody>
         <DialogFooter className='flex gap-x-4'>
-          <Button onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
+          <Button className='flex gap-x-1 items-center font-medium' onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
             {selectedEvent ? 'Обновить' : 'Сохранить'}
+            <ArrowUpOnSquareIcon className="h-4 w-4" />
           </Button>
           {selectedEvent && (
-            <button onClick={handleDeleteEvent} className='transition-background inline-flex h-10 items-center justify-center rounded-md bg-gradient-to-r from-gray-100 via-[#FFC6C6] to-[#C83333] bg-[length:200%_200%] bg-[0%_0%] px-6 font-medium text-black hover:text-white duration-500 hover:bg-[100%_200%] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-50'>
-            Удалить
-            </button>
+            <IconButton onClick={handleDeleteEvent}  className="rounded-full">
+            <TrashIcon className="h-4 w-4" />
+            </IconButton>
           )}
+
         </DialogFooter>
       </Dialog>
     </div>
