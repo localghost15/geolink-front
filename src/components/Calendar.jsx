@@ -9,6 +9,7 @@ import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Input, Menu, Me
 import { ClockIcon, PhoneIcon } from '@heroicons/react/24/solid';
 import Select from 'react-select';
 import axios from 'axios';
+import {PhoneInput} from "react-international-phone";
 
 
 function Icon() {
@@ -110,18 +111,25 @@ export default function Calendar() {
     setEventTitle(event.target.value);
   };
 
-  const handleNumberChange = (event) => {
-    setEventNumber(event.target.value);
+  const handleNumberChange = (phone) => {
+    setEventNumber(phone); // Устанавливаем значение телефона
   };
 
   const handleEventClick = (clickInfo) => {
     const event = clickInfo.event;
     setEventTitle(event.title);
     setEventNumber(event.extendedProps.phone);
-  
-    const selectedService = services.find(service => service.id === event.extendedProps.service.id);
-    setSelectedService(selectedService ? { value: selectedService.id, label: selectedService.name } : '');
-  
+
+    // Находим объект сервиса по его id
+    const selectedService = services.find(service => service.id === event.extendedProps.service?.id);
+
+    // Проверяем, был ли найден объект сервиса
+    if (selectedService) {
+      setSelectedService({ value: selectedService.id, label: selectedService.name });
+    } else {
+      setSelectedService(''); // Если объект сервиса не найден, сбрасываем выбранный сервис
+    }
+
     if (event.start) {
       const date = event.start.toISOString().split('T')[0];
       let hours = event.start.getHours();
@@ -129,12 +137,12 @@ export default function Calendar() {
 
       hours = hours < 10 ? `0${hours}` : hours;
       minutes = minutes < 10 ? `0${minutes}` : minutes;
-  
+
       setSelectedDate(date);
       setSelectedTime(`${hours}:${minutes}`);
     }
     setSelectedType(event.extendedProps.type || '');
-  
+
     setOpenDialog(true);
     setSelectedEvent(event);
   };
@@ -168,8 +176,6 @@ export default function Calendar() {
       title: eventTitle,
       phone: eventNumber,
       start_at: date.toISOString(),
-      service_id: selectedService.value,
-      type: selectedType
     };
   
     try {
@@ -198,9 +204,7 @@ export default function Calendar() {
     const eventData = {
       title: eventTitle,
       phone: eventNumber,
-      start_at: `${selectedDate}T${selectedTime}`,
-      service_id: selectedService,
-      type: selectedType
+      start_at: `${selectedDate}T${selectedTime}`
     };
     console.log(selectedService)
   
@@ -234,10 +238,8 @@ export default function Calendar() {
     const { event } = info;
     const updatedEvent = {
       title: event.title,
-      service_id: event.extendedProps.service.id,
       phone: event.extendedProps.phone,
-      start_at: event.start.toISOString(),
-      type: event.extendedProps.type,
+      start_at: event.start.toISOString()
     };
   
     try {
@@ -311,9 +313,7 @@ export default function Calendar() {
           extendedProps: {
             phone: event.phone,
             title: event.title,
-            start: event.start,
-            type: event.type,
-            service: event.service,
+            start: event.start
           },
         }))}
         select={handleDateSelect}
@@ -334,111 +334,17 @@ export default function Calendar() {
               error={errors.eventTitle}
             />
             {errors.eventTitle && <p className="text-red-500 text-xs mt-1">{errors.eventTitle}</p>}
-            <div className="flex mt-4">
-              <Menu placement="bottom-start">
-                <MenuHandler>
-                  <Button
-                    ripple={false}
-                    variant="text"
-                    color="blue-gray"
-                    className="flex h-11 items-center gap-2 rounded-md rounded-r-none border border-r-0 border-blue-gray-200 bg-blue-gray-500/10 pl-3"
-                  >
-                    <img src={flags.svg} alt={name} className="h-4 w-4 rounded-full object-cover" />
-                    {countryCallingCode}
-                  </Button>
-                </MenuHandler>
-                <MenuList className="max-h-[20rem] z-[9999] max-w-[18rem]">
-                  {countries.map(({ name, flags, countryCallingCode }, index) => {
-                    return (
-                      <MenuItem
-                        key={name}
-                        value={name}
-                        className="flex items-center gap-2"
-                        onClick={() => setCountry(index)}
-                      >
-                        <img src={flags.svg} alt={name} className="h-5 w-5 rounded object-cover" />
-                        {name} <span className="ml-auto">{countryCallingCode}</span>
-                      </MenuItem>
-                    );
-                  })}
-                </MenuList>
-              </Menu>
-              <Input
-                size="lg"
-                value={eventNumber}
-                onChange={handleNumberChange}
-                type="tel"
-                placeholder="Телефон номер:"
-                className="rounded-md rounded-l-none !border-t-blue-gray-200 focus:!border-t-gray-900"
-                labelProps={{ className: "before:content-none after:content-none" }}
-                containerProps={{ className: "min-w-0" }}
-                error={errors.eventNumber} // Apply error to Input component
-              />
-            </div>
+            <PhoneInput
+                international={false}
+                defaultCountry="uz"
+                prefix=""
+                value={eventNumber || ''}
+                onChange={(phone) => handleNumberChange(phone)} // Передаем значение телефона напрямую
+                inputClass="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
             {errors.eventNumber && <p className="text-red-500 text-xs mt-1">{errors.eventNumber}</p>}
           </div>
           <TimePicker selectedTime={selectedTime} onTimeChange={handleTimeChange} error={errors.selectedTime} />
-          <Select
-  id='services'
-  className='text-sm'
-  options={services.map(service => ({ value: service.id, label: service.name }))}
-  defaultValue={selectedService} // Изменено
-  onChange={selectedOption => setSelectedService(selectedOption ? selectedOption.value : '')}
-  placeholder="Хизматни тангланг"
-/>
-          <div className="flex gap-5">
-          <Radio
-  name="type"
-  ripple={true}
-  icon={<Icon />}
-  checked ={selectedType === 'booking'} // Check if selectedType matches 'booking'
-  value="booking"
-  onChange={handleTypeChange}
-  className="border-gray-900/10 bg-gray-900/5 p-0 transition-all hover:before:opacity-0"
-  label={
-    <Typography
-      color="blue-gray"
-      className="font-normal text-blue-gray-400"
-    >
-      Bron qilish
-    </Typography>
-  }
-/>
-<Radio
-  name="type"
-  ripple={true}
-  icon={<Icon />}
-  checked ={selectedType === 'planned'} // Check if selectedType matches 'planned'
-  value="planned"
-  onChange={handleTypeChange}
-  className="border-gray-900/10 bg-gray-900/5 p-0 transition-all hover:before:opacity-0"
-  label={
-    <Typography
-      color="blue-gray"
-      className="font-normal text-blue-gray-400"
-    >
-      Rejalashtirilgan
-    </Typography>
-  }
-/>
-<Radio
-  name="type"
-  ripple={true}
-  icon={<Icon />}
-  checked ={selectedType === 'technical'} // Check if selectedType matches 'technical'
-  value="technical"
-  onChange={handleTypeChange}
-  className="border-gray-900/10 bg-gray-900/5 p-0 transition-all hover:before:opacity-0"
-  label={
-    <Typography
-      color="blue-gray"
-      className="font-normal text-blue-gray-400"
-    >
-      Texnik
-    </Typography>
-  }
-/>
-    </div>
         </DialogBody>
         <DialogFooter className='flex gap-x-4'>
   <Button onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
