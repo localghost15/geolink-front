@@ -74,7 +74,7 @@ function App() {
       <Route path="patients" element={<Patients />} />
       <Route path="/patient/:index" element={<PatientDetails />} />
       <Route path="doctors" element={<Doctors />} />
-      <Route path="users" element={<Users />} />
+      {/*<Route path="users" element={<Users />} />*/}
       <Route path="services" element={<Services />} />
       <Route path="partners" element={<Partners />} />
       <Route path="epidemiological_history" element={<EpidemiologicalHistory />} />
