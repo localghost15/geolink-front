@@ -1,33 +1,29 @@
-import React,{ Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react';
 import { useCountries } from "use-react-countries";
-import {MagnifyingGlassIcon,ChevronUpDownIcon} from "@heroicons/react/24/outline";
-  import { Dialog, Transition } from '@headlessui/react'
-  import {PencilIcon, TrashIcon, UserPlusIcon} from "@heroicons/react/24/solid";
-  import {
-    Card,
-    CardHeader,
-    Typography,
-    Button,
-    CardBody,
-    CardFooter,
-    Avatar,
-    IconButton,
-    Tooltip,
-    Input,
-    Menu,
-    MenuHandler,
-    MenuList,
-    MenuItem,
-    Textarea
-  } from "@material-tailwind/react";
+import { MagnifyingGlassIcon, ChevronUpDownIcon } from "@heroicons/react/24/outline";
+import { Dialog, Transition } from '@headlessui/react';
+import { PencilIcon, TrashIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import {
+  Card,
+  CardHeader,
+  Typography,
+  Button,
+  CardBody,
+  CardFooter,
+  Avatar,
+  IconButton,
+  Tooltip,
+  Input,
+  Menu,
+  MenuHandler,
+  MenuList,
+  MenuItem,
+  Textarea
+} from "@material-tailwind/react";
 import DoctorsList from './components/DoctorsList';
-import RolesList from './components/RolesList';
 import axios from 'axios';
-import UserList from "../Users/components/UserList";
 
-
-  const TABLE_HEAD = ["ФИО", "Логин", "Телефон","Роль", "Харакат"];
-
+const TABLE_HEAD = ["ФИО", "Логин", "Телефон", "Роль", "Харакат"];
 
 export default function Doctors() {
   const { countries } = useCountries();
@@ -96,12 +92,27 @@ export default function Doctors() {
     }
   };
 
+  const getUpdatedFields = (original, updated) => {
+    const fieldsToUpdate = {};
+    for (const key in updated) {
+      if (key === 'password' || key === 'confirmPassword') {
+        if (updated[key]) {
+          fieldsToUpdate[key] = updated[key];
+        }
+      } else if (original[key] !== updated[key]) {
+        fieldsToUpdate[key] = updated[key];
+      }
+    }
+    return fieldsToUpdate;
+  };
+
   const updateUser = async (userId, updatedUserData) => {
     setIsLoading(true);
     try {
-      const updatedUser = { ...updatedUserData, roles: "doctor" };
+      const fieldsToUpdate = getUpdatedFields(editUser, updatedUserData);
+      fieldsToUpdate.roles = "doctor";
 
-      const response = await axiosInstance.put(`/admin/users/${userId}`, updatedUser);
+      const response = await axiosInstance.put(`/admin/users/${userId}`, fieldsToUpdate);
       console.log('User updated:', response.data);
 
       setUsers(users.map(user => (user.id === userId ? response.data.data : user)));
