@@ -24,6 +24,7 @@ import { useFormik } from 'formik';
 import * as yup from 'yup';
 import DoctorsList from './components/DoctorsList';
 import axios from 'axios';
+import RolesList from "./components/RolesList";
 
 const TABLE_HEAD = ["ФИО", "Логин", "Телефон", "Роль", "Харакат"];
 
@@ -107,7 +108,7 @@ export default function Doctors() {
   const createUser = async (userData) => {
     setIsLoading(true);
     try {
-      const newUser = { ...userData, roles: "doctor" };
+      const newUser = { ...userData, roles: userData.roles.length > 0 ? userData.roles[0].label : '' };
 
       const response = await axiosInstance.post('/admin/users', newUser);
       console.log('User created:', response.data);
@@ -142,7 +143,11 @@ export default function Doctors() {
     setIsLoading(true);
     try {
       const fieldsToUpdate = getUpdatedFields(editUser, updatedUserData);
-      fieldsToUpdate.roles = "doctor";
+
+      // Обновляем только те роли, которые были изменены
+      if (updatedUserData.roles) {
+        fieldsToUpdate.roles = updatedUserData.roles[0].label;
+      }
 
       const response = await axiosInstance.put(`/admin/users/${userId}`, fieldsToUpdate);
       console.log('User updated:', response.data);
@@ -155,6 +160,7 @@ export default function Doctors() {
       setIsLoading(false);
     }
   };
+
 
   const deleteUser = async (userId) => {
     setIsLoading(true);
@@ -317,7 +323,8 @@ export default function Doctors() {
 
 
                             </div>
-                            <div className="mt-4 grid grid-cols-1 gap-4">
+                            <div className="mt-4 grid grid-cols-2 gap-4">
+                            <div>
                               <div className="flex">
                                 <Menu placement="bottom-start ">
                                   <MenuHandler>
@@ -379,6 +386,9 @@ export default function Doctors() {
                                     {formik.errors.phone}
                                   </Typography>
                               )}
+                            </div>
+                              <RolesList value={formik.values.roles} onChange={(value) => formik.setFieldValue('roles', value)} />
+
                             </div>
                             <div className="mt-4 flex gap-4">
                               <Button onClick={closeModal} variant="text" fullWidth>
