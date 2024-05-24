@@ -18,6 +18,12 @@
   background-repeat: no-repeat;
 
 }
+
+.react-international-phone-input-container .react-international-phone-country-selector-button {
+    padding-left: 7px;
+    padding-right: 5px;
+}
+
 .react-international-phone-input {
     height: 44px !important;
     width: 100%;
@@ -31,9 +37,9 @@
     top: 3px;
 }
 
-/*.react-datepicker__input-container input {*/
-/*   padding-left: 30px !important;*/
-/*}*/
+.react-datepicker__input-container input {
+   width: 100% !important;
+}
 
 
 .react-international-phone-country-selector, .react-international-phone-country-selector-button {

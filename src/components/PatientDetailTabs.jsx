@@ -286,7 +286,7 @@ function PatientDetailTabs({patientId, mkb10}) {
     useEffect(() => {
         const fetchVisits = async () => {
             try {
-                const response = await axiosInstance.get(`https://back.geolink.uz/api/v1/visit?patientId=${patientId}`);
+                const response = await axiosInstance.get(`https://back.geolink.uz/api/v1/visit?patient_id=${patientId}`);
                 setVisits((prevVisits) => ({
                     ...prevVisits,
                     [patientId]: response.data.data,

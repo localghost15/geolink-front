@@ -29,7 +29,7 @@ export default function DateSelect({ value, onChange }) {
     };
 
     return (
-        <div className="">
+        <div className="w-max">
             <DatePicker
                 // showIcon
                 // icon={<CalendarIcon />}

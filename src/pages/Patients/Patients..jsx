@@ -128,13 +128,13 @@ export default function Patients() {
 
         <CardHeader floated={false} shadow={false} className="rounded-none"></CardHeader>
         <CardBody className="overflow-scroll px-0">
-          <table className="mt-4  w-full min-w-max table-auto text-left">
+          <table className="mt-4  w-full min-w-max table-auto text-left ">
             <thead>
             <tr>
               {TABLE_HEAD.map((head, index) => (
                   <th
                       key={head}
-                      className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+                      className="cursor-pointer border-x dark:border-neutral-600 border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
                   >
                     <Typography
                         variant="small"
@@ -152,7 +152,7 @@ export default function Patients() {
             </thead>
             <tbody>
             {patients.map((patient) => (
-                <tr className="cursor-pointer" key={patient.id}>
+                <tr className="cursor-pointer transition-colors " key={patient.id}>
                   <td className="p-4 border-b border-blue-gray-50">
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col">
@@ -162,20 +162,20 @@ export default function Patients() {
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 border-b border-blue-gray-50">
+                  <td className="p-4 border-b border-blue-gray-50 border-x dark:border-neutral-600">
                     <div className="flex flex-col">
                       <Typography variant="small" color="blue-gray" className="font-normal">
                         {patient.birth_at}
                       </Typography>
                     </div>
                   </td>
-                  <td className="p-4 border-b border-blue-gray-50">
+                  <td className="p-4 border-b border-blue-gray-50 border-x dark:border-neutral-600">
                     <Typography variant="small" color="blue-gray" className="font-normal">
                       {patient.phone}
                     </Typography>
                   </td>
 
-                  <td className="p-4 border-b border-blue-gray-50">
+                  <td className="p-4 border-b border-blue-gray-50 border-x dark:border-neutral-600">
                     <Tooltip content="Ўзгартириш">
                       <IconButton onClick={() => handleOpenUpdateDialog(patient)} variant="text">
                         <PencilIcon className="h-4 w-4" />

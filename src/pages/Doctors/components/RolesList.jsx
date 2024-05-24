@@ -43,6 +43,7 @@ export default function RolesList({ value, onChange }) {
 
     return (
         <Select
+            placeholder='Ролни танланг'
             options={roles}
             value={value}
             onChange={handleChange}
