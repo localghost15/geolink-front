@@ -20,10 +20,27 @@ import {
   MenuItem,
   Textarea
 } from "@material-tailwind/react";
+import { useFormik } from 'formik';
+import * as yup from 'yup';
 import DoctorsList from './components/DoctorsList';
 import axios from 'axios';
 
 const TABLE_HEAD = ["ФИО", "Логин", "Телефон", "Роль", "Харакат"];
+
+const createValidationSchema = yup.object({
+  name: yup.string().required('ФИО майдони тулдириши шарт'),
+  login: yup.string().required('Логин майдони тулдириши шарт'),
+  password: yup.string().required('Пароль майдони тулдириши шарт'),
+  confirmPassword: yup.string()
+      .oneOf([yup.ref('password'), null], 'Пароллар бир хил булиши шарт')
+      .required('Паролни саклаш шарт'),
+  phone: yup.string().required('Телефон раками тулдириши шарт'),
+});
+
+const editValidationSchema = yup.object({
+  name: yup.string().required('ФИО майдони тулдириши шарт'),
+  phone: yup.string().required('Телефон раками тулдириши шарт'),
+});
 
 export default function Doctors() {
   const { countries } = useCountries();
@@ -33,13 +50,24 @@ export default function Doctors() {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [userData, setUserData] = useState({
-    name: "",
-    login: "",
-    password: "",
-    confirmPassword: "",
-    roles: [],
-    phone: ""
+
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      login: "",
+      password: "",
+      confirmPassword: "",
+      roles: [],
+      phone: ""
+    },
+    validationSchema: editUser ? editValidationSchema : createValidationSchema,
+    onSubmit: (values) => {
+      if (editUser) {
+        updateUser(editUser.id, values);
+      } else {
+        createUser(values);
+      }
+    },
   });
 
   useEffect(() => {
@@ -87,6 +115,10 @@ export default function Doctors() {
       closeModal();
     } catch (error) {
       console.error('Error creating user:', error);
+      if (error.response && error.response.data && error.response.data.message) {
+        // Если есть сообщение об ошибке от сервера, отобразите его
+        formik.setFieldError('phone', 'Телефон ракам руйхатдан утказган');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -139,14 +171,7 @@ export default function Doctors() {
   const closeModal = () => {
     setIsOpen(false);
     setEditUser(null);
-    setUserData({
-      name: "",
-      login: "",
-      password: "",
-      confirmPassword: "",
-      roles: [],
-      phone: ""
-    });
+    formik.resetForm();
   };
 
   const openModal = () => {
@@ -155,7 +180,7 @@ export default function Doctors() {
 
   const openEditDialog = (user) => {
     setEditUser(user);
-    setUserData({
+    formik.setValues({
       name: user.name,
       login: user.login,
       password: "",
@@ -218,78 +243,152 @@ export default function Doctors() {
                           {editUser ? "Доктор малумотларни Узгартириш" : "Янги доктор кушиш"}
                         </Dialog.Title>
                         <div className="mt-2">
-                          <div className="grid grid-cols-2 gap-4">
-                            <Input label="ФИО: *" size="lg" value={userData.name}
-                                   onChange={(e) => setUserData({ ...userData, name: e.target.value })} />
-                            <Input label="Логин" size="lg" value={userData.login}
-                                   onChange={(e) => setUserData({ ...userData, login: e.target.value })} />
-                          </div>
-                          <div className="grid mt-4 grid-cols-2 gap-4">
-                            <Input label="Пароль: *" size="lg" type="password" value={userData.password}
-                                   onChange={(e) => setUserData({ ...userData, password: e.target.value })} />
-                            <Input label="Паролни такрорланг" size="lg" type="password" value={userData.confirmPassword}
-                                   onChange={(e) => setUserData({ ...userData, confirmPassword: e.target.value })} />
-                          </div>
-                          <div className="mt-4 grid grid-cols-1 gap-4">
-                            <div className="flex">
-                              <Menu placement="bottom-start ">
-                                <MenuHandler>
-                                  <Button
-                                      ripple={false}
-                                      variant="text"
-                                      color="blue-gray"
-                                      className="flex h-11 items-center gap-2 rounded-md rounded-r-none border border-r-0 border-blue-gray-200 bg-blue-gray-500/10 pl-3"
-                                  >
-                                    <img
-                                        src={flags.svg}
-                                        alt={name}
-                                        className="h-5 w-5 rounded-full object-cover"
-                                    />
-                                    {countryCallingCode}
-                                  </Button>
-                                </MenuHandler>
-                                <MenuList className="max-h-[20rem] max-w-[18rem]">
-                                  {countries.map(({ name, flags, countryCallingCode }, index) => {
-                                    return (
-                                        <MenuItem
-                                            key={name}
-                                            value={name}
-                                            className="flex items-center gap-2"
-                                            onClick={() => setCountry(index)}
-                                        >
-                                          <img
-                                              src={flags.svg}
-                                              alt={name}
-                                              className="h-5 w-5 rounded object-cover"
-                                          />
-                                          {name} <span className="ml-auto">{countryCallingCode}</span>
-                                        </MenuItem>
-                                    );
-                                  })}
-                                </MenuList>
-                              </Menu>
-                              <Input size="lg"
-                                     type="tel"
-                                     placeholder="Телефон раками:"
-                                     className="rounded-md rounded-l-none !border-t-blue-gray-200 focus:!border-t-gray-900"
-                                     labelProps={{
-                                       className: "before:content-none after:content-none",
-                                     }}
-                                     containerProps={{
-                                       className: "min-w-0",
-                                     }}
-                                     value={userData.phone}
-                                     onChange={(e) => setUserData({ ...userData, phone: e.target.value })} />
+                          <form onSubmit={formik.handleSubmit}>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Input
+                                    label="ФИО: *"
+                                    size="lg"
+                                    name="name"
+                                    value={formik.values.name}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.name && Boolean(formik.errors.name)}
+                                    helperText={formik.touched.name && formik.errors.name}
+                                />
+                                {formik.touched.name && Boolean(formik.errors.name) && (
+                                    <Typography variant="small" color="red" className="mt-1">
+                                      {formik.errors.name}
+                                    </Typography>
+                                )}
+                              </div>
+                              <div>
+                                <Input
+                                    label="Логин"
+                                    size="lg"
+                                    name="login"
+                                    value={formik.values.login}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.login && Boolean(formik.errors.login)}
+                                    helperText={formik.touched.login && formik.errors.login}
+                                />
+                                {formik.touched.login && Boolean(formik.errors.name) && (
+                                    <Typography variant="small" color="red" className="mt-1">
+                                      {formik.errors.login}
+                                    </Typography>
+                                )}
+                              </div>
+
                             </div>
-                          </div>
-                        </div>
-                        <div className="mt-4">
-                          <Button onClick={closeModal} variant="text" fullWidth>
-                            Отмена
-                          </Button>
-                          <Button onClick={editUser ? () => updateUser(editUser.id, userData) : () => createUser(userData)} variant="gradient" fullWidth>
-                            {editUser ? "Саклаш" : "Узгартириш"}
-                          </Button>
+                            <div className="grid mt-4 grid-cols-2 gap-4">
+                              <div>
+                                <Input
+                                    label="Пароль: *"
+                                    size="lg"
+                                    type="password"
+                                    name="password"
+                                    value={formik.values.password}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.password && Boolean(formik.errors.password)}
+                                    helperText={formik.touched.password && formik.errors.password}
+                                />
+                                {formik.touched.password && Boolean(formik.errors.password) && (
+                                    <Typography variant="small" color="red" className="mt-1">
+                                      {formik.errors.password}
+                                    </Typography>
+                                )}
+                              </div>
+                              <div>
+                                <Input
+                                    label="Паролни такрорланг"
+                                    size="lg"
+                                    type="password"
+                                    name="confirmPassword"
+                                    value={formik.values.confirmPassword}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
+                                    helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
+                                />
+                                {formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword) && (
+                                    <Typography variant="small" color="red" className="mt-1">
+                                      {formik.errors.confirmPassword}
+                                    </Typography>
+                                )}
+                              </div>
+
+
+                            </div>
+                            <div className="mt-4 grid grid-cols-1 gap-4">
+                              <div className="flex">
+                                <Menu placement="bottom-start ">
+                                  <MenuHandler>
+                                    <Button
+                                        ripple={false}
+                                        variant="text"
+                                        color="blue-gray"
+                                        className="flex h-11 items-center gap-2 rounded-md rounded-r-none border border-r-0 border-blue-gray-200 bg-blue-gray-500/10 pl-3"
+                                    >
+                                      <img
+                                          src={flags.svg}
+                                          alt={name}
+                                          className="h-5 w-5 rounded-full object-cover"
+                                      />
+                                      {countryCallingCode}
+                                    </Button>
+                                  </MenuHandler>
+                                  <MenuList className="max-h-[20rem] max-w-[18rem]">
+                                    {countries.map(({ name, flags, countryCallingCode }, index) => {
+                                      return (
+                                          <MenuItem
+                                              key={name}
+                                              value={name}
+                                              className="flex items-center gap-2"
+                                              onClick={() => setCountry(index)}
+                                          >
+                                            <img
+                                                src={flags.svg}
+                                                alt={name}
+                                                className="h-5 w-5 rounded object-cover"
+                                            />
+                                            {name} <span className="ml-auto">{countryCallingCode}</span>
+                                          </MenuItem>
+                                      );
+                                    })}
+                                  </MenuList>
+                                </Menu>
+                                <Input
+                                    size="lg"
+                                    type="tel"
+                                    placeholder="Телефон раками:"
+                                    className="rounded-md rounded-l-none !border-t-blue-gray-200 focus:!border-t-gray-900"
+                                    labelProps={{
+                                      className: "before:content-none after:content-none",
+                                    }}
+                                    containerProps={{
+                                      className: "min-w-0",
+                                    }}
+                                    name="phone"
+                                    value={formik.values.phone}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.phone && Boolean(formik.errors.phone)}
+                                    helperText={formik.touched.phone && formik.errors.phone}
+                                />
+
+                              </div>
+                              {formik.touched.phone && Boolean(formik.errors.phone) && (
+                                  <Typography variant="small" color="red" className="mt-1">
+                                    {formik.errors.phone}
+                                  </Typography>
+                              )}
+                            </div>
+                            <div className="mt-4 flex gap-4">
+                              <Button onClick={closeModal} variant="text" fullWidth>
+                                Отмена
+                              </Button>
+                              <Button type="submit" variant="gradient" fullWidth>
+                                {editUser ? "Узгартириш" : "Саклаш"}
+                              </Button>
+                            </div>
+                          </form>
                         </div>
                       </Dialog.Panel>
                     </Transition.Child>
