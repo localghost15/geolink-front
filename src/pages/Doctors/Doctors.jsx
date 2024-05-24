@@ -218,7 +218,7 @@ export default function Doctors() {
                           {editUser ? "Доктор малумотларни Узгартириш" : "Янги доктор кушиш"}
                         </Dialog.Title>
                         <div className="mt-2">
-                          <div className="grid grid-cols-3 gap-4">
+                          <div className="grid grid-cols-2 gap-4">
                             <Input label="ФИО: *" size="lg" value={userData.name}
                                    onChange={(e) => setUserData({ ...userData, name: e.target.value })} />
                             <Input label="Логин" size="lg" value={userData.login}
@@ -230,7 +230,7 @@ export default function Doctors() {
                             <Input label="Паролни такрорланг" size="lg" type="password" value={userData.confirmPassword}
                                    onChange={(e) => setUserData({ ...userData, confirmPassword: e.target.value })} />
                           </div>
-                          <div className="mt-4 grid grid-cols-2 gap-4">
+                          <div className="mt-4 grid grid-cols-1 gap-4">
                             <div className="flex">
                               <Menu placement="bottom-start ">
                                 <MenuHandler>
