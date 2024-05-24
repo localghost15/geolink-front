@@ -160,7 +160,7 @@ export default function Doctors() {
 
   return (
       <Card className="h-full w-full rounded-none pt-5">
-        <Typography className="mx-8 mb-2" variant="h3" color="black">Фойдаланувчилар</Typography>
+        <Typography className="mx-8 mb-2" variant="h3" color="black">Докторлар</Typography>
         <div className="flex mx-8 justify-between gap-8">
           <label
               className="relative  bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
