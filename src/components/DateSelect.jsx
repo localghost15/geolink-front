@@ -6,7 +6,7 @@ import uzLocale from "date-fns/locale/uz";
 import { CalendarIcon } from "@heroicons/react/24/solid";
 import { Input } from "@material-tailwind/react";
 
-export default function DateSelect({ value, onChange }) {
+export default function DateSelect({ value, onChange, error }) {
     const [date, setDate] = React.useState(value ? new Date(value) : new Date());
     const locale = uzLocale;
 
@@ -33,7 +33,7 @@ export default function DateSelect({ value, onChange }) {
             <DatePicker
                 // showIcon
                 // icon={<CalendarIcon />}
-                customInput={<Input value={format(new Date(date), 'P')} label="Тугилган куни" />}
+                customInput={<Input value={format(new Date(date), 'P')} label="Тугилган куни" error={error} />} // Передача ошибки в компонент Input
                 dateFormat="P"
                 onChange={handleDateChange}
                 locale={locale}
@@ -43,3 +43,4 @@ export default function DateSelect({ value, onChange }) {
         </div>
     );
 }
+

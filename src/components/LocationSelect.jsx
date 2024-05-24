@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Select from 'react-select';
 
-const LocationSelect = ({ value, onChange }) => {
+const LocationSelect = ({ value, onChange, error }) => {
   const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
   });
@@ -50,26 +50,32 @@ const LocationSelect = ({ value, onChange }) => {
   };
 
   return (
-    <div className='flex col-span-2 w-full gap-x-4 '>
-      <Select 
+      <>
+        <div className='flex flex-row col-span-2 w-full gap-x-4'>
+          <Select
+              className='text-sm mb-2'
+              id="province"
+              value={selectedProvince}
+              onChange={handleProvinceChange}
+              options={provinces}
+              placeholder="Вилоят"
+          />
+<div>
+  <Select
       className='text-sm'
-        id="province" 
-        value={selectedProvince} 
-        onChange={handleProvinceChange} 
-        options={provinces} 
-        placeholder="Вилоят" 
-      />
-      <Select 
-      className='text-sm'
-        id="district" 
-        value={selectedDistrict} 
-        onChange={handleDistrictChange} 
-        options={districts} 
-        placeholder="Шаҳар, туман" 
-      />
-    </div>
+      id="district"
+      value={selectedDistrict}
+      onChange={handleDistrictChange}
+      options={districts}
+      placeholder="Шаҳар, туман"
+  />
+  {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+</div>
+
+        </div>
+
+      </>
   );
 };
-
 
 export default LocationSelect;
