@@ -215,7 +215,7 @@ export default function Doctors() {
                             as="h3"
                             className="text-lg font-medium leading-6 text-gray-900"
                         >
-                          {editUser ? "Редактирование пользователя" : "Новый пользователь"}
+                          {editUser ? "Доктор малумотларни Узгартириш" : "Янги доктор кушиш"}
                         </Dialog.Title>
                         <div className="mt-2">
                           <div className="grid grid-cols-3 gap-4">
@@ -270,7 +270,7 @@ export default function Doctors() {
                               </Menu>
                               <Input size="lg"
                                      type="tel"
-                                     placeholder="Телефон номер:"
+                                     placeholder="Телефон раками:"
                                      className="rounded-md rounded-l-none !border-t-blue-gray-200 focus:!border-t-gray-900"
                                      labelProps={{
                                        className: "before:content-none after:content-none",
@@ -288,7 +288,7 @@ export default function Doctors() {
                             Отмена
                           </Button>
                           <Button onClick={editUser ? () => updateUser(editUser.id, userData) : () => createUser(userData)} variant="gradient" fullWidth>
-                            {editUser ? "Обновить" : "Сохранить"}
+                            {editUser ? "Саклаш" : "Узгартириш"}
                           </Button>
                         </div>
                       </Dialog.Panel>
