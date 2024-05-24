@@ -20,7 +20,7 @@ import {
 } from "@material-tailwind/react";
 import EpidemiologicalList from './components/EpidemiologicalList';
 
-const TABLE_HEAD = ["Номланиши", "Тавсиф", "Харакат"];
+const TABLE_HEAD = ["Номланиши", "Харакат"];
 
 export default function EpidemiologicalHistory() {
     const [newName, setNewName] = useState('');
@@ -64,8 +64,7 @@ export default function EpidemiologicalHistory() {
         setIsLoading(true);
         try {
             const response = await axiosInstance.post('/epidemiological', {
-                name: newName,
-                description: newDescription
+                name: newName
             });
             console.log(response.data);
             fetchRecords();
@@ -81,8 +80,7 @@ export default function EpidemiologicalHistory() {
         setIsLoading(true);
         try {
             const response = await axiosInstance.put(`/epidemiological/${recordId}`, {
-                name: newName,
-                description: newDescription
+                name: newName
             });
             console.log(response.data);
             fetchRecords();
@@ -109,14 +107,12 @@ export default function EpidemiologicalHistory() {
     const closeModal = () => {
         setIsOpen(false);
         setNewName('');
-        setNewDescription('');
         setEditingRecordId(null);
     };
 
     const openModal = (record) => {
         setIsOpen(true);
         setNewName(record.name);
-        setNewDescription(record.description);
         setEditingRecordId(record.id);
     };
 
@@ -174,7 +170,6 @@ export default function EpidemiologicalHistory() {
                                             <div className="mt-2">
                                                 <div className="grid grid-cols-1 gap-4">
                                                     <Input label="Хизмат номи: *" size="lg" value={newName} onChange={(e) => setNewName(e.target.value)} />
-                                                    <Input label="Тавсиф: *" size="lg" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
                                                 </div>
                                             </div>
                                             <div className="mt-4">
@@ -218,7 +213,6 @@ export default function EpidemiologicalHistory() {
                         {records.map(record => (
                             <tr key={record.id}>
                                 <td className="p-4">{record.name}</td>
-                                <td className="p-4">{record.description}</td>
                                 <td className="p-4">
                                     <Tooltip content="Ўзгартириш">
                                         <IconButton onClick={() => openModal(record)} variant="text">

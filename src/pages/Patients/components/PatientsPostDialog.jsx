@@ -9,6 +9,7 @@ import Dropzone from '../../../components/Dropzone';
 import DoctorsSelect from './DoctorsList';
 import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
+import DateSelect from "../../../components/DateSelect";
 
 
 export default function PatientsPostDialog({ onAddPatient }) {
@@ -101,8 +102,8 @@ export default function PatientsPostDialog({ onAddPatient }) {
                 birth_at: "",
                 file: null,
             });
-            setPhone(''); // Reset phone state
-            closeModal(); // Close the dialog after successful submission
+            setPhone('');
+            closeModal();
         } catch (error) {
             console.error("Error:", error);
         }
@@ -153,7 +154,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                         <div className="grid grid-cols-3 gap-4">
                                             <Input label="ФИО: *" size="lg" name="name" value={patientData.name} onChange={handleChange} />
                                             <Input label="Иш Манзили" size="lg" name="work_address" value={patientData.work_address} onChange={handleChange} />
-                                            <DatePicker label="Тугилган куни" value={patientData.birth_at} onChange={handleChange}  />
+                                            <DateSelect value={patientData.birth_at} onChange={(date) => handleChange(date)} />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
                                             <LocationSelect label="District"  onChange={(selectedValues) => setPatientData({ ...patientData, ...selectedValues })} />

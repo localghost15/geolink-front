@@ -65,13 +65,13 @@ export default function Admissions() {
     const [selectedService, setSelectedService] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState(null);
     const [open, setOpen] = React.useState(false);
-    const [openPayDialog, setOpenPayDialog] = useState(false);
+    const [openPayDialog, setOpenPayDialog] = useState((cur) => !cur);
     const [paymentAmount, setPaymentAmount] = useState('');
     const [paymentType, setPaymentType] = useState('');
     const [selectedOrderId, setSelectedOrderId] = useState(null);
     const [selectedVisitId, setSelectedVisitId] = useState(null);
     const handleOpen = (id) => {
-        setOpen(true);
+        setOpen((cur) => !cur);
         setSelectedVisitId(id); // Устанавливаем выбранный id
     };
 
@@ -120,7 +120,7 @@ export default function Admissions() {
     const handleOpenPayDialog = (orderId) => {
         setSelectedOrderId(orderId);
         console.log(orderId)
-        setOpenPayDialog(true);
+        setOpenPayDialog((cur) => !cur);
     };
 
     const handleClosePayDialog = () => {
@@ -151,231 +151,234 @@ export default function Admissions() {
     }, []);
 
     return (
-        <Card className="h-full w-full rounded-none pt-5">
-            <Typography className="mx-8 mb-2" variant="h3" color="black">Навбатда</Typography>
-            <div className="flex mx-8 justify-between gap-8">
-                <label
-                    className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
-                    htmlFor="search-bar"
-                >
-                    <input
-                        id="search-bar"
-                        placeholder="Қидириш"
-                        className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
-                    />
-                    <Button size="md" ><MagnifyingGlassIcon className="h-5 w-5" /></Button>
-                </label>
-            </div>
-            <CardHeader floated={false} shadow={false} className="rounded-none" />
-            <CardBody className="overflow-scroll px-0">
-                <table className="mt-4  w-full min-w-max table-auto text-left">
-                    <thead>
-                    <tr>
-                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                            <Typography variant="small" color="blue-gray"
-                                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                ФИО{" "}
-                                <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                            </Typography>
-                        </th>
-                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                            <Typography variant="small" color="blue-gray"
-                                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                Доктор{" "}
-                                <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                            </Typography>
-                        </th>
-                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                            <Typography variant="small" color="blue-gray"
-                                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                Услуга кушиш{" "}
-                                <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                            </Typography>
-                        </th>
+       <>
+           <Card className="h-full w-full rounded-none pt-5">
+               <Typography className="mx-8 mb-2" variant="h3" color="black">Навбатда</Typography>
+               <div className="flex mx-8 justify-between gap-8">
+                   <label
+                       className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
+                       htmlFor="search-bar"
+                   >
+                       <input
+                           id="search-bar"
+                           placeholder="Қидириш"
+                           className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
+                       />
+                       <Button size="md" ><MagnifyingGlassIcon className="h-5 w-5" /></Button>
+                   </label>
+               </div>
+               <CardHeader floated={false} shadow={false} className="rounded-none" />
+               <CardBody className="overflow-scroll px-0">
+                   <table className="mt-4  w-full min-w-max table-auto text-left">
+                       <thead>
+                       <tr>
+                           <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                               <Typography variant="small" color="blue-gray"
+                                           className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                                   ФИО{" "}
+                                   <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
+                               </Typography>
+                           </th>
+                           <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                               <Typography variant="small" color="blue-gray"
+                                           className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                                   Доктор{" "}
+                                   <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
+                               </Typography>
+                           </th>
+                           <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                               <Typography variant="small" color="blue-gray"
+                                           className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                                   Услуга кушиш{" "}
+                                   <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
+                               </Typography>
+                           </th>
 
-                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                            <Typography variant="small" color="blue-gray"
-                                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                Статус{" "}
-                                <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                            </Typography>
-                        </th>
-                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                            <Typography variant="small" color="blue-gray"
-                                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                Tўлов{" "}
-                                <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                            </Typography>
-                        </th>
-                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                            <Typography variant="small" color="blue-gray"
-                                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                Tўлов килиш{" "}
-                                <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                            </Typography>
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {admissions.length > 0 && admissions.map(({
-                                                                  id,
-                                                                  patient_id,
-                                                                  user_id,
-                                                                  doctor,
-                                                                  date_at,
-                                                                  remark,
-                                                                  status,
-                                                                  bill,
-                                                                  visit_at,
-                                                                  debit,
-                                                                  order_count,
-                                                                  orders
-                                                              }) => {
-                        const currentId = id;
-                        const isLast = id === admissions.length - 1;
-                        const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
-                        const filteredOrders = orders.filter(order => order.visit_id === selectedVisitId);
+                           <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                               <Typography variant="small" color="blue-gray"
+                                           className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                                   Статус{" "}
+                                   <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
+                               </Typography>
+                           </th>
+                           <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                               <Typography variant="small" color="blue-gray"
+                                           className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                                   Tўлов{" "}
+                                   <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
+                               </Typography>
+                           </th>
+                           <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                               <Typography variant="small" color="blue-gray"
+                                           className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                                   Tўлов килиш{" "}
+                                   <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
+                               </Typography>
+                           </th>
+                       </tr>
+                       </thead>
+                       <tbody>
+                       {admissions.length > 0 && admissions.map(({
+                                                                     id,
+                                                                     patient_id,
+                                                                     user_id,
+                                                                     doctor,
+                                                                     date_at,
+                                                                     remark,
+                                                                     status,
+                                                                     bill,
+                                                                     visit_at,
+                                                                     debit,
+                                                                     order_count,
+                                                                     orders
+                                                                 }) => {
+                           const currentId = id;
+                           const isLast = id === admissions.length - 1;
+                           const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
+                           const filteredOrders = orders.filter(order => order.visit_id === selectedVisitId);
 
-                        return (
-                            <tr key={id}>
-                                <td className={classes}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex flex-col">
-                                            <Typography variant="small" color="blue-gray" className="font-normal">
-                                                {patient_id.name}
-                                            </Typography>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className={classes}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex flex-col">
-                                            <Typography variant="small" color="blue-gray" className="font-normal">
-                                                {doctor.name}
-                                            </Typography>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className={classes}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex flex-col">
-                                            <Typography onClick={() => handleOpen(id)} variant="small" color="blue-gray" className="text-sm font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">
-                                                Услуга кушиш
-                                            </Typography>
+                           return (
+                               <tr key={id}>
+                                   <td className={classes}>
+                                       <div className="flex items-center gap-3">
+                                           <div className="flex flex-col">
+                                               <Typography variant="small" color="blue-gray" className="font-normal">
+                                                   {patient_id.name}
+                                               </Typography>
+                                           </div>
+                                       </div>
+                                   </td>
+                                   <td className={classes}>
+                                       <div className="flex items-center gap-3">
+                                           <div className="flex flex-col">
+                                               <Typography variant="small" color="blue-gray" className="font-normal">
+                                                   {doctor.name}
+                                               </Typography>
+                                           </div>
+                                       </div>
+                                   </td>
+                                   <td className={classes}>
+                                       <div className="flex items-center gap-3">
+                                           <div className="flex flex-col">
+                                               <Typography onClick={() => handleOpen(id)} variant="small" color="blue-gray" className="text-sm font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">
+                                                   Услуга кушиш
+                                               </Typography>
 
-                                            <AddServiceVisit
-                                                open={open}
-                                                onClose={() => setOpen(false)}
-                                                services={services}
-                                                handleServiceSelect={handleServiceSelect}
-                                                handlePaymentMethodSelect={handlePaymentMethodSelect}
-                                                handleSave={handleSave}
-                                                id={selectedVisitId}
-                                            />
-                                        </div>
-                                    </div>
-                                </td>
+                                               <AddServiceVisit
+                                                   open={open}
+                                                   onClose={() => setOpen(false)}
+                                                   services={services}
+                                                   handleServiceSelect={handleServiceSelect}
+                                                   handlePaymentMethodSelect={handlePaymentMethodSelect}
+                                                   handleSave={handleSave}
+                                                   id={selectedVisitId}
+                                               />
+                                           </div>
+                                       </div>
+                                   </td>
 
-                                <td className={classes}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex flex-col">
+                                   <td className={classes}>
+                                       <div className="flex items-center gap-3">
+                                           <div className="flex flex-col">
                                               <span
                                                   className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-sm font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                           {status}
                             </span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className={classes}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex flex-col">
-                                            <Typography variant="small" color="blue-gray" className="font-normal">
-                                                {debit}
-                                            </Typography>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className={classes}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex flex-col">
-                                            <IconButton className="rounded-full" onClick={() => handleOpenPayDialog(id)}>
-                                                <BanknotesIcon className='w-4 h-4'/>
-                                            </IconButton>
-                                            <Dialog size="sm" open={openPayDialog} onClose={handleClosePayDialog} className="bg-transparent shadow-none">
-                                                <Card>
-                                                    <CardBody className="flex flex-col gap-4">
-                                                        {/* Добавляем элемент select для вывода ID, amount и payed выбранного ордера */}
-                                                        <select value={selectedOrderId} onChange={(e) => setSelectedOrderId(e.target.value)} className="border border-gray-300 rounded-md px-3 py-2">
-                                                            {admissions.map((admission) => (
-                                                                <optgroup key={admission.id} label={`Order ID: ${admission.id}`}>
-                                                                    {admission.orders.map((order) => (
-                                                                        <option key={order.id} value={order.id}>
-                                                                            {`${order.service.name} - Общая сумма: ${order.amount} - Заплачено: ${order.payed}`}
-                                                                        </option>
-                                                                    ))}
-                                                                </optgroup>
-                                                            ))}
-                                                        </select>
-                                                        <input
-                                                            type="number"
-                                                            placeholder="Amount"
-                                                            className="border border-gray-300 rounded-md px-3 py-2"
-                                                            value={paymentAmount}
-                                                            onChange={(e) => setPaymentAmount(e.target.value)}
-                                                        />
-                                                        <div className="flex flex-col">
-                                                            <label className="inline-flex items-center">
-                                                                <Radio
-                                                                    checked={paymentType === "cash"}
-                                                                    onChange={() => handlePaymentTypeChange("cash")}
-                                                                />
-                                                                <span className="ml-2">Наличные</span>
-                                                            </label>
-                                                            <label className="inline-flex items-center">
-                                                                <Radio
-                                                                    checked={paymentType === "card"}
-                                                                    onChange={() => handlePaymentTypeChange("card")}
-                                                                />
-                                                                <span className="ml-2">Карта</span>
-                                                            </label>
-                                                            <label className="inline-flex items-center">
-                                                                <Radio
-                                                                    checked={paymentType === "credit"}
-                                                                    onChange={() => handlePaymentTypeChange("credit")}
-                                                                />
-                                                                <span className="ml-2">Кредит</span>
-                                                            </label>
-                                                        </div>
-                                                    </CardBody>
-                                                    <CardFooter className="pt-0">
-                                                        <Button onClick={handlePayment}>Оплатить</Button>
-                                                    </CardFooter>
-                                                </Card>
-                                            </Dialog>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                    </tbody>
-                </table>
-            </CardBody>
-            <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-                <Typography variant="small" color="blue-gray" className="font-normal">
-                    Сахифа 1/10
-                </Typography>
-                <div className="flex gap-2">
-                    <Button variant="outlined" size="sm">
-                        Олдинги
-                    </Button>
-                    <Button variant="outlined" size="sm">
-                        Кейингиси
-                    </Button>
-                </div>
-            </CardFooter>
+                                           </div>
+                                       </div>
+                                   </td>
+                                   <td className={classes}>
+                                       <div className="flex items-center gap-3">
+                                           <div className="flex flex-col">
+                                               <Typography variant="small" color="blue-gray" className="font-normal">
+                                                   {debit}
+                                               </Typography>
+                                           </div>
+                                       </div>
+                                   </td>
+                                   <td className={classes}>
+                                       <div className="flex items-center gap-3">
+                                           <div className="flex flex-col">
+                                               <IconButton className="rounded-full" onClick={() => handleOpenPayDialog(id)}>
+                                                   <BanknotesIcon className='w-4 h-4'/>
+                                               </IconButton>
+                                           </div>
+                                       </div>
+                                   </td>
+                               </tr>
+                           );
+                       })}
+                       </tbody>
+                   </table>
+               </CardBody>
+               <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
+                   <Typography variant="small" color="blue-gray" className="font-normal">
+                       Сахифа 1/10
+                   </Typography>
+                   <div className="flex gap-2">
+                       <Button variant="outlined" size="sm">
+                           Олдинги
+                       </Button>
+                       <Button variant="outlined" size="sm">
+                           Кейингиси
+                       </Button>
+                   </div>
+               </CardFooter>
 
 
-        </Card>
+           </Card>
+
+           <Dialog size="sm" open={openPayDialog} handler={setOpenPayDialog}  className="bg-transparent shadow-none">
+               <Card>
+                   <CardBody className="flex flex-col gap-4">
+                       {/* Добавляем элемент select для вывода ID, amount и payed выбранного ордера */}
+                       <select value={selectedOrderId} onChange={(e) => setSelectedOrderId(e.target.value)} className="border border-gray-300 rounded-md px-3 py-2">
+                           {admissions.map((admission) => (
+                               <optgroup key={admission.id} label={`Order ID: ${admission.id}`}>
+                                   {admission.orders.map((order) => (
+                                       <option key={order.id} value={order.id}>
+                                           {`${order.service.name} - Общая сумма: ${order.amount} - Заплачено: ${order.payed}`}
+                                       </option>
+                                   ))}
+                               </optgroup>
+                           ))}
+                       </select>
+                       <input
+                           type="number"
+                           placeholder="Amount"
+                           className="border border-gray-300 rounded-md px-3 py-2"
+                           value={paymentAmount}
+                           onChange={(e) => setPaymentAmount(e.target.value)}
+                       />
+                       <div className="flex flex-col">
+                           <label className="inline-flex items-center">
+                               <Radio
+                                   checked={paymentType === "cash"}
+                                   onChange={() => handlePaymentTypeChange("cash")}
+                               />
+                               <span className="ml-2">Наличные</span>
+                           </label>
+                           <label className="inline-flex items-center">
+                               <Radio
+                                   checked={paymentType === "card"}
+                                   onChange={() => handlePaymentTypeChange("card")}
+                               />
+                               <span className="ml-2">Карта</span>
+                           </label>
+                           <label className="inline-flex items-center">
+                               <Radio
+                                   checked={paymentType === "credit"}
+                                   onChange={() => handlePaymentTypeChange("credit")}
+                               />
+                               <span className="ml-2">Кредит</span>
+                           </label>
+                       </div>
+                   </CardBody>
+                   <CardFooter className="pt-0">
+                       <Button onClick={handlePayment}>Оплатить</Button>
+                   </CardFooter>
+               </Card>
+           </Dialog>
+       </>
     );
 }

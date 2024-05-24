@@ -14,7 +14,7 @@ import {
 } from "@material-tailwind/react";
 import axios from 'axios';
 
-const TABLE_HEAD = ["Номланиши", "Нархи", "Процедура вакти" , "Вид Услуги","Харакат"];
+const TABLE_HEAD = ["Номланиши", "Нархи", "Хизмат тури","Харакат"];
 
 export default function Services() {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,7 +60,6 @@ export default function Services() {
     setEditServiceId(null)
     setNewServiceName('');
     setNewServicePrice('');
-    setNewServiceTime('');
     setIsPrimary(false);
   };
 
@@ -74,14 +73,12 @@ export default function Services() {
         await axiosInstance.put(`/admin/service/${editServiceId}`, {
           name: newServiceName,
           price: newServicePrice,
-          time: newServiceTime,
           primary: isPrimary ? 1 : 0
         });
       } else {
         await axiosInstance.post("/admin/service", {
           name: newServiceName,
           price: newServicePrice,
-          time: newServiceTime,
           primary: isPrimary ? 1 : 0
         });
       }
@@ -96,7 +93,6 @@ export default function Services() {
     setEditServiceId(service.id);
     setNewServiceName(service.name);
     setNewServicePrice(service.price);
-    setNewServiceTime(service.time);
     setIsPrimary(service.primary);
     openModal();
   };
@@ -152,10 +148,8 @@ export default function Services() {
                                  onChange={(e) => setNewServiceName(e.target.value)}/>
                           <Input label="Нархи: *" size="lg" value={newServicePrice}
                                  onChange={(e) => setNewServicePrice(e.target.value)}/>
-                          <Input label="Процедура вакти (минут): *" type="number" size="lg" value={newServiceTime}
-                                 onChange={(e) => setNewServiceTime(e.target.value)}/>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center mt-2 gap-4">
                           <Switch label={isPrimary ? 'Основной' : 'Дополнительный'}
                               className="h-full w-full checked:bg-[#012c6e]"
                               containerProps={{
@@ -198,7 +192,6 @@ export default function Services() {
               <tr key={service.id} className={`transition-colors hover:bg-blue-gray-50 ${index % 2 === 0 ? "bg-blue-gray-50/50" : ""}`}>
                 <td className="p-4 text-sm">{service.name}</td>
                 <td className="p-4 text-sm">{service.price} сум</td>
-                <td className="p-4 text-sm">{service.time} минут</td>
                 <td className="p-4 text-sm">{service.primary ? 'Основной' : 'Дополнительный'}</td>
                 <td className="p-4 text-sm">
                   <div className="flex items-center gap-4">

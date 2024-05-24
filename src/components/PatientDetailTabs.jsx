@@ -25,6 +25,7 @@ import { ArrowPathIcon } from '@heroicons/react/24/solid';
 import SendAnalysis from './SignAnalysis';
 import { PaymentHistoryTable } from './PaymentHistoryTable';
 import {PencilIcon} from "@heroicons/react/24/outline";
+import VisitPatientStartEnd from "./VisitPatientStartEnd";
 
 function Icon({ id, open }) {
     return (
@@ -280,6 +281,24 @@ function PatientDetailTabs({patientId, mkb10}) {
         }
     );
 
+    const [visits, setVisits] = useState({});
+
+    useEffect(() => {
+        const fetchVisits = async () => {
+            try {
+                const response = await axiosInstance.get(`https://back.geolink.uz/api/v1/visit?patientId=${patientId}`);
+                setVisits((prevVisits) => ({
+                    ...prevVisits,
+                    [patientId]: response.data.data,
+                }));
+            } catch (error) {
+                console.error('Ошибка при получении данных о визитах:', error);
+            }
+        };
+
+        fetchVisits();
+    }, [patientId]);
+
     const [selectedTab, setSelectedTab] = useState(1);
 
     const [doctorId, setDoctorId] = useState('');
@@ -315,9 +334,7 @@ function PatientDetailTabs({patientId, mkb10}) {
         {
             label: "Қабулларни кўриш",
             value: 3,
-            desc: <>
-               On Process...
-            </>,
+            desc:  <VisitPatientStartEnd patientId={patientId} visits={visits} />,
         },
     ];
 

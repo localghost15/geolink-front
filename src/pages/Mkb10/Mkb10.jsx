@@ -20,7 +20,7 @@ import {
 } from "@material-tailwind/react";
 import Mkb10List from './components/Mkb10List';
 
-const TABLE_HEAD = ["Код", "Номланиши", "Харакат"];
+const TABLE_HEAD = ["Код", "Номланиши", "Кушимча малумот"];
 
 export default function Mkb10() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -139,13 +139,8 @@ const handleNextPage = () => {
                             <tr key={record.id}>
                                 <td className="p-4 text-sm">{record.code}</td>
                                 <td className="p-4 text-sm">{record.name}</td>
-                                <td className="p-4 text-sm">
-                                <Tooltip content="Ўзгартириш">
-                                        <IconButton  variant="text">
-                                            <EyeIcon className="h-4 w-4" />
-                                        </IconButton>
-                                    </Tooltip>
-                                </td>
+                                <td className="p-4 text-sm">{record.additional_info ? `${record.additional_info.split(' ').slice(0, 7).join(' ')} ...` : ''}</td>
+
                             </tr>
                         ))}
                     </tbody>

@@ -59,28 +59,35 @@ export default function Patients() {
     try {
       const token = localStorage.getItem('token');
 
-      // Создаем копию обновленных данных без PINFL
+      // Remove PINFL from the updated data
       const { pinfl, ...dataWithoutPinfl } = updatedPatientData;
 
-      // Отправляем запрос на обновление данных без PINFL
-      const response = await axios.put(`https://back.geolink.uz/api/v1/patients/${selectedPatient.id}`, dataWithoutPinfl, {
+      // Check if remark is empty, if so, remove it from dataToSend
+      const dataToSend = { ...dataWithoutPinfl };
+      if (dataToSend.remark === "") {
+        delete dataToSend.remark;
+      }
+
+      // Send the request to update data without PINFL and possibly without remark
+      const response = await axios.put(`https://back.geolink.uz/api/v1/patients/${selectedPatient.id}`, dataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       const updatedPatient = response.data.data;
 
-      // Обновляем список пациентов с обновленными данными
+      // Update the list of patients with the updated data
       const updatedPatients = patients.map(patient =>
           patient.id === selectedPatient.id ? updatedPatient : patient
       );
       setPatients(updatedPatients);
-      setIsOpen(false); // Закрываем диалог после успешного обновления
+      setIsOpen(false); // Close the dialog after successful update
       setSelectedPatient(null);
     } catch (error) {
-      console.error("Ошибка при обновлении пациента:", error);
+      console.error("Error updating patient:", error);
     }
   };
+
 
   const handleAddPatient = (newPatient) => {
     setPatients([...patients, newPatient]);

@@ -7,6 +7,7 @@ import DatePicker from '../../../components/DatePicker';
 import LocationSelect from '../../../components/LocationSelect';
 import Dropzone from '../../../components/Dropzone';
 import DoctorsSelect from './DoctorsList';
+import DateSelect from "../../../components/DateSelect";
 
 export default function PatientsUpdateDialog({ selectedPatient, onUpdatePatient }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -110,21 +111,21 @@ export default function PatientsUpdateDialog({ selectedPatient, onUpdatePatient 
                                     </Dialog.Title>
                                     <div className="mt-2">
                                         <div className="grid grid-cols-3 gap-4">
-                                            <Input label="Full Name: *" size="lg" name="name" value={patientData.name} onChange={handleChange} />
-                                            <Input label="Work Address" size="lg" name="work_address" value={patientData.work_address} onChange={handleChange} />
-                                            <DatePicker label="Date of Birth" value={patientData.birth_at} onChange={handleChange}  />
+                                            <Input label="ФИО: *" size="lg" name="name" value={patientData.name} onChange={handleChange} />
+                                            <Input label="Иш манзили" size="lg" name="work_address" value={patientData.work_address} onChange={handleChange} />
+                                            <DateSelect value={patientData.birth_at} onChange={(date) => handleChange(date)} />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
                                             <LocationSelect label="District"  onChange={(selectedValues) => setPatientData({ ...patientData, ...selectedValues })} />
                                             <DoctorsSelect
-                                                label="Partner"
+                                                label="Ким йуборди"
                                                 onChange={(partnerId) => setPatientData({ ...patientData, partner_id: partnerId })}
                                             />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
-                                            <Input label="Profession:" size="lg" name="profession" value={patientData.profession} onChange={handleChange} />
-                                            <Input label="Phone Number:" size="lg" name="phone" value={patientData.phone} onChange={handleChange} />
-                                            <Input label="Home Address:" size="lg" name="home_address" value={patientData.home_address} onChange={handleChange} />
+                                            <Input label="Касби:" size="lg" name="profession" value={patientData.profession} onChange={handleChange} />
+                                            <Input label="Телефон раками:" size="lg" name="phone" value={patientData.phone} onChange={handleChange} />
+                                            <Input label="Яшаш манзили:" size="lg" name="home_address" value={patientData.home_address} onChange={handleChange} />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
                                             <Radio
@@ -132,26 +133,26 @@ export default function PatientsUpdateDialog({ selectedPatient, onUpdatePatient 
                                                 value="men"
                                                 checked={patientData.gender === 'men'}
                                                 onChange={() => handleChange({ target: { name: 'gender', value: 'men' } })}
-                                                label="Male"
+                                                label="Еркак"
                                             />
                                             <Radio
                                                 name="gender"
                                                 value="female"
                                                 checked={patientData.gender === 'women'}
                                                 onChange={() => handleChange({ target: { name: 'gender', value: 'women' } })}
-                                                label="Female"
+                                                label="Айол"
                                             />
-                                            <Input label="PINFL:" size="lg" name="pinfl" value={patientData.pinfl} onChange={handleChange} />
+                                            <Input label="ПИНФЛ:" size="lg" name="pinfl" value={patientData.pinfl} onChange={handleChange} />
                                         </div>
                                         <div className="mt-4 flex gap-4">
-                                            <Textarea label="Remark:" fullWidth name="remark" value={patientData.remark} onChange={handleChange} />
+                                            <Textarea label="Исох:" fullWidth name="remark" value={patientData.remark} onChange={handleChange} />
                                             <Dropzone onFilesChange={(file) => setPatientData({ ...patientData, file: file })} />
                                         </div>
                                     </div>
 
                                     <div className="mt-4">
-                                        <Button onClick={handleSubmit} variant="gradient" fullWidth>
-                                            Save
+                                        <Button className="font-medium" onClick={handleSubmit} variant="gradient" fullWidth>
+                                            Узгартиришни Саклаш
                                         </Button>
                                     </div>
                                 </Dialog.Panel>

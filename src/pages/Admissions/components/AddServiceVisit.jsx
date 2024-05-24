@@ -13,7 +13,7 @@ export default function AddServiceVisit({
                                         }) {
 
     return (
-        <Dialog open={open} onClose={onClose} className="bg-transparent shadow-none">
+        <Dialog open={open} handler={(cur) => !cur}  className="bg-transparent shadow-none">
             <Card className="mx-auto w-full max-w-[24rem]">
                 <CardBody className="flex flex-col gap-4">
                     <Select
