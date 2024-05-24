@@ -64,7 +64,7 @@ export default function Patients() {
 
       // Check if remark is empty, if so, remove it from dataToSend
       const dataToSend = { ...dataWithoutPinfl };
-      if (dataToSend.remark === "") {
+      if (dataToSend.remark === null || dataToSend.remark === '') {
         delete dataToSend.remark;
       }
 

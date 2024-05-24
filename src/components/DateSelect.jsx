@@ -16,20 +16,28 @@ export default function DateSelect({ value, onChange }) {
     }, []);
 
     const handleDateChange = (date) => {
-        setDate(date);
-        const formattedDate = format(date, 'yyyy-MM-dd');
-        onChange(formattedDate);
+        // Check if the date is null, indicating the input field has been cleared
+        if (date === null) {
+            setDate(null);
+            onChange(""); // Notify that the date has been cleared
+        } else {
+            // If the date is not null, proceed as usual
+            setDate(date);
+            const formattedDate = format(date, 'yyyy-MM-dd');
+            onChange(formattedDate);
+        }
     };
 
     return (
         <div className="">
             <DatePicker
-                showIcon
-                icon={<CalendarIcon />}
-                customInput={<Input value={format(date, 'P')} label="Тугилган куни" />}
+                // showIcon
+                // icon={<CalendarIcon />}
+                customInput={<Input value={format(new Date(date), 'P')} label="Тугилган куни" />}
                 dateFormat="P"
                 onChange={handleDateChange}
                 locale={locale}
+                isClearable
                 selected={date}
             />
         </div>
