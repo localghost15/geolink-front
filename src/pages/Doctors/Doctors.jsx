@@ -39,7 +39,6 @@ export default function Doctors() {
   const [editUser, setEditUser] = useState(null);
   const [userData, setUserData] = useState({
     name: "",
-    email: "",
     login: "",
     password: "",
     confirmPassword: "",
@@ -131,7 +130,6 @@ export default function Doctors() {
     setEditUser(null);
     setUserData({
       name: "",
-      email: "",
       login: "",
       password: "",
       confirmPassword: "",
@@ -148,7 +146,6 @@ export default function Doctors() {
     setEditUser(user);
     setUserData({
       name: user.name,
-      email: user.email,
       login: user.login,
       password: "",
       confirmPassword: "",
@@ -215,8 +212,6 @@ export default function Doctors() {
                                    onChange={(e) => setUserData({ ...userData, name: e.target.value })} />
                             <Input label="Логин" size="lg" value={userData.login}
                                    onChange={(e) => setUserData({ ...userData, login: e.target.value })} />
-                            <Input label="Email" size="lg" value={userData.email}
-                                   onChange={(e) => setUserData({ ...userData, email: e.target.value })} />
                           </div>
                           <div className="grid mt-4 grid-cols-2 gap-4">
                             <Input label="Пароль: *" size="lg" type="password" value={userData.password}
