@@ -16,17 +16,18 @@ export default function Patients() {
   const [patients, setPatients] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // Add this state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchCategory, setSearchCategory] = useState("name"); // Add this state
   const navigate = useNavigate();
 
-  const fetchPatients = useCallback(async (query) => {
+  const fetchPatients = useCallback(async (query, category) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`https://back.geolink.uz/api/v1/patients`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params: query ? { name: query } : {}
+        params: query ? { [category]: query } : {}
       });
       setPatients(response.data.data);
     } catch (error) {
@@ -35,8 +36,8 @@ export default function Patients() {
   }, []);
 
   useEffect(() => {
-    fetchPatients(searchQuery);
-  }, [fetchPatients, searchQuery]);
+    fetchPatients(searchQuery, searchCategory);
+  }, [fetchPatients, searchQuery, searchCategory]);
 
   const handleRemovePatient = async (patientId) => {
     try {
@@ -111,13 +112,12 @@ export default function Patients() {
               className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2 focus-within:border-gray-300"
               htmlFor="search-bar"
           >
-            <ListsMenu />
-
+            <ListsMenu onSelect={setSearchCategory} /> {/* Pass the callback */}
             <input
                 id="search-bar"
                 placeholder="Қидириш"
                 className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
-                onChange={handleSearchChange} // Add onChange handler
+                onChange={handleSearchChange}
             />
             <Button size="md">
               <MagnifyingGlassIcon className="h-5 w-5" />
