@@ -3,8 +3,7 @@ import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 
 const people = [
-  { name: 'Хаммаси' },
-  { name: 'ФИШ' },
+  { name: 'ФИО' },
   { name: 'Телефон' },
   { name: 'Идентификатор' },
 

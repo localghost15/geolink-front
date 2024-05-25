@@ -13,24 +13,25 @@ import { PhoneInput } from 'react-international-phone';
 import 'react-international-phone/style.css';
 import DateSelect from "../../../components/DateSelect";
 import { PhoneNumberUtil } from 'google-libphonenumber';
+import toast from "react-hot-toast";
 
 // Инициализируем объект PhoneNumberUtil
 const phoneUtil = PhoneNumberUtil.getInstance();
 
 
 const validationSchema = yup.object({
-    name: yup.string().required('ФИО обязателен'),
+    name: yup.string().required('ФИО майдони шарт'),
     pinfl: yup.string().optional(),
-    home_address: yup.string().required('Яшаш манзили обязателен'),
+    home_address: yup.string().required('Яшаш манзили майдони шарт'),
     work_address: yup.string().optional(),
     remark: yup.string().optional(),
     phone: yup.string()
-        .matches(/^\d{12}$/, 'Номер телефона должен содержать 12 цифр')
+        .matches(/^\d{12}$/, 'Телефон рақами 12 та рақамдан иборат бўлиши керак')
         .required('Телефон обязателен'),
     profession: yup.string().optional(),
     district_id: yup.string().required('Район обязателен'),
     partner_id: yup.string().required('Партнер обязателен'),
-    gender: yup.string().required('Пол обязателен'),
+    gender: yup.string().required('Жинси танланг'),
     birth_at: yup.date().required('Дата рождения обязательна'),
 });
 
@@ -79,6 +80,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
                     onAddPatient(responseData.data);
                     formik.resetForm();
                     closeModal();
+                    toast.success('Бемор кушилди!')
                 }
             } catch (error) {
                 console.error("Error:", error);
@@ -177,6 +179,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                             <div className="mt-4 grid grid-cols-3 gap-4">
                                                 <LocationSelect
                                                     label="District"
+                                                    error={formik.touched.district_id && formik.errors.district_id}
                                                     onChange={(selectedValues) => formik.setFieldValue('district_id', selectedValues.district_id)}
                                                 />
                                                 <DoctorsSelect
@@ -208,31 +211,46 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                        </Typography>
                                                    )}
                                                </div>
-                                                <Input
-                                                    label="Яшаш манзили"
-                                                    size="lg"
-                                                    name="home_address"
-                                                    value={formik.values.home_address}
-                                                    onChange={formik.handleChange}
-                                                    error={formik.touched.home_address && formik.errors.home_address}
-                                                    helperText={formik.touched.home_address && formik.errors.home_address ? formik.errors.home_address : ''}
-                                                />
+                                              <div>
+                                                  <Input
+                                                      label="Яшаш манзили"
+                                                      size="lg"
+                                                      name="home_address"
+                                                      value={formik.values.home_address}
+                                                      onChange={formik.handleChange}
+                                                      error={formik.touched.home_address && formik.errors.home_address}
+                                                      helperText={formik.touched.home_address && formik.errors.home_address ? formik.errors.home_address : ''}
+                                                  />
+                                                  {formik.touched.home_address && formik.errors.home_address && (
+                                                      <Typography className="text-xs" color="red" size="xs">
+                                                          {formik.errors.home_address}
+                                                      </Typography>
+                                                  )}
+                                              </div>
                                             </div>
                                             <div className="mt-4 grid grid-cols-3 gap-4">
-                                                <Radio
-                                                    name="gender"
-                                                    value="men"
-                                                    checked={formik.values.gender === 'men'}
-                                                    onChange={() => formik.setFieldValue('gender', 'men')}
-                                                    label="Еркак"
-                                                />
-                                                <Radio
-                                                    name="gender"
-                                                    value="women"
-                                                    checked={formik.values.gender === 'women'}
-                                                    onChange={() => formik.setFieldValue('gender', 'women')}
-                                                    label="Айол"
-                                                />
+                                               <div>
+                                                   <Radio
+                                                       name="gender"
+                                                       value="men"
+                                                       checked={formik.values.gender === 'men'}
+                                                       onChange={() => formik.setFieldValue('gender', 'men')}
+                                                       label="Еркак"
+                                                   />
+                                                   <Radio
+                                                       name="gender"
+                                                       value="women"
+                                                       checked={formik.values.gender === 'women'}
+                                                       onChange={() => formik.setFieldValue('gender', 'women')}
+                                                       label="Айол"
+                                                   />
+
+                                                   {formik.touched.gender && formik.errors.gender && (
+                                                       <Typography className="text-xs" color="red" size="xs">
+                                                           {formik.errors.gender}
+                                                       </Typography>
+                                                   )}
+                                               </div>
                                                 <Input
                                                     label="ПИНФЛ:"
                                                     size="lg"

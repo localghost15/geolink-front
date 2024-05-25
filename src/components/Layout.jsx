@@ -17,6 +17,7 @@ import {
     Button,
   } from "@material-tailwind/react";
   import { logout, isLoggedIn , getUserRole } from '../services/authServices';
+import ExpandedSidebar from "./ExpandedSidebar";
 
 const Layout = () => {
   const [userRole, setUserRole] = useState(null);
@@ -38,6 +39,8 @@ const Layout = () => {
         <>
         <div className="min-h-screen flex flex-row bg-white">
         <Sidebar/>
+        {/*  <ExpandedSidebar/>*/}
+
   <div className="content w-full relative">
   <nav className="bg-white border-b-[1px] border-gray-300 absolute w-full top-0 z-10 h-max max-w-full rounded-none px-4 lg:px-8">
   <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
