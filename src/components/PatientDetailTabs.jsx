@@ -158,7 +158,7 @@ function AccordionCustomIcon({ patientId, mkb10  }) {
             </Accordion>
             <Accordion open={open === 3} icon={<Icon id={3} open={open} />}>
                 <AccordionHeader className='text-sm' onClick={() => handleOpen(3)}>
-                    Диспонсер рўйхати
+                    Диспансер рўйхати
                 </AccordionHeader>
                 <AccordionBody>
                     <div className="flex gap-4">
@@ -176,21 +176,56 @@ function AccordionCustomIcon({ patientId, mkb10  }) {
                         showToolbar={true}
                         height="80vh"
                         setOptions={{
+                            mode: 'classic',
+                            rtl: false,
+                            previewTemplate: "<div style='width:auto; max-width:1080px; margin:auto;'>    <h1>Preview Template</h1>     {{contents}}     <div>_Footer_</div></div>",
+                            printTemplate: "<div style='width:auto; max-width:1080px; margin:auto;'>    <h1>Print Template</h1>     {{contents}}     <div>_Footer_</div></div>",
+                            katex: 'window.katex',
+                            imageGalleryUrl: 'https://etyswjpn79.execute-api.ap-northeast-1.amazonaws.com/suneditor-demo',
+                            videoFileInput: false,
+                            tabDisable: false,
+                            templates: templates,
                             buttonList: [
                                 [
-                                    "bold",
-                                    "underline",
-                                    "italic",
-                                    "strike",
-                                    "list",
-                                    "align",
-                                    "fontSize",
-                                    "formatBlock",
-                                    "table",
-                                    "image",
-                                    "template"
+                                    'undo',
+                                    'redo',
+                                    'font',
+                                    'fontSize',
+                                    'formatBlock',
+                                    'paragraphStyle',
+                                    'blockquote',
+                                    'bold',
+                                    'underline',
+                                    'italic',
+                                    'strike',
+                                    'subscript',
+                                    'superscript',
+                                    'fontColor',
+                                    'hiliteColor',
+                                    'textStyle',
+                                    'removeFormat',
+                                    'outdent',
+                                    'indent',
+                                    'align',
+                                    'horizontalRule',
+                                    'list',
+                                    'lineHeight',
+                                    'table',
+                                    'link',
+                                    'image',
+                                    'video',
+                                    'audio',
+                                    'math',
+                                    'imageGallery',
+                                    'fullScreen',
+                                    'showBlocks',
+                                    'codeView',
+                                    'preview',
+                                    'print',
+                                    'save',
+                                    'template'
                                 ]
-                            ]
+                            ],
                         }}
                     />
                 </AccordionBody>

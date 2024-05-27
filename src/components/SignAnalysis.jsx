@@ -54,7 +54,7 @@ import SignAnalysisList from './Lists/SignAnalysisList';
 
 
     return (
-      <Card className="h-full w-full rounded-none pt-5">
+      <Card className="h-[50vh] w-full rounded-none pt-5">
 
         <div className="flex mx-8 justify-between gap-8">
         <label
@@ -78,7 +78,7 @@ import SignAnalysisList from './Lists/SignAnalysisList';
   
          
         </CardHeader>
-        <CardBody className="overflow-scroll px-0">
+        <CardBody className="overflow-scroll h-sreen px-0">
           <table className="mt-1  w-full min-w-max table-auto text-left">
             <thead>
               <tr>

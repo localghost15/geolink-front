@@ -5,7 +5,6 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 const people = [
   { name: 'ФИО', value: 'name' },
   { name: 'Телефон', value: 'phone' },
-  { name: 'Идентификатор', value: 'id' },
 ];
 
 export default function ListsMenu({ onSelect }) {
