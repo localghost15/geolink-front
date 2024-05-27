@@ -3,6 +3,8 @@ import {
     MagnifyingGlassIcon,
     ChevronUpDownIcon,
     InformationCircleIcon,
+    DocumentArrowDownIcon,
+    PaperAirplaneIcon,
 } from '@heroicons/react/24/outline';
 import {
     Card,
@@ -17,7 +19,7 @@ import {
 } from '@material-tailwind/react';
 import SignAnalysisList from './Lists/SignAnalysisList';
 import axios from 'axios';
-import {DocumentArrowDownIcon, PaperAirplaneIcon} from "@heroicons/react/24/solid";
+import POSReceipt from "./POSReceipt";
 
 const TABLE_HEAD = ['Хизматлар', 'Нархи', 'Количество', 'Умумий сумма'];
 
@@ -25,6 +27,8 @@ export default function SendAnalysis() {
     const [quantities, setQuantities] = useState({});
     const [services, setServices] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     const axiosInstance = axios.create({
         baseURL: 'https://back.geolink.uz/api/v1',
@@ -44,12 +48,12 @@ export default function SendAnalysis() {
     );
 
     useEffect(() => {
-        fetchServices();
-    }, []);
+        fetchServices(currentPage);
+    }, [currentPage]);
 
-    const fetchServices = async () => {
+    const fetchServices = async (page) => {
         try {
-            const response = await axiosInstance.get('/admin/service');
+            const response = await axiosInstance.get(`/admin/service?page=${page}`);
             const services = response.data.data;
             setServices(services);
 
@@ -59,6 +63,11 @@ export default function SendAnalysis() {
                 return acc;
             }, {});
             setQuantities(initialQuantities);
+
+            // Update pagination info
+            const { current_page, last_page } = response.data.meta;
+            setCurrentPage(current_page);
+            setTotalPages(last_page);
         } catch (error) {
             console.error('Ошибка при получении списка сервисов:', error);
         }
@@ -97,6 +106,10 @@ export default function SendAnalysis() {
         service.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
     return (
         <>
             <Card className="h-screen w-full rounded-none pt-5">
@@ -105,7 +118,7 @@ export default function SendAnalysis() {
                         className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2 focus-within:border-gray-300"
                         htmlFor="search-bar"
                     >
-                        <SignAnalysisList/>
+                        <SignAnalysisList />
 
                         <input
                             id="search-bar"
@@ -115,13 +128,13 @@ export default function SendAnalysis() {
                             onChange={handleSearchChange}
                         />
                         <Button size="md">
-                            <MagnifyingGlassIcon className="h-5 w-5"/>
+                            <MagnifyingGlassIcon className="h-5 w-5" />
                         </Button>
                     </label>
                 </div>
 
                 <CardHeader floated={false} shadow={false} className="rounded-none"></CardHeader>
-                <CardBody className="overflow-scroll h-[60vh] px-0">
+                <CardBody className="overflow-scroll px-0">
                     <table className="mt-1 w-full min-w-max table-auto text-left">
                         <thead>
                         <tr>
@@ -137,7 +150,7 @@ export default function SendAnalysis() {
                                     >
                                         {head}
                                         {index !== TABLE_HEAD.length - 1 && (
-                                            <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
+                                            <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
                                         )}
                                     </Typography>
                                 </th>
@@ -145,7 +158,7 @@ export default function SendAnalysis() {
                         </tr>
                         </thead>
                         <tbody>
-                        {filteredServices.map(({id, name, price}, index) => {
+                        {filteredServices.map(({ id, name, price }, index) => {
                             const isLast = index === filteredServices.length - 1;
                             const classes = isLast ? 'p-4' : 'p-4 border-b border-blue-gray-50';
                             const quantity = quantities[id] || 0;
@@ -206,9 +219,8 @@ export default function SendAnalysis() {
                                                             required
                                                             readOnly
                                                         />
-                                                        <div
-                                                            className="absolute bottom-1 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 flex items-center text-xs text-gray-400 space-x-1 rtl:space-x-reverse">
-                                                            <InformationCircleIcon className="h-4 w-4"/>
+                                                        <div className="absolute bottom-1 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 flex items-center text-xs text-gray-400 space-x-1 rtl:space-x-reverse">
+                                                            <InformationCircleIcon className="h-4 w-4" />
                                                             <span>Хизмат</span>
                                                         </div>
                                                         <button
@@ -251,21 +263,39 @@ export default function SendAnalysis() {
                     </table>
                 </CardBody>
                 <div className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-                   <div> Уммумий киймат:</div>
-                   <div>{calculateTotalSum()} сум</div>
+                    <div> Уммумий киймат:</div>
+                    <div>{calculateTotalSum()} сум</div>
                 </div>
                 <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-
                     <Typography variant="small" color="blue-gray" className="font-normal">
-                        Сахифа 1/10
+                        Сахифа {currentPage}/{totalPages}
                     </Typography>
                     <div className="flex gap-2">
+                        <POSReceipt/>
                         <Button size="sm" className="flex py-3 items-center gap-x-1">
-                            <DocumentArrowDownIcon className="w-4 h-4"/> Чекни тортиб олиш
+                            <PaperAirplaneIcon className="w-4 h-4" /> Кассага юбориш
                         </Button>
-                        <Button size="sm" className="flex py-3 items-center gap-x-1">
-                            <PaperAirplaneIcon className="w-4 h-4"/> Кассага йубориш
-                        </Button>
+                    </div>
+                </CardFooter>
+                <CardFooter className="flex items-center justify-center border-t border-blue-gray-50 p-4">
+                    <div className="flex items-center gap-2">
+                        <IconButton variant="outlined" size="sm" onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
+                            1
+                        </IconButton>
+                        {Array.from({ length: totalPages - 2 }, (_, i) => i + 2).map((page) => (
+                            <IconButton
+                                key={page}
+                                variant="text"
+                                size="sm"
+                                onClick={() => handlePageChange(page)}
+                                disabled={currentPage === page}
+                            >
+                                {page}
+                            </IconButton>
+                        ))}
+                        <IconButton variant="text" size="sm" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>
+                            {totalPages}
+                        </IconButton>
                     </div>
                 </CardFooter>
             </Card>

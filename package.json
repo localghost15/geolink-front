@@ -25,6 +25,7 @@
     "date-fns": "^3.6.0",
     "formik": "^2.4.6",
     "google-libphonenumber": "^3.2.34",
+    "hamburger-react": "^2.5.1",
     "react": "18.2.0",
     "react-country-state-city": "^1.1.0",
     "react-datepicker": "^6.9.0",

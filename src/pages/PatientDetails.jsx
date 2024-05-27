@@ -16,6 +16,7 @@ import Select from 'react-select';
 import PatientDetailTabs from '../components/PatientDetailTabs';
 import axios from 'axios';
 import {ArrowPathIcon, ClipboardDocumentCheckIcon, EyeIcon, EyeSlashIcon} from "@heroicons/react/24/solid";
+import POSReceipt from "../components/POSReceipt";
 
 function Icon({ id, open }) {
     return (
@@ -400,7 +401,7 @@ export default function PatientDetails() {
                 </div>
             )}
 
-            <div className="w-full max-w-full pr-10">
+            <div className="w-full max-w-full pr-3 pl-3">
               <PatientDetailTabs patientName={patient.name} mkb10={patient.mkb10} patientId={index}/>
             </div>
           </div>
