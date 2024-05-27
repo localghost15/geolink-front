@@ -150,7 +150,7 @@ function AccordionCustomIcon({ patientId, mkb10  }) {
             </Accordion>
             <Accordion open={open === 2} icon={<Icon id={2} open={open} />}>
                 <AccordionHeader className='text-sm' onClick={() => handleOpen(2)}>
-                    Анализга юбориш
+                    Процедурага юбориш
                 </AccordionHeader>
                 <AccordionBody>
                     <SendAnalysis/>
