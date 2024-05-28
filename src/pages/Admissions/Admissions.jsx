@@ -65,7 +65,7 @@ export default function Admissions() {
     const [selectedService, setSelectedService] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState(null);
     const [open, setOpen] = React.useState(false);
-    const [openPayDialog, setOpenPayDialog] = useState((cur) => !cur);
+    const [openPayDialog, setOpenPayDialog] = useState(false);
     const [paymentAmount, setPaymentAmount] = useState('');
     const [paymentType, setPaymentType] = useState('');
     const [selectedOrderId, setSelectedOrderId] = useState(null);

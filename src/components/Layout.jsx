@@ -51,7 +51,7 @@ const Layout = () => {
   };
     return (
         <>
-        <div className="min-h-screen flex flex-row bg-white">
+        <div className="min-h-screen relative flex flex-row bg-white">
         {/*<Sidebar/>*/}
           <ExpandedSidebar
               className={`app flex ${toggled ? 'toggled' : ''}`}

@@ -44,9 +44,9 @@ const ExpandedSidebar = ({
 
     return (
         <div style={{display: "flex", height: "100vh"}}>
-            <Sidebar breakPoint="md"  collapsed={collapsed}
+            <Sidebar breakPoint="md"   collapsed={collapsed}
                        toggled={toggled}
-                       onToggle={handleToggleSidebar} width="300px" className="app">
+                       onToggle={handleToggleSidebar} width="300px" className="app ">
 
                 <Menu>
                     <MenuItem icon={<svg width="34" height="34" viewBox="0 0 34 34" fill="none"
@@ -92,10 +92,10 @@ const ExpandedSidebar = ({
                         <CustomLink to="/list_of_disponser"> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Диспонсер ҳисоби</MenuItem></CustomLink>
                     </SubMenu>
                     <SubMenu icon={ <ChartPieIcon className="h-6 w-6" />} label="Ҳисоботлар">
-                        <CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>Навбатда</MenuItem></CustomLink>
-                        <CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Қайта навбатлар</MenuItem></CustomLink>
-                        <CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Қайта қабуллар</MenuItem></CustomLink>
-                        <CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Диспонсер ҳисоби</MenuItem></CustomLink>
+                        {/*<CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>Навбатда</MenuItem></CustomLink>*/}
+                        {/*<CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Қайта навбатлар</MenuItem></CustomLink>*/}
+                        {/*<CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Қайта қабуллар</MenuItem></CustomLink>*/}
+                        {/*<CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Диспонсер ҳисоби</MenuItem></CustomLink>*/}
                     </SubMenu>
                 </Menu>
             </Sidebar>

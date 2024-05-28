@@ -26,6 +26,7 @@ import SendAnalysis from './SignAnalysis';
 import { PaymentHistoryTable } from './PaymentHistoryTable';
 import {PencilIcon} from "@heroicons/react/24/outline";
 import VisitPatientStartEnd from "./VisitPatientStartEnd";
+import toast from "react-hot-toast";
 
 function Icon({ id, open }) {
     return (
@@ -42,11 +43,12 @@ function Icon({ id, open }) {
     );
 }
 
-function AccordionCustomIcon({ patientId, mkb10  }) {
+function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
     const [open, setOpen] = React.useState(0);
     const [alwaysOpen, setAlwaysOpen] = React.useState(true);
     const [selectedDisease, setSelectedDisease] = useState(null);
     const [mkb10Data, setMkb10Data] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(null);
     const [selectedMKB10, setSelectedMKB10] = useState([]);
     const TABLE_HEAD = ["Код", "Номланиши", "Харакат"];
     const animatedComponents = makeAnimated();
@@ -125,6 +127,36 @@ function AccordionCustomIcon({ patientId, mkb10  }) {
         setSelectedDisease(selectedOptions);
     };
 
+
+
+    const sendDateData = async () => {
+        if (!selectedDate) {
+            toast.error('Илтимос кунни танланг!')
+            return;
+        }
+
+        const payload = { date_at: selectedDate };
+        console.log("Payload to send:", payload);
+
+        let config = {
+            method: 'post',
+            url: `https://back.geolink.uz/api/v1/visit/revisit/${visitId}`, // Использование visitId в URL
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(payload)
+        };
+
+        try {
+            const response = await axios.request(config);
+            toast.success(`Кайта кабул: ${selectedDate}`);
+            console.log("Date data sent successfully:", response.data);
+        } catch (error) {
+            console.error("Error sending date data:", error);
+        }
+    };
+
     const templates = [
         {
             name: 'Template-1',
@@ -143,8 +175,10 @@ function AccordionCustomIcon({ patientId, mkb10  }) {
                 <AccordionHeader className='text-sm' onClick={handleAlwaysOpen}>Қайта қабул</AccordionHeader>
                 <AccordionBody>
                     <div className="flex gap-4">
-                        <DatePicker/>
-                        <Button className='flex gap-x-1'><ArrowPathIcon className='w-4 h-4' /> Қайта қабулга қўшиш</Button>
+                        <DatePicker onChange={(date) => setSelectedDate(date)} />
+                        <Button className='flex gap-x-1' onClick={sendDateData}>
+                            <ArrowPathIcon className='w-4 h-4' /> Қайта қабулга қўшиш
+                        </Button>
                     </div>
                 </AccordionBody>
             </Accordion>
@@ -317,14 +351,20 @@ function PatientDetailTabs({patientId, mkb10}) {
     );
 
     const [visits, setVisits] = useState({});
+    const [visitId, setVisitId] = useState(null);
 
     useEffect(() => {
         const fetchVisits = async () => {
             try {
                 const response = await axiosInstance.get(`https://back.geolink.uz/api/v1/visit?patient_id=${patientId}`);
-                setVisits((prevVisits) => ({
+                const visitData = response.data.data;
+                if (visitData.length > 0) {
+                    const firstVisitId = visitData[0].id; // Получаем ID первого визита
+                    setVisitId(firstVisitId); // Сохраняем ID первого визита в состоянии
+                }
+                setVisits(prevVisits => ({
                     ...prevVisits,
-                    [patientId]: response.data.data,
+                    [patientId]: visitData,
                 }));
             } catch (error) {
                 console.error('Ошибка при получении данных о визитах:', error);
@@ -358,7 +398,7 @@ function PatientDetailTabs({patientId, mkb10}) {
         {
             label: "Янги қабул",
             value: 1,
-            desc: <AccordionCustomIcon mkb10 ={mkb10} patientId={patientId} value={1} />,
+            desc: <AccordionCustomIcon visitId={visitId} mkb10 ={mkb10} patientId={patientId} value={1} />,
         },
         {
             label: "Тўловлар тарихи",
