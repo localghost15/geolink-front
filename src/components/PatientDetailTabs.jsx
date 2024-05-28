@@ -128,7 +128,6 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
     };
 
 
-
     const sendDateData = async () => {
         if (!selectedDate) {
             toast.error('Илтимос кунни танланг!')
@@ -164,12 +163,15 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
             try {
                 const response = await axiosInstance.get('/template');
                 const apiData = response.data.data;
-                const transformedTemplates = apiData.map(item => ({
-                    name: item.title,
-                    html: item.title
+                const transformedTemplates = await Promise.all(apiData.map(async item => {
+                    const textResponse = await axiosInstance.get(`/template/${item.id}`);
+                    const textData = textResponse.data.data;
+                    return {
+                        name: item.title,
+                        html: textData.text
+                    };
                 }));
                 setTemplates(transformedTemplates);
-                console.log(templates)
             } catch (error) {
                 console.error('Error fetching templates:', error);
             }
@@ -179,7 +181,9 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
     }, []);
 
 
-    var plugin_submenu = {
+
+
+    let plugin_submenu = {
         // @Required @Unique
         // plugin name
         name: 'custom_plugin_submenu',
@@ -192,18 +196,12 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
         title: 'Янги шаблон қушиш',
         buttonClass: '',
         innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
-  <path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" />
+    <path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" />
 </svg>
 `,
 
-        // @Required
-        // add function - It is called only once when the plugin is first run.
-        // This function generates HTML to append and register the event.
-        // arguments - (core : core object, targetElement : clicked button element)
         add: function (core, targetElement) {
 
-            // @Required
-            // Registering a namespace for caching as a plugin name in the context object
             const context = core.context;
             context.customSubmenu = {
                 targetButton: targetElement,
@@ -211,28 +209,19 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
                 currentSpan: null
             };
 
-            // Generate submenu HTML
-            // Always bind "core" when calling a plugin function
             let listDiv = this.setSubmenu(core);
 
-            // Input tag caching
             context.customSubmenu.titleElement = listDiv.querySelector('.title-input');
 
-            // You must bind "core" object when registering an event.
-            /** add event listeners */
-            listDiv.querySelector('.se-btn-primary').addEventListener('click', this.onClick.bind(core));
+            listDiv.querySelector('.se-btn-primary').addEventListener('click', this.onClick.bind(core, setTemplates));
             listDiv.querySelector('.se-btn').addEventListener('click', this.onClickRemove.bind(core));
 
-            // @Required
-            // You must add the "submenu" element using the "core.initMenuTarget" method.
-            /** append target button menu */
             core.initMenuTarget(this.name, targetElement, listDiv);
         },
 
         setSubmenu: function (core) {
             const listDiv = core.util.createElement('DIV');
-            // @Required
-            // A "se-submenu" class is required for the top level element.
+
             listDiv.className = 'se-menu-container se-submenu se-list-layer';
             listDiv.innerHTML = '' +
                 '<div class="se-list-inner">' +
@@ -255,20 +244,33 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
             return listDiv;
         },
 
-        onClick: function (e) {
+
+
+        onClick: async function (setTemplates, e) {
             const title = this.context.customSubmenu.titleElement.value;
             const text = this.getContents();
             if (!title || !text) return;
-            axiosInstance.post('/template', {
-                title: title,
-                text: text
-            }).then(response => {
-                toast.success('Шаблон муафақиятли яратилди')
-                console.log("Template saved successfully:", response.data);
-            }).catch(error => {
+            try {
+                const response = await axiosInstance.post('/template', {
+                    title: title,
+                    text: text
+                });
+
+                const fetching = await axiosInstance.get('/template');
+                const apiData = fetching.data.data;
+                const transformedTemplates = apiData.map(item => ({
+                    name: item.title,
+                    html: item.title
+                }));
+                setTemplates(transformedTemplates);
+                toast.success('Шаблон муафақиятли яратилди');
+
+            } catch (error) {
                 console.error("Error saving template:", error);
-            });
+            }
         },
+
+
 
         onClickRemove: function (e) {
             this.focus();
@@ -279,8 +281,6 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
         }
     };
 
-
-    // Registering the custom plugin
     plugins.custom_plugin_submenu = plugin_submenu;
 
     const editorOptions = {
@@ -292,7 +292,7 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
             ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
             ['fontColor', 'hiliteColor', 'textStyle'],
             ['removeFormat'],
-            '/', // Line break
+            '/',
             ['outdent', 'indent'],
             ['align', 'horizontalRule', 'list', 'lineHeight'],
             ['table', 'link', 'image', 'video'],
@@ -343,13 +343,15 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
                     Врач хулосаси
                 </AccordionHeader>
                 <AccordionBody>
-                    {templates.length > 0 && (
+                    {Array.isArray(templates) && (
                         <SunEditor
+                            key={templates.length}
                             setOptions={editorOptions}
                             height="800px"
                             defaultValue=""
                             setDefaultStyle="font-family: Arial; font-size: 16px;"
-                            onChange={(content) => console.log(content)}
+                            onChange={(content) => {
+                            }}
                         />
                     )}
                 </AccordionBody>
@@ -488,7 +490,7 @@ function PatientDetailTabs({patientId, mkb10}) {
         {
             label: "Янги қабул",
             value: 1,
-            desc: <AccordionCustomIcon visitId={visitId} mkb10 ={mkb10} patientId={patientId} value={1} />,
+            desc: <AccordionCustomIcon  visitId={visitId} mkb10 ={mkb10} patientId={patientId} value={1} />,
         },
         {
             label: "Тўловлар тарихи",
