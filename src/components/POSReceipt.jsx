@@ -1,16 +1,80 @@
 import React from 'react';
+import axios from "axios";
 import {
     Button, Card,
     Dialog,
 } from "@material-tailwind/react";
 import {DocumentArrowDownIcon} from "@heroicons/react/24/outline";
-const POSReceipt = () => {
+import {PrinterIcon} from "@heroicons/react/24/solid";
+import toast, {Toaster} from "react-hot-toast";
+const POSReceipt = ({ selectedServices, visitId }) => {
     const [open, setOpen] = React.useState(false);
 
+    const axiosInstance = axios.create({
+        baseURL: 'https://back.geolink.uz/api/v1',
+    });
+
+    axiosInstance.interceptors.request.use(
+        (config) => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            return config;
+        },
+        (error) => {
+            return Promise.reject(error);
+        }
+    );
+
     const handleOpen = () => setOpen(!open);
+
+    const calculateTotal = () => {
+        return selectedServices.reduce((total, service) => {
+            return total + (service.price * quantities[service.id]);
+        }, 0);
+    };
+
+
+
+    const countQuantities = () => {
+        const counts = {};
+        selectedServices.forEach((service) => {
+            counts[service.id] = (counts[service.id] || 0) + 1;
+        });
+        return counts;
+    };
+
+    const quantities = countQuantities();
+
+    // Создаем новый массив, содержащий только уникальные объекты
+    const uniqueServices = selectedServices.filter((service, index) => {
+        return selectedServices.findIndex((s) => s.id === service.id) === index;
+    });
+
+
+    const handleSubmit = () => {
+        // Отправляем POST-запрос на сервер
+        axiosInstance.post(`visit/service_mass/${visitId}`, {
+            service: selectedServices.map(service => service.id), // Отправляем только id сервисов
+            type: "cash",
+            cash: 1
+        })
+            .then(response => {
+                console.log(response.data); // Выводим ответ сервера в консоль
+                handleOpen(open); // Закрываем диалоговое окно после успешного запроса
+                toast.success('Хизматлар кайта навбатда йуборилди!');
+            })
+            .catch(error => {
+                toast.error('Хизмат ни танланг!')
+                console.error('There was an error!', error); // Обрабатываем ошибку
+            });
+    };
+
+
     return (
         <>
-            <Button onClick={handleOpen} size="sm" className="flex py-3 items-center gap-x-1">
+            <Button onClick={handleSubmit} size="sm" className="flex py-3 items-center gap-x-1">
                 <DocumentArrowDownIcon className="w-4 h-4" /> Чекни чикариш
             </Button>
             <Dialog   animate={{
@@ -57,55 +121,26 @@ const POSReceipt = () => {
                                         <h2>Нархи</h2>
                                     </td>
                                 </tr>
-                                <tr className="service">
-                                    <td className="tableitem">
-                                        <p className="itemtext">Communication</p>
-                                    </td>
-                                    <td className="tableitem">
-                                        <p className="itemtext">5</p>
-                                    </td>
-                                    <td className="tableitem">
-                                        <p className="itemtext">$375.00</p>
-                                    </td>
-                                </tr>
-                                <tr className="service">
-                                    <td className="tableitem">
-                                        <p className="itemtext">Asset Gathering</p>
-                                    </td>
-                                    <td className="tableitem">
-                                        <p className="itemtext">3</p>
-                                    </td>
-                                    <td className="tableitem">
-                                        <p className="itemtext">$225.00</p>
-                                    </td>
-                                </tr>
-                                <tr className="service">
-                                    <td className="tableitem">
-                                        <p className="itemtext">Design Development</p>
-                                    </td>
-                                    <td className="tableitem">
-                                        <p className="itemtext">5</p>
-                                    </td>
-                                    <td className="tableitem">
-                                        <p className="itemtext">$375.00</p>
-                                    </td>
-                                </tr>
-                                <tr className="tabletitle">
-                                    <td/>
-                                    <td className="Rate">
-                                        <h2>Солиқ</h2>
-                                    </td>
-                                    <td className="payment">
-                                        <h2>12%</h2>
-                                    </td>
-                                </tr>
+                                {uniqueServices.map((service, index) => (
+                                    <tr className="service" key={index}>
+                                        <td className="tableitem">
+                                            <p className="itemtext">{service.name}</p>
+                                        </td>
+                                        <td className="tableitem">
+                                            <p className="itemtext">{quantities[service.id]}</p>
+                                        </td>
+                                        <td className="tableitem">
+                                            <p className="itemtext">{(service.price * quantities[service.id]).toFixed(2)} сўм</p>
+                                        </td>
+                                    </tr>
+                                ))}
                                 <tr className="tabletitle">
                                     <td/>
                                     <td className="Rate">
                                         <h2>Жами</h2>
                                     </td>
                                     <td className="payment">
-                                        <h2>$3,644.25</h2>
+                                        <h2>${calculateTotal().toFixed(2)}</h2>
                                     </td>
                                 </tr>
                                 </tbody>
@@ -121,8 +156,11 @@ const POSReceipt = () => {
                         </div>
                         <img src="/qr.svg" className="mx-auto mt-2" width="150" height="150"/>
                     </div>
+                    <Button  onClick={() => window.print()} className="flex items-center gap-x-1 justify-center"><PrinterIcon className="w-4 h-4" />Чекни чикариш</Button>
+
                     {/*End InvoiceBot*/}
                 </Card>
+
             </Dialog>
 
             {/*End Invoice*/}

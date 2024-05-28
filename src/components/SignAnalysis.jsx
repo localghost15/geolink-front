@@ -23,9 +23,10 @@ import POSReceipt from "./POSReceipt";
 
 const TABLE_HEAD = ['Хизматлар', 'Нархи', 'Количество', 'Умумий сумма'];
 
-export default function SendAnalysis() {
+export default function SendAnalysis({visitId}) {
     const [quantities, setQuantities] = useState({});
     const [services, setServices] = useState([]);
+    const [selectedServices, setSelectedServices] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -73,19 +74,39 @@ export default function SendAnalysis() {
         }
     };
 
-    const incrementQuantity = (serviceId) => {
+    const incrementQuantity = (service) => {
         setQuantities((prevQuantities) => ({
             ...prevQuantities,
-            [serviceId]: (prevQuantities[serviceId] || 0) + 1,
+            [service.id]: (prevQuantities[service.id] || 0) + 1,
         }));
+        setSelectedServices((prevSelected) => [...prevSelected, { id: service.id, name: service.name, price: service.price}]);
     };
 
-    const decrementQuantity = (serviceId) => {
-        setQuantities((prevQuantities) => ({
-            ...prevQuantities,
-            [serviceId]: Math.max((prevQuantities[serviceId] || 0) - 1, 0),
-        }));
+    const decrementQuantity = (service) => {
+        setQuantities((prevQuantities) => {
+            const newQuantity = Math.max((prevQuantities[service.id] || 0) - 1, 0);
+            return {
+                ...prevQuantities,
+                [service.id]: newQuantity,
+            };
+        });
+        setSelectedServices((prevSelected) => {
+            const index = prevSelected.findIndex((selected) => selected.id === service.id);
+            if (index > -1) {
+                const updatedSelected = [...prevSelected];
+                updatedSelected.splice(index, 1);
+                return updatedSelected;
+            }
+            return prevSelected;
+        });
     };
+
+
+
+    useEffect(() => {
+        console.log("Выбранные сервисы:", selectedServices);
+    }, [selectedServices]);
+
 
     const calculateSum = (price, quantity) => {
         return price * quantity;
@@ -190,7 +211,7 @@ export default function SendAnalysis() {
                                                     <div className="relative flex items-center max-w-[11rem]">
                                                         <button
                                                             type="button"
-                                                            onClick={() => decrementQuantity(id)}
+                                                            onClick={() => decrementQuantity({ id, name, price })}
                                                             className="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
                                                         >
                                                             <svg
@@ -225,7 +246,7 @@ export default function SendAnalysis() {
                                                         </div>
                                                         <button
                                                             type="button"
-                                                            onClick={() => incrementQuantity(id)}
+                                                            onClick={() => incrementQuantity({ id, name, price })}
                                                             className="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
                                                         >
                                                             <svg
@@ -271,7 +292,7 @@ export default function SendAnalysis() {
                         Сахифа {currentPage}/{totalPages}
                     </Typography>
                     <div className="flex gap-2">
-                        <POSReceipt/>
+                        <POSReceipt visitId={visitId} selectedServices={selectedServices} />
                         <Button size="sm" className="flex py-3 items-center gap-x-1">
                             <PaperAirplaneIcon className="w-4 h-4" /> Кассага юбориш
                         </Button>

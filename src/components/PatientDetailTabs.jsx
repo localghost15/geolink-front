@@ -187,7 +187,7 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
                     Процедурага юбориш
                 </AccordionHeader>
                 <AccordionBody>
-                    <SendAnalysis/>
+                    <SendAnalysis visitId={visitId} />
                 </AccordionBody>
             </Accordion>
             <Accordion open={open === 3} icon={<Icon id={3} open={open} />}>
