@@ -21,7 +21,7 @@ import {
     AccordionBody,
 } from "@material-tailwind/react";
 import DatePicker from './DatePicker';
-import { ArrowPathIcon } from '@heroicons/react/24/solid';
+import {ArrowPathIcon, PlusCircleIcon} from '@heroicons/react/24/solid';
 import SendAnalysis from './SignAnalysis';
 import { PaymentHistoryTable } from './PaymentHistoryTable';
 import {PencilIcon} from "@heroicons/react/24/outline";
@@ -157,16 +157,153 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
         }
     };
 
-    const templates = [
-        {
-            name: 'Template-1',
-            html: '<p>HTML source1</p>'
+    const [templates, setTemplates] = useState([]);
+
+    useEffect(() => {
+        const fetchTemplates = async () => {
+            try {
+                const response = await axiosInstance.get('/template');
+                const apiData = response.data.data;
+                const transformedTemplates = apiData.map(item => ({
+                    name: item.title,
+                    html: item.title
+                }));
+                setTemplates(transformedTemplates);
+                console.log(templates)
+            } catch (error) {
+                console.error('Error fetching templates:', error);
+            }
+        };
+
+        fetchTemplates();
+    }, []);
+
+
+    var plugin_submenu = {
+        // @Required @Unique
+        // plugin name
+        name: 'custom_plugin_submenu',
+
+        // @Required
+        // data display
+        display: 'submenu',
+
+        // @Options
+        title: 'Янги шаблон қушиш',
+        buttonClass: '',
+        innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+  <path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" />
+</svg>
+`,
+
+        // @Required
+        // add function - It is called only once when the plugin is first run.
+        // This function generates HTML to append and register the event.
+        // arguments - (core : core object, targetElement : clicked button element)
+        add: function (core, targetElement) {
+
+            // @Required
+            // Registering a namespace for caching as a plugin name in the context object
+            const context = core.context;
+            context.customSubmenu = {
+                targetButton: targetElement,
+                titleElement: null,
+                currentSpan: null
+            };
+
+            // Generate submenu HTML
+            // Always bind "core" when calling a plugin function
+            let listDiv = this.setSubmenu(core);
+
+            // Input tag caching
+            context.customSubmenu.titleElement = listDiv.querySelector('.title-input');
+
+            // You must bind "core" object when registering an event.
+            /** add event listeners */
+            listDiv.querySelector('.se-btn-primary').addEventListener('click', this.onClick.bind(core));
+            listDiv.querySelector('.se-btn').addEventListener('click', this.onClickRemove.bind(core));
+
+            // @Required
+            // You must add the "submenu" element using the "core.initMenuTarget" method.
+            /** append target button menu */
+            core.initMenuTarget(this.name, targetElement, listDiv);
         },
-        {
-            name: 'Template-2',
-            html: '<p>HTML source2</p>'
+
+        setSubmenu: function (core) {
+            const listDiv = core.util.createElement('DIV');
+            // @Required
+            // A "se-submenu" class is required for the top level element.
+            listDiv.className = 'se-menu-container se-submenu se-list-layer';
+            listDiv.innerHTML = '' +
+                '<div class="se-list-inner">' +
+                '<ul class="se-list-basic" style="width: 230px;">' +
+                '<li>' +
+                '<div class="se-form-group">' +
+                '<input class="se-input-form title-input" type="text" placeholder="Insert title" style="border: 1px solid #CCC;" />' +
+                '<button type="button" class="se-btn-primary se-tooltip">' +
+                '<strong>OK</strong>' +
+                '<span class="se-tooltip-inner"><span class="se-tooltip-text">OK</span></span>' +
+                '</button>' +
+                '<button type="button" class="se-btn se-tooltip" style="margin-left: 5px;">' +
+                '<strong>X</strong>' +
+                '<span class="se-tooltip-inner"><span class="se-tooltip-text">Remove all tags</span></span>' +
+                '</button>' +
+                '</div>' +
+                '</li>' +
+                '</ul>' +
+                '</div>';
+            return listDiv;
+        },
+
+        onClick: function (e) {
+            const title = this.context.customSubmenu.titleElement.value;
+            const text = this.getContents();
+            if (!title || !text) return;
+            axiosInstance.post('/template', {
+                title: title,
+                text: text
+            }).then(response => {
+                toast.success('Шаблон муафақиятли яратилди')
+                console.log("Template saved successfully:", response.data);
+            }).catch(error => {
+                console.error("Error saving template:", error);
+            });
+        },
+
+        onClickRemove: function (e) {
+            this.focus();
+            const node = this.util.getParentNode(this.context.customSubmenu.currentSpan, 'SPAN');
+            this.util.removeItem(node);
+            this.context.customSubmenu.currentSpan = null;
+            this.submenuOff();
         }
-    ];
+    };
+
+
+    // Registering the custom plugin
+    plugins.custom_plugin_submenu = plugin_submenu;
+
+    const editorOptions = {
+        plugins: plugins,
+        buttonList: [
+            ['undo', 'redo'],
+            ['font', 'fontSize', 'formatBlock'],
+            ['paragraphStyle', 'blockquote'],
+            ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+            ['fontColor', 'hiliteColor', 'textStyle'],
+            ['removeFormat'],
+            '/', // Line break
+            ['outdent', 'indent'],
+            ['align', 'horizontalRule', 'list', 'lineHeight'],
+            ['table', 'link', 'image', 'video'],
+            ['fullScreen', 'showBlocks', 'codeView'],
+            ['preview', 'print'],
+            ['custom_plugin_submenu'],
+            ['template'],
+            ['save'],
+        ],
+        templates: templates,
+    };
 
 
     return (
@@ -206,62 +343,15 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
                     Врач хулосаси
                 </AccordionHeader>
                 <AccordionBody>
-                    <SunEditor
-                        showToolbar={true}
-                        height="80vh"
-                        setOptions={{
-                            mode: 'classic',
-                            rtl: false,
-                            previewTemplate: "<div style='width:auto; max-width:1080px; margin:auto;'>    <h1>Preview Template</h1>     {{contents}}     <div>_Footer_</div></div>",
-                            printTemplate: "<div style='width:auto; max-width:1080px; margin:auto;'>    <h1>Print Template</h1>     {{contents}}     <div>_Footer_</div></div>",
-                            katex: 'window.katex',
-                            imageGalleryUrl: 'https://etyswjpn79.execute-api.ap-northeast-1.amazonaws.com/suneditor-demo',
-                            videoFileInput: false,
-                            tabDisable: false,
-                            templates: templates,
-                            buttonList: [
-                                [
-                                    'undo',
-                                    'redo',
-                                    'font',
-                                    'fontSize',
-                                    'formatBlock',
-                                    'paragraphStyle',
-                                    'blockquote',
-                                    'bold',
-                                    'underline',
-                                    'italic',
-                                    'strike',
-                                    'subscript',
-                                    'superscript',
-                                    'fontColor',
-                                    'hiliteColor',
-                                    'textStyle',
-                                    'removeFormat',
-                                    'outdent',
-                                    'indent',
-                                    'align',
-                                    'horizontalRule',
-                                    'list',
-                                    'lineHeight',
-                                    'table',
-                                    'link',
-                                    'image',
-                                    'video',
-                                    'audio',
-                                    'math',
-                                    'imageGallery',
-                                    'fullScreen',
-                                    'showBlocks',
-                                    'codeView',
-                                    'preview',
-                                    'print',
-                                    'save',
-                                    'template'
-                                ]
-                            ],
-                        }}
-                    />
+                    {templates.length > 0 && (
+                        <SunEditor
+                            setOptions={editorOptions}
+                            height="800px"
+                            defaultValue=""
+                            setDefaultStyle="font-family: Arial; font-size: 16px;"
+                            onChange={(content) => console.log(content)}
+                        />
+                    )}
                 </AccordionBody>
             </Accordion>
             <Accordion open={open === 5} icon={<Icon id={5} open={open} />}>
@@ -270,18 +360,18 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
                 </AccordionHeader>
                 <AccordionBody>
                     <div className=" px-5">
-                       <div className='flex gap-x-4'>
-                           <Select
-                               components={animatedComponents}
-                               className='lg:w-4/5 rounded-none'
-                               isMulti
-                               options={mkb10Data}
-                               value={selectedDisease}
-                               onChange={handleSelectChange}
-                               placeholder="Кассаликни танланг..."
-                           />
-                           <Button className='rounded-md' onClick={() => sendMKB10Data(selectedDisease)}>Саклаш</Button>
-                       </div>
+                        <div className='flex gap-x-4'>
+                            <Select
+                                components={animatedComponents}
+                                className='lg:w-4/5 rounded-none'
+                                isMulti
+                                options={mkb10Data}
+                                value={selectedDisease}
+                                onChange={handleSelectChange}
+                                placeholder="Кассаликни танланг..."
+                            />
+                            <Button className='rounded-md' onClick={() => sendMKB10Data(selectedDisease)}>Саклаш</Button>
+                        </div>
                         <Card className="h-full w-full rounded-none mt-5 overflow-scroll">
                             <table className="w-full min-w-max table-auto text-left">
                                 <thead>
@@ -312,14 +402,14 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
                                                 {name}
                                             </Typography>
                                         </td>  <td className="p-4">
-                                            <Typography variant="small" color="blue-gray" className="font-normal">
-                                                <Tooltip content="Ўзгартириш">
-                                                    <IconButton variant="text">
-                                                        <PencilIcon className="h-4 w-4" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </Typography>
-                                        </td>
+                                        <Typography variant="small" color="blue-gray" className="font-normal">
+                                            <Tooltip content="Ўзгартириш">
+                                                <IconButton variant="text">
+                                                    <PencilIcon className="h-4 w-4" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Typography>
+                                    </td>
                                     </tr>
                                 ))}
                                 </tbody>
