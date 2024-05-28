@@ -20,6 +20,7 @@ import {
 import SignAnalysisList from './Lists/SignAnalysisList';
 import axios from 'axios';
 import POSReceipt from "./POSReceipt";
+import toast from "react-hot-toast";
 
 const TABLE_HEAD = ['Хизматлар', 'Нархи', 'Количество', 'Умумий сумма'];
 
@@ -47,6 +48,25 @@ export default function SendAnalysis({visitId}) {
             return Promise.reject(error);
         }
     );
+
+
+    const handleSubmitRegister = () => {
+        // Отправляем POST-запрос на сервер
+        axiosInstance.post(`visit/service/${visitId}`, {
+            service: selectedServices.map(service => service.id), // Отправляем только id сервисов
+            type: "cash",
+            cash: 0
+        })
+            .then(response => {
+                console.log(response.data);
+                toast.success('Хизмат чеки кассага юборилди!');
+                setQuantities({});
+            })
+            .catch(error => {
+                toast.error('Хизмат ни танланг!')
+                console.error('There was an error!', error); // Обрабатываем ошибку
+            });
+    };
 
     useEffect(() => {
         fetchServices(currentPage);
@@ -293,7 +313,7 @@ export default function SendAnalysis({visitId}) {
                     </Typography>
                     <div className="flex gap-2">
                         <POSReceipt visitId={visitId} selectedServices={selectedServices} />
-                        <Button size="sm" className="flex py-3 items-center gap-x-1">
+                        <Button onClick={handleSubmitRegister} size="sm" className="flex py-3 items-center gap-x-1">
                             <PaperAirplaneIcon className="w-4 h-4" /> Кассага юбориш
                         </Button>
                     </div>

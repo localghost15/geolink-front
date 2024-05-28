@@ -61,9 +61,8 @@ const POSReceipt = ({ selectedServices, visitId }) => {
             cash: 1
         })
             .then(response => {
-                console.log(response.data); // Выводим ответ сервера в консоль
-                handleOpen(open); // Закрываем диалоговое окно после успешного запроса
-                toast.success('Хизматлар кайта навбатда йуборилди!');
+                console.log(response.data);
+                handleOpen(open);
             })
             .catch(error => {
                 toast.error('Хизмат ни танланг!')
@@ -140,7 +139,7 @@ const POSReceipt = ({ selectedServices, visitId }) => {
                                         <h2>Жами</h2>
                                     </td>
                                     <td className="payment">
-                                        <h2>${calculateTotal().toFixed(2)}</h2>
+                                        <h2>{calculateTotal().toFixed(2)} сўм</h2>
                                     </td>
                                 </tr>
                                 </tbody>
