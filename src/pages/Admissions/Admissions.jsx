@@ -75,11 +75,18 @@ export default function Admissions() {
         setSelectedVisitId(id); // Устанавливаем выбранный id
     };
 
-    // Функция для получения данных приемов
     const fetchAdmissions = async () => {
         try {
             const response = await axiosInstance.get('/visit');
-            setAdmissions(response.data.data);
+            const admissionsData = response.data.data;
+
+            // Проверка структуры данных
+            const validatedAdmissions = admissionsData.map(admission => ({
+                ...admission,
+                orders: Array.isArray(admission.orders) ? admission.orders : [],
+            }));
+
+            setAdmissions(validatedAdmissions);
         } catch (error) {
             console.error("Error fetching admissions:", error);
         }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import SunEditor from 'suneditor-react';
 import "suneditor/dist/css/suneditor.min.css";
+import debounce from 'lodash/debounce'; // Add this import
 import plugins from 'suneditor/src/plugins'
 import {
     Tabs,
@@ -9,7 +10,7 @@ import {
     Tab,
     TabPanel,
     Button,
-    Card, Typography, IconButton, Tooltip, Input,
+    Card, Typography, IconButton, Tooltip, Input, Switch, CardFooter,
 } from "@material-tailwind/react";
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
@@ -24,9 +25,10 @@ import DatePicker from './DatePicker';
 import {ArrowPathIcon, PlusCircleIcon} from '@heroicons/react/24/solid';
 import SendAnalysis from './SignAnalysis';
 import { PaymentHistoryTable } from './PaymentHistoryTable';
-import {PencilIcon} from "@heroicons/react/24/outline";
+import {MagnifyingGlassIcon, PencilIcon} from "@heroicons/react/24/outline";
 import VisitPatientStartEnd from "./VisitPatientStartEnd";
 import toast from "react-hot-toast";
+import Mkb10List from "../pages/Mkb10/components/Mkb10List";
 
 function Icon({ id, open }) {
     return (
@@ -51,15 +53,25 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedMKB10, setSelectedMKB10] = useState([]);
     const TABLE_HEAD = ["Код", "Номланиши", "Харакат"];
+    const [currentPage, setCurrentPage] = useState(1); // Track current page
+    const [totalPages, setTotalPages] = useState(1);
     const animatedComponents = makeAnimated();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         async function fetchData() {
             const data = await fetchMkb10Data();
-            setMkb10Data(data);
+            // Инициализация selectedMKB10 с id элементов из mkb10, которые должны быть checked
+            const initialSelectedMKB10 = mkb10.map(item => item.id);
+            const selectedData = data.filter(item => initialSelectedMKB10.includes(item.id));
+            const remainingData = data.filter(item => !initialSelectedMKB10.includes(item.id));
+            const sortedData = [...selectedData, ...remainingData];
+            setMkb10Data(sortedData);
+            setSelectedMKB10(initialSelectedMKB10);
         }
         fetchData();
-    }, []);
+    }, [currentPage]);
 
     const handleAlwaysOpen = () => setAlwaysOpen((cur) => !cur);
     const handleOpen = (value) => setOpen(open === value ? 0 : value);
@@ -95,16 +107,17 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
         }
     };
 
+    const handleSaveMKB10 = () => {
+        sendMKB10Data(selectedMKB10);
+    };
+
     // Функция для отправки данных MKB-10
 
-    const sendMKB10Data = async (selectedOptions) => {
-        if (selectedOptions.length === 0) {
-            alert("The mkb10 field is required.");
+    const sendMKB10Data = async (mkb10Ids) => {
+        if (mkb10Ids.length === 0) {
+           toast.error('МКБни танланг!')
             return;
         }
-
-        // Извлекаем только идентификаторы из выбранных опций
-        const mkb10Ids = selectedOptions.map(option => option.id);
 
         let config = {
             method: 'post',
@@ -118,10 +131,20 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
 
         try {
             const response = await axios.request(config);
-            console.log("MKB-10 data sent successfully:", response.data);
+            toast.success('МКБ қўшилди !')
         } catch (error) {
             console.error("Error sending MKB-10 data:", error);
         }
+    };
+
+    const handleSwitchChange = (id, checked) => {
+        setSelectedMKB10((prevState) => {
+            const updatedMKB10 = checked
+                ? [...prevState, id]
+                : prevState.filter((item) => item !== id);
+            console.log("Selected MKB10:", updatedMKB10); // Вывести обновленный список MKB10 в консоль
+            return updatedMKB10;
+        });
     };
     const handleSelectChange = (selectedOptions) => {
         setSelectedDisease(selectedOptions);
@@ -258,9 +281,13 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
 
                 const fetching = await axiosInstance.get('/template');
                 const apiData = fetching.data.data;
-                const transformedTemplates = apiData.map(item => ({
-                    name: item.title,
-                    html: item.title
+                const transformedTemplates = await Promise.all(apiData.map(async item => {
+                    const textResponse = await axiosInstance.get(`/template/${item.id}`);
+                    const textData = textResponse.data.data;
+                    return {
+                        name: item.title,
+                        html: textData.text
+                    };
                 }));
                 setTemplates(transformedTemplates);
                 toast.success('Шаблон муафақиятли яратилди');
@@ -305,6 +332,28 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
         templates: templates,
     };
 
+    const handleSearch = async () => {
+        setIsLoading(true);
+        try {
+            let responseData;
+            if (searchQuery !== '') {
+                const response = await axiosInstance.get(`/mkb10?search=${searchQuery}`);
+                responseData = response.data.data;
+            } else {
+                responseData = await fetchMkb10Data();
+            }
+            setMkb10Data(responseData);
+        } catch (error) {
+            console.error("Error fetching MKB-10 data:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+        handleSearch();
+    };
 
     return (
         <>
@@ -362,20 +411,37 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
                 </AccordionHeader>
                 <AccordionBody>
                     <div className=" px-5">
-                        <div className='flex gap-x-4'>
-                            <Select
-                                components={animatedComponents}
-                                className='lg:w-4/5 rounded-none'
-                                isMulti
-                                options={mkb10Data}
-                                value={selectedDisease}
-                                onChange={handleSelectChange}
-                                placeholder="Кассаликни танланг..."
+                        {/*<div className='flex gap-x-4'>*/}
+                        {/*    <Select*/}
+                        {/*        components={animatedComponents}*/}
+                        {/*        className='lg:w-4/5 rounded-none'*/}
+                        {/*        isMulti*/}
+                        {/*        options={mkb10Data}*/}
+                        {/*        value={selectedDisease}*/}
+                        {/*        onChange={handleSelectChange}*/}
+                        {/*        placeholder="Кассаликни танланг..."*/}
+                        {/*    />*/}
+                        {/*    <Button className='rounded-md' onClick={() => sendMKB10Data(selectedDisease)}>Саклаш</Button>*/}
+                        {/*</div>*/}
+
+                        <label
+                            className="relative  bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
+                            htmlFor="search-bar"
+                        >
+                            <Mkb10List/>
+                            <input
+                                id="search-bar"
+                                placeholder="Қидириш"
+                                className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
+                                value={searchQuery}
+                                onChange={handleSearchChange}
                             />
-                            <Button className='rounded-md' onClick={() => sendMKB10Data(selectedDisease)}>Саклаш</Button>
-                        </div>
-                        <Card className="h-full w-full rounded-none mt-5 overflow-scroll">
-                            <table className="w-full min-w-max table-auto text-left">
+                            <Button onClick={handleSearch} size="md"><MagnifyingGlassIcon className="h-5 w-5"/></Button>
+                            <Button className='rounded-md' onClick={handleSaveMKB10}>Саклаш</Button>
+
+                        </label>
+                        <Card className="h-[40vh] w-full  rounded-none mt-5 overflow-scroll">
+                            <table className="w-full  min-w-max table-auto text-left">
                                 <thead>
                                 <tr>
                                     {TABLE_HEAD.map((head) => (
@@ -392,7 +458,7 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {mkb10.map(({ id, code, name }) => (
+                                {mkb10Data.map(({id, code, name}) => (
                                     <tr key={id} className="even:bg-blue-gray-50/50">
                                         <td className="p-4">
                                             <Typography variant="small" color="blue-gray" className="font-normal">
@@ -403,20 +469,46 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
                                             <Typography variant="small" color="blue-gray" className="font-normal">
                                                 {name}
                                             </Typography>
-                                        </td>  <td className="p-4">
-                                        <Typography variant="small" color="blue-gray" className="font-normal">
-                                            <Tooltip content="Ўзгартириш">
-                                                <IconButton variant="text">
-                                                    <PencilIcon className="h-4 w-4" />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </Typography>
-                                    </td>
+                                        </td>
+                                        <td className="p-4">
+                                            <Switch  id={id} checked={selectedMKB10.includes(id)} onChange={(e) => handleSwitchChange(id, e.target.checked)}  />
+                                        </td>
                                     </tr>
                                 ))}
                                 </tbody>
                             </table>
                         </Card>
+                        <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
+                            <Button variant="outlined" size="sm">
+                                Previous
+                            </Button>
+                            <div className="flex items-center gap-2">
+                                <IconButton variant="outlined" size="sm">
+                                    1
+                                </IconButton>
+                                <IconButton variant="text" size="sm">
+                                    2
+                                </IconButton>
+                                <IconButton variant="text" size="sm">
+                                    3
+                                </IconButton>
+                                <IconButton variant="text" size="sm">
+                                    ...
+                                </IconButton>
+                                <IconButton variant="text" size="sm">
+                                    8
+                                </IconButton>
+                                <IconButton variant="text" size="sm">
+                                    9
+                                </IconButton>
+                                <IconButton variant="text" size="sm">
+                                    10
+                                </IconButton>
+                            </div>
+                            <Button variant="outlined" size="sm">
+                                Next
+                            </Button>
+                        </CardFooter>
                     </div>
                 </AccordionBody>
             </Accordion>
@@ -474,17 +566,17 @@ function PatientDetailTabs({patientId, mkb10}) {
         setDoctorId(event.target.value);
     };
 
-    const handleNewVisitSubmit = async () => {
-        try {
-            // Используем axiosInstance для отправки запроса
-            const response = await axiosInstance.post(`/visit?patient_id=${patientId}&doctor_id=${doctorId}`);
-            console.log("New visit created:", response.data);
-            // Дополнительные действия после успешной отправки, например, обновление интерфейса или отображение уведомления
-        } catch (error) {
-            console.error("Error creating new visit:", error);
-            // Обработка ошибки, например, отображение сообщения об ошибке пользователю
-        }
-    };
+    // const handleNewVisitSubmit = async () => {
+    //     try {
+    //         // Используем axiosInstance для отправки запроса
+    //         const response = await axiosInstance.post(`/visit?patient_id=${patientId}&doctor_id=${doctorId}`);
+    //         console.log("New visit created:", response.data);
+    //         // Дополнительные действия после успешной отправки, например, обновление интерфейса или отображение уведомления
+    //     } catch (error) {
+    //         console.error("Error creating new visit:", error);
+    //         // Обработка ошибки, например, отображение сообщения об ошибке пользователю
+    //     }
+    // };
 
     const data = [
         {
@@ -501,7 +593,8 @@ function PatientDetailTabs({patientId, mkb10}) {
         {
             label: "Қабулларни кўриш",
             value: 3,
-            desc:  <VisitPatientStartEnd patientId={patientId} visits={visits} />,
+            // desc:  <VisitPatientStartEnd patientId={patientId} visits={visits} />,
+            desc:  <div>hello</div>,
         },
     ];
 

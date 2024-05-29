@@ -17,6 +17,8 @@ import PatientDetailTabs from '../components/PatientDetailTabs';
 import axios from 'axios';
 import {ArrowPathIcon, ClipboardDocumentCheckIcon, EyeIcon, EyeSlashIcon} from "@heroicons/react/24/solid";
 import POSReceipt from "../components/POSReceipt";
+import Mkb10List from "./Mkb10/components/Mkb10List";
+import {MagnifyingGlassIcon} from "@heroicons/react/24/outline";
 
 function Icon({ id, open }) {
     return (
@@ -46,6 +48,21 @@ export default function PatientDetails() {
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [selectedEpidem, setSelectedEpidem] = useState(null);
+  const [selectedEpidemIds, setSelectedEpidemIds] = useState({});
+  const [epidemSwitchState, setEpidemSwitchState] = useState({});
+
+  const handleSwitchChange = (epidemId) => {
+    setEpidemData(prevState =>
+        prevState.map(item =>
+            item.id === epidemId ? { ...item, active: !item.active } : item
+        )
+    );
+
+    setSelectedEpidemIds(prevState => ({
+      ...prevState,
+      [epidemId]: !prevState[epidemId]
+    }));
+  };
 
   const [isVisible, setIsVisible] = useState(true);
 
@@ -144,6 +161,14 @@ export default function PatientDetails() {
           }
         });
         setPatient(response.data.data);
+        const initialSelectedEpidemIds = response.data.data.epidem.map(item => item.id);
+        setSelectedEpidemIds(initialSelectedEpidemIds);
+
+        // Отфильтровать выбранные эпидемии и поместить их в начало массива
+        const selectedEpidemData = response.data.data.epidem.filter(item => initialSelectedEpidemIds.includes(item.id));
+        const unselectedEpidemData = response.data.data.epidem.filter(item => !initialSelectedEpidemIds.includes(item.id));
+        const sortedEpidemData = [...selectedEpidemData, ...unselectedEpidemData];
+        setEpidemData(sortedEpidemData);
         if (response.data.data.partner_id) {
           const partnerResponse = await axios.get(`https://back.geolink.uz/api/v1/partners/${response.data.data.partner_id}`, {
             headers: {
@@ -172,23 +197,30 @@ export default function PatientDetails() {
   const fetchRecords = async () => {
     try {
       const response = await axiosInstance.get("/epidemiological");
-      setEpidemData(response.data.data);
-      console.log(epidemData)
+      const epidemData = response.data.data;
+      setEpidemData(epidemData);
+
+      // Устанавливаем начальное состояние для выбранных эпидемий
+      const initialSelectedEpidemIds = {};
+      epidemData.forEach(item => {
+        initialSelectedEpidemIds[item.id] = item.active;
+      });
+      setSelectedEpidem(initialSelectedEpidemIds); // Установить начальные выбранные эпидемии
     } catch (error) {
       console.error("Ошибка при получении списка эпидемии:", error);
     }
   };
 
-  const sendEpidemData = async (selectedOption) => {
-    if (!selectedOption) {
+  const sendEpidemData = async () => {
+    const activeEpidems = epidemData.filter(item => item.active).map(item => item.id);
+    if (activeEpidems.length === 0) {
       alert("The epidem field is required.");
       return;
     }
 
+    setSelectedEpidem(activeEpidems); // Установить выбранные эпидемии
 
-    const epidemId = selectedOption.value;
-
-    const data = { epidem: [epidemId] };
+    const data = { epidem: activeEpidems };
 
     const config = {
       method: 'post',
@@ -207,6 +239,7 @@ export default function PatientDetails() {
       console.error("Error sending epidem data:", error);
     }
   };
+
 
 
   const CUSTOM_ANIMATION = {
@@ -237,10 +270,10 @@ export default function PatientDetails() {
 
         </div>
 
-          <div className="flex w-full space-x-10">
+          <div className="flex w-full sticky top-0 relative space-x-10">
             {isVisible && (
-                <div className='pl-10 w-1/2'>
-                  <div className="px-4 sm:px-0">
+                <div className='pl-10  w-1/2'>
+                  <div className="px-4 sm:px-0 ">
                     <h3 className="text-xl font-semibold leading-7 text-gray-900">Бемор картаси</h3>
                   </div>
                   <div className="mt-3 border-t border-gray-100">
@@ -353,13 +386,29 @@ export default function PatientDetails() {
                                            onClick={() => handleOpen(1)}>Эпиданамнез</AccordionHeader>
                           <AccordionBody>
                             <div className='flex gap-4'>
-                              <Select
-                                  options={epidemData.map(item => ({value: item.id, label: item.name}))}
-                                  value={selectedEpidem}
-                                  onChange={(selectedOption) => setSelectedEpidem(selectedOption)}
-                                  placeholder="Выберите эпидемиологическую запись..."
-                              />
-                              <Button onClick={() => sendEpidemData(selectedEpidem)}>Саклаш</Button>
+                              {/*<Select*/}
+                              {/*    options={epidemData.map(item => ({value: item.id, label: item.name}))}*/}
+                              {/*    value={selectedEpidem}*/}
+                              {/*    onChange={(selectedOption) => setSelectedEpidem(selectedOption)}*/}
+                              {/*    placeholder="Выберите эпидемиологическую запись..."*/}
+                              {/*/>*/}
+                              <label
+                                  className="relative w-full bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
+                                  htmlFor="search-bar"
+                              >
+
+                                <input
+                                    id="search-bar"
+                                    placeholder="Қидириш"
+                                    className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
+
+                                />
+                                <Button  size="md"><MagnifyingGlassIcon
+                                    className="h-5 w-5"/></Button>
+                                <Button onClick={() => sendEpidemData(selectedEpidem)}>Саклаш</Button>
+
+                              </label>
+
                             </div>
                             <div className="px-4 py-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:px-0">
                               <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -368,24 +417,24 @@ export default function PatientDetails() {
                                   <tr>
                                     <th scope="col"
                                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                      Идентификатор
-                                    </th>
-                                    <th scope="col"
-                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                       Номланиши
                                     </th>
                                     <th scope="col"
                                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                      Описание
+                                      Харакат
                                     </th>
                                   </tr>
                                   </thead>
                                   <tbody className="bg-white divide-y divide-gray-200">
-                                  {patient.epidem.map((item) => (
+                                  {epidemData.map((item) => (
                                       <tr key={item.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.id}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.description}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                          <Switch
+                                              checked={selectedEpidemIds[item.id]}
+                                              onChange={() => handleSwitchChange(item.id)}
+                                          />
+                                        </td>
                                       </tr>
                                   ))}
                                   </tbody>
@@ -401,7 +450,7 @@ export default function PatientDetails() {
                 </div>
             )}
 
-            <div className="w-full max-w-full pr-3 pl-3">
+            <div className="w-full tabs-part max-w-full overflow-y-auto h-[85vh] pr-3 pl-3">
               <PatientDetailTabs patientName={patient.name} mkb10={patient.mkb10} patientId={index}/>
             </div>
           </div>
