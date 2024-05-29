@@ -43,9 +43,7 @@ export function PaymentHistoryTable({ patientId }) {
     try {
       const response = await axiosInstance.get(`/visit?patient_id=${patientId}&page=${page}`);
       const uniqueVisits = removeDuplicateVisits(response.data.data);
-      const payedVisits = uniqueVisits.filter(visit => visit.bill === "payed");
-      const sortedVisits = payedVisits.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      setVisits(sortedVisits);
+      setVisits(uniqueVisits);
       setMeta(response.data.meta);
     } catch (error) {
       console.error("Error fetching visits:", error);

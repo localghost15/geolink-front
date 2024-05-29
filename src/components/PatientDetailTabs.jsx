@@ -22,7 +22,7 @@ import {
     AccordionBody,
 } from "@material-tailwind/react";
 import DatePicker from './DatePicker';
-import {ArrowPathIcon, PlusCircleIcon} from '@heroicons/react/24/solid';
+import {ArrowPathIcon, PauseCircleIcon, PlayCircleIcon, PlusCircleIcon} from '@heroicons/react/24/solid';
 import SendAnalysis from './SignAnalysis';
 import { PaymentHistoryTable } from './PaymentHistoryTable';
 import {MagnifyingGlassIcon, PencilIcon} from "@heroicons/react/24/outline";
@@ -358,6 +358,19 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
 
     return (
         <>
+            <Typography className='text-sm font-semibold text-blue-gray-900' >Янги қабул харакати ва холати</Typography>
+
+            <div className="flex items-center mb-3 gap-x-1">
+                <Button className="bg-[#1d4ed8] rounded-md flex items-center font-medium gap-x-1 capitalize">
+                    <PlayCircleIcon className="h-4 w-4" />
+                    Кабул Бошланиш
+                </Button>
+
+                <Button className="flex rounded-md  items-center font-medium gap-x-1 capitalize">
+                    <PauseCircleIcon className="h-4 w-4" />
+                    Кабул Тугатиш
+                </Button>
+            </div>
             <Typography className='text-sm font-semibold text-blue-gray-900' >Қабул қўшиш</Typography>
             <CreateVisit patientId={patientId} />
             <Accordion open={alwaysOpen} icon={<Icon id={1} open={open} />}>

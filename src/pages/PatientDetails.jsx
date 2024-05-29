@@ -15,7 +15,13 @@ import { useParams } from 'react-router-dom';
 import Select from 'react-select';
 import PatientDetailTabs from '../components/PatientDetailTabs';
 import axios from 'axios';
-import {ArrowPathIcon, ClipboardDocumentCheckIcon, EyeIcon, EyeSlashIcon} from "@heroicons/react/24/solid";
+import {
+  ArrowPathIcon,
+  ClipboardDocumentCheckIcon,
+  EyeIcon,
+  EyeSlashIcon, PauseCircleIcon,
+  PlayCircleIcon
+} from "@heroicons/react/24/solid";
 import POSReceipt from "../components/POSReceipt";
 import Mkb10List from "./Mkb10/components/Mkb10List";
 import {MagnifyingGlassIcon} from "@heroicons/react/24/outline";
