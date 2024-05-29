@@ -43,7 +43,7 @@ const ExpandedSidebar = ({
         : username;
 
     return (
-        <div className="sticky top-0 z-[999]" style={{display: "flex", height: "100vh"}}>
+        <div className="sticky top-0 z-[7]" style={{display: "flex", height: "100vh"}}>
             <Sidebar breakPoint="md"   collapsed={collapsed}
                        toggled={toggled}
                        onToggle={handleToggleSidebar} width="300px" className="app ">

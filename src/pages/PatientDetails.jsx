@@ -39,14 +39,11 @@ export default function PatientDetails() {
   const { index } = useParams();
   const [patient, setPatient] = useState(null);
   const [open, setOpen] = useState(0);
-  const [openVisit, setOpenVisit] = React.useState(false);
   const [partnerName, setPartnerName] = useState(null);
   const [districtName, setDistrictName] = useState(null);
   const [provinceName, setProvinceName] = useState(null);
   const [epidemData, setEpidemData] = useState([]);
-  const [doctorId, setDoctorId] = useState('');
-  const [doctors, setDoctors] = useState([]);
-  const [selectedDoctor, setSelectedDoctor] = useState('');
+
   const [selectedEpidem, setSelectedEpidem] = useState(null);
   const [selectedEpidemIds, setSelectedEpidemIds] = useState({});
   const [epidemSwitchState, setEpidemSwitchState] = useState({});
@@ -70,23 +67,9 @@ export default function PatientDetails() {
     setIsVisible(prev => !prev);
   };
 
-  useEffect(() => {
-    fetchDoctors();
-  }, []);
 
-  const fetchDoctors = async () => {
-    try {
-      const response = await axiosInstance.get("/admin/users");
-      const doctorUsers = response.data.data.filter(user => user.roles.includes('doctor'));
-      setDoctors(doctorUsers);
-    } catch (error) {
-      console.error("Ошибка при получении списка врачей:", error);
-    }
-  };
 
-  const handleDoctorIdChange = (event) => {
-    setDoctorId(event.target.value);
-  };
+
 
   const [allServices, setAllServices] = useState([]);
   // State для отфильтрованных услуг, где primary === 1
@@ -119,8 +102,7 @@ export default function PatientDetails() {
     // Дополнительная логика при выборе услуги, если необходимо
   };
 
-  const openDrawer = () => setOpenVisit(true);
-  const closeDrawer = () => setOpenVisit(false);
+
 
   const handleOpen = (value) => setOpen(open === value ? 0 : value);
 
@@ -141,15 +123,7 @@ export default function PatientDetails() {
       }
   );
 
-  const handleNewVisitSubmit = async () => {
-    try {
-      const response = await axiosInstance.post(`/visit?patient_id=${index}&doctor_id=${selectedDoctor.value}&service_id=${selectedService.value}`);
-      console.log("New visit created:", response.data);
-      setOpenVisit(false); // Close the drawer after successful submission
-    } catch (error) {
-      console.error("Error creating new visit:", error);
-    }
-  };
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -286,51 +260,6 @@ export default function PatientDetails() {
                             <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
                           </div>
                         </div>
-                        <Button onClick={openDrawer} className='flex gap-x-1 mt-1'><ClipboardDocumentCheckIcon
-                            className='w-4 h-4'/> қабулга қўшиш</Button>
-                        <Drawer open={openVisit} onClose={closeDrawer} className="p-4">
-                          <div className="mb-6 flex items-center justify-between">
-                            <Typography variant="h5" color="blue-gray" className="capitalize">
-                              қабулга қўшиш
-                            </Typography>
-                            <IconButton variant="text" color="blue-gray" onClick={closeDrawer}>
-                              <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth={2}
-                                  stroke="currentColor"
-                                  className="h-5 w-5"
-                              >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                            </IconButton>
-                          </div>
-                          <Select
-                              options={primaryServices.map(service => ({value: service.id, label: service.name}))}
-                              value={selectedService}
-                              onChange={handleServiceSelect}
-                              placeholder="Выберите услугу..."
-                              className="mb-3"
-                          />
-                          {doctors.length > 0 ? (
-                              <Select
-                                  options={doctors.map(doctor => ({value: doctor.id, label: doctor.name}))}
-                                  value={selectedDoctor}
-                                  onChange={(selectedOption) => setSelectedDoctor(selectedOption)}
-                                  placeholder="Доктор"
-                              />
-                          ) : (
-                              <p>Нет доступных докторов</p>
-                          )}
-                          <div className="px-4 py-3 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-0">
-                            <Button onClick={handleNewVisitSubmit}>Янги қабул қушиш</Button>
-                          </div>
-                        </Drawer>
                       </div>
                       <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                         <dt className="text-sm font-medium leading-6 text-gray-900">Иш жойи:</dt>

@@ -29,6 +29,7 @@ import {MagnifyingGlassIcon, PencilIcon} from "@heroicons/react/24/outline";
 import VisitPatientStartEnd from "./VisitPatientStartEnd";
 import toast from "react-hot-toast";
 import Mkb10List from "../pages/Mkb10/components/Mkb10List";
+import CreateVisit from "./CreateVisit";
 
 function Icon({ id, open }) {
     return (
@@ -357,6 +358,8 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
 
     return (
         <>
+            <CreateVisit patientId={patientId} />
+
             <Accordion open={alwaysOpen} icon={<Icon id={1} open={open} />}>
                 <AccordionHeader className='text-sm' onClick={handleAlwaysOpen}>Қайта қабул</AccordionHeader>
                 <AccordionBody>

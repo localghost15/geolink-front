@@ -57,13 +57,15 @@ export default function SendAnalysis({visitId}) {
             type: "cash",
             cash: 0
         })
+
             .then(response => {
                 console.log(response.data);
-                toast.success('Хизмат чеки кассага юборилди!');
                 setQuantities({});
+                toast.success('Хизмат чеки кассага юборилди!');
+
             })
             .catch(error => {
-                toast.error('Хизмат ни танланг!')
+                toast.error('Хизмат ни танланг ва Навбатга кушилганини хам текширинг !')
                 console.error('There was an error!', error); // Обрабатываем ошибку
             });
     };
@@ -74,7 +76,7 @@ export default function SendAnalysis({visitId}) {
 
     const fetchServices = async (page) => {
         try {
-            const response = await axiosInstance.get(`/admin/service?page=${page}`);
+            const response = await axiosInstance.get(`/admin/service?page=${page}&primary=0`);
             const services = response.data.data;
             setServices(services);
 
