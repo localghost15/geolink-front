@@ -358,8 +358,8 @@ function AccordionCustomIcon({ patientId, mkb10, visitId  }) {
 
     return (
         <>
+            <Typography className='text-sm font-semibold text-blue-gray-900' >Қабул қўшиш</Typography>
             <CreateVisit patientId={patientId} />
-
             <Accordion open={alwaysOpen} icon={<Icon id={1} open={open} />}>
                 <AccordionHeader className='text-sm' onClick={handleAlwaysOpen}>Қайта қабул</AccordionHeader>
                 <AccordionBody>
@@ -590,7 +590,7 @@ function PatientDetailTabs({patientId, mkb10}) {
         {
             label: "Тўловлар тарихи",
             value: 2,
-            desc: <PaymentHistoryTable value={2} />,
+            desc: <PaymentHistoryTable patientId={patientId} value={2} />,
         },
 
         {

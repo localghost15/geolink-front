@@ -3,6 +3,7 @@ import {Button, Dialog, Drawer, IconButton, Typography} from "@material-tailwind
 import {ClipboardDocumentCheckIcon} from "@heroicons/react/24/solid";
 import Select from "react-select";
 import axiosInstance from "../axios/axiosInstance";
+import toast from "react-hot-toast";
 
 const CreateVisit = ({patientId}) => {
     const [openVisit, setOpenVisit] = React.useState(false);
@@ -39,16 +40,15 @@ const CreateVisit = ({patientId}) => {
         try {
             const response = await axiosInstance.post(`/visit?patient_id=${patientId}&doctor_id=${selectedDoctor.value}&service_id=${selectedService.value}`);
             console.log("New visit created:", response.data);
-            setOpenVisit(false); // Close the drawer after successful submission
+            setOpenVisit(false);
+            toast.success('Навбат қушилди')
         } catch (error) {
             console.error("Error creating new visit:", error);
         }
     };
 
-    // Функция для обработки выбора услуги из списка
     const handleServiceSelect = (selectedOption) => {
         setSelectedService(selectedOption);
-        // Дополнительная логика при выборе услуги, если необходимо
     };
 
     const handleDoctorIdChange = (event) => {
