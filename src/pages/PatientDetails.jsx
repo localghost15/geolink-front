@@ -16,15 +16,11 @@ import Select from 'react-select';
 import PatientDetailTabs from '../components/PatientDetailTabs';
 import axios from 'axios';
 import {
-  ArrowPathIcon,
-  ClipboardDocumentCheckIcon,
   EyeIcon,
-  EyeSlashIcon, PauseCircleIcon,
-  PlayCircleIcon
+  EyeSlashIcon,
 } from "@heroicons/react/24/solid";
-import POSReceipt from "../components/POSReceipt";
-import Mkb10List from "./Mkb10/components/Mkb10List";
 import {MagnifyingGlassIcon} from "@heroicons/react/24/outline";
+import axiosInstance from "../axios/axiosInstance";
 
 function Icon({ id, open }) {
     return (
@@ -52,7 +48,6 @@ export default function PatientDetails() {
 
   const [selectedEpidem, setSelectedEpidem] = useState(null);
   const [selectedEpidemIds, setSelectedEpidemIds] = useState({});
-  const [epidemSwitchState, setEpidemSwitchState] = useState({});
 
   const handleSwitchChange = (epidemId) => {
     setEpidemData(prevState =>
@@ -75,59 +70,7 @@ export default function PatientDetails() {
 
 
 
-
-
-  const [allServices, setAllServices] = useState([]);
-  // State для отфильтрованных услуг, где primary === 1
-  const [primaryServices, setPrimaryServices] = useState([]);
-  // State для выбранной услуги
-  const [selectedService, setSelectedService] = useState(null);
-
-  useEffect(() => {
-    fetchServices();
-  }, []);
-
-  // Функция для получения всех услуг
-  const fetchServices = async () => {
-    try {
-      const response = await axiosInstance.get("/admin/service?primary=1");
-      // Сохраняем все полученные услуги
-      setAllServices(response.data.data);
-      // Фильтруем услуги, где primary === 1
-      const primaryServices = response.data.data.filter(service => service.primary === 1);
-      // Сохраняем отфильтрованные услуги
-      setPrimaryServices(response.data.data);
-    } catch (error) {
-      console.error("Ошибка при получении списка услуг:", error);
-    }
-  };
-
-  // Функция для обработки выбора услуги из списка
-  const handleServiceSelect = (selectedOption) => {
-    setSelectedService(selectedOption);
-    // Дополнительная логика при выборе услуги, если необходимо
-  };
-
-
-
   const handleOpen = (value) => setOpen(open === value ? 0 : value);
-
-  const axiosInstance = axios.create({
-    baseURL: 'https://back.geolink.uz/api/v1'
-  });
-
-  axiosInstance.interceptors.request.use(
-      config => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      error => {
-        return Promise.reject(error);
-      }
-  );
 
 
 
@@ -260,7 +203,7 @@ export default function PatientDetails() {
                     <dl className="divide-y divide-gray-100">
                       <div className="px-4 py-3 sm:grid sm:grid-cols-1 sm:gap-1 sm:px-0">
                         <div className="flex items-center gap-4">
-                          <Avatar src={`${patient.avatar}`} size="xl" alt="avatar" variant="rounded"/>
+                          <Avatar loading="lazy" src={`${patient.avatar}`} size="xl" alt="avatar" variant="rounded"/>
                           <div>
                             <h3 className="text-base font-semibold leading-7 text-gray-900">{patient.name}</h3>
                             <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>

@@ -15,7 +15,7 @@ import {
   Tooltip, Dialog, DialogBody,
 } from "@material-tailwind/react";
 
-const TABLE_HEAD = ["ID", "Навбат номери", "Сана", "Умумий қиймат", "Хизматлар", "Чек"];
+const TABLE_HEAD = ["ID", "Навбат сони", "Сана", "Умумий қиймат", "Хизматлар", "Чек"];
 const TABLE_DIALOG = ["Чек", "Хизматлар", "Нархи"];
 
 export function PaymentHistoryTable({ patientId }) {
@@ -53,7 +53,7 @@ export function PaymentHistoryTable({ patientId }) {
   const removeDuplicateVisits = (visits) => {
     const visitedIds = new Set();
     return visits.filter(visit => {
-      const uniqueKey = `${visit.id}`;
+      const uniqueKey = `${visit.parent_id}`;
       if (visitedIds.has(uniqueKey)) {
         return false;
       }
@@ -93,7 +93,7 @@ export function PaymentHistoryTable({ patientId }) {
             </thead>
             <tbody>
             {visits.map((visit, index) => (
-                <tr key={visit.id} onClick={() => handleRowClick(visit)} className="transition-colors hover:bg-gray-100">
+                <tr key={visit.patient_id} onClick={() => handleRowClick(visit)} className="transition-colors hover:bg-gray-100">
                   <td className="p-4 border-b border-blue-gray-50">
                     <Typography variant="small" color="blue-gray" className="font-normal">
                       {index + 1}
@@ -111,7 +111,7 @@ export function PaymentHistoryTable({ patientId }) {
                   </td>
                   <td className="p-4 border-b border-blue-gray-50">
                     <Typography variant="small" color="blue-gray" className="font-normal">
-                      {visit.orders.amount}
+                      {visit.total_amount} сўм
                     </Typography>
                   </td>
                   <td className="p-4 border-b border-blue-gray-50">

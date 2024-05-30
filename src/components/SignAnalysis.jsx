@@ -24,7 +24,7 @@ import toast from "react-hot-toast";
 
 const TABLE_HEAD = ['Хизматлар', 'Нархи', 'Количество', 'Умумий сумма'];
 
-export default function SendAnalysis({visitId}) {
+export default function SendAnalysis({visitId, open}) {
     const [quantities, setQuantities] = useState({});
     const [services, setServices] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
@@ -71,8 +71,10 @@ export default function SendAnalysis({visitId}) {
     };
 
     useEffect(() => {
-        fetchServices(currentPage);
-    }, [currentPage]);
+        if (open === 2 && services.length === 0) {
+            fetchServices(currentPage);
+        }
+    }, [open, currentPage]);
 
     const fetchServices = async (page) => {
         try {
@@ -123,11 +125,6 @@ export default function SendAnalysis({visitId}) {
         });
     };
 
-
-
-    useEffect(() => {
-        console.log("Выбранные сервисы:", selectedServices);
-    }, [selectedServices]);
 
 
     const calculateSum = (price, quantity) => {

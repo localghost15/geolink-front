@@ -3,12 +3,11 @@ import axios from "axios";
 import { Avatar, Button, Card, CardBody, CardFooter, CardHeader, IconButton, Tooltip, Typography } from "@material-tailwind/react";
 import { MagnifyingGlassIcon, ChevronUpDownIcon, PencilIcon, EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import ListsMenu from "./components/ListsMenu";
-import PatientsDialog from "./components/PatientsDialog";
 import { Link, useNavigate } from "react-router-dom";
 import PatientsPostDialog from "./components/PatientsPostDialog";
 import PatientsUpdateDialog from "./components/PatientsUpdateDialog";
 import toast from "react-hot-toast";
-import debounce from 'lodash/debounce'; // Add this import
+import debounce from 'lodash/debounce';
 
 const TABLE_HEAD = ["ФИО", "Туғилган санаси", "Телефон", "Харакат"];
 
@@ -17,27 +16,30 @@ export default function Patients() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchCategory, setSearchCategory] = useState("name"); // Add this state
+  const [searchCategory, setSearchCategory] = useState("name");
   const navigate = useNavigate();
 
-  const fetchPatients = useCallback(async (query, category) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`https://back.geolink.uz/api/v1/patients`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: query ? { [category]: query } : {}
-      });
-      setPatients(response.data.data);
-    } catch (error) {
-      console.error("Ошибка при получении пациентов:", error);
-    }
-  }, []);
+  const fetchPatients = useCallback(
+      debounce(async (query, category) => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get(`https://back.geolink.uz/api/v1/patients`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: query ? { [category]: query } : {}
+          });
+          setPatients(response.data.data);
+        } catch (error) {
+          console.error("Ошибка при получении пациентов:", error);
+        }
+      }, 300),
+      []
+  );
 
   useEffect(() => {
     fetchPatients(searchQuery, searchCategory);
-  }, [fetchPatients, searchQuery, searchCategory]);
+  }, [searchQuery, searchCategory, fetchPatients]);
 
   const handleRemovePatient = async (patientId) => {
     try {
@@ -57,23 +59,19 @@ export default function Patients() {
 
   const handleOpenUpdateDialog = (patient) => {
     setSelectedPatient(patient);
-    setIsOpen(true); // Open the dialog when updating patient data
+    setIsOpen(true);
   };
 
   const handleUpdatePatient = async (updatedPatientData) => {
     try {
       const token = localStorage.getItem('token');
-
-      // Remove PINFL from the updated data
       const { pinfl, ...dataWithoutPinfl } = updatedPatientData;
 
-      // Check if remark is empty, if so, remove it from dataToSend
       const dataToSend = { ...dataWithoutPinfl };
       if (dataToSend.remark === null || dataToSend.remark === '') {
         delete dataToSend.remark;
       }
 
-      // Send the request to update data without PINFL and possibly without remark
       const response = await axios.put(`https://back.geolink.uz/api/v1/patients/${selectedPatient.id}`, dataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -81,12 +79,11 @@ export default function Patients() {
       });
       const updatedPatient = response.data.data;
 
-      // Update the list of patients with the updated data
       const updatedPatients = patients.map(patient =>
           patient.id === selectedPatient.id ? updatedPatient : patient
       );
       setPatients(updatedPatients);
-      setIsOpen(false); // Close the dialog after successful update
+      setIsOpen(false);
       setSelectedPatient(null);
     } catch (error) {
       console.error("Error updating patient:", error);
@@ -97,9 +94,9 @@ export default function Patients() {
     setPatients([...patients, newPatient]);
   };
 
-  const handleSearchChange = debounce((e) => {
+  const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
-  }, 300); // Debounce the input to limit the API calls
+  };
 
   return (
       <Card className="h-full w-full rounded-none pt-5">
@@ -112,7 +109,7 @@ export default function Patients() {
               className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2 focus-within:border-gray-300"
               htmlFor="search-bar"
           >
-            <ListsMenu onSelect={setSearchCategory} /> {/* Pass the callback */}
+            <ListsMenu onSelect={setSearchCategory} />
             <input
                 id="search-bar"
                 placeholder="Қидириш"
@@ -135,7 +132,7 @@ export default function Patients() {
 
         <CardHeader floated={false} shadow={false} className="rounded-none"></CardHeader>
         <CardBody className="overflow-scroll px-0">
-          <table className="mt-4 w-full min-w-max table-auto text-left ">
+          <table className="mt-4 w-full min-w-max table-auto text-left">
             <thead>
             <tr>
               {TABLE_HEAD.map((head, index) => (
@@ -159,7 +156,7 @@ export default function Patients() {
             </thead>
             <tbody>
             {patients.map((patient) => (
-                <tr className="cursor-pointer transition-colors " key={patient.id}>
+                <tr className="cursor-pointer transition-colors" key={patient.id}>
                   <td className="p-4 border-b border-blue-gray-50">
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col">
