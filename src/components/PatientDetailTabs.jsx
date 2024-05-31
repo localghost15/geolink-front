@@ -6,7 +6,7 @@ import {
     TabsHeader,
     TabsBody,
     Tab,
-    TabPanel,
+    TabPanel, IconButton,
 } from "@material-tailwind/react";
 
 import axios from 'axios';
@@ -14,6 +14,7 @@ import axios from 'axios';
 import { PaymentHistoryTable } from './PaymentHistoryTable';
 import AccordionCustomIcon from "./AccordionCustomIcon";
 import {fetchVisits} from "../services/visitService";
+import {EyeIcon} from "@heroicons/react/24/solid";
 
 export function Icon({ id, open }) {
     return (
@@ -32,55 +33,23 @@ export function Icon({ id, open }) {
 
 
 
-function PatientDetailTabs({ patientId, mkb10 }) {
+function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit, remark ,setMostRecentVisit }) {
 
-    const [visits, setVisits] = useState({});
-    const [visitId, setVisitId] = useState(null);
+
     const [selectedTab, setSelectedTab] = useState(1);
     const [doctorId, setDoctorId] = useState('');
-    const [dataCache, setDataCache] = useState({});
 
-    useEffect(() => {
-        if (!dataCache[patientId]) {
-            const fetchData = async () => {
-                try {
-                    const request = await fetchVisits(patientId);
-                    const response = await request;
-                    const visitData = response.data.data;
-                    if (visitData.length > 0) {
-                        setVisitId(visitData[0].id);
-                    }
-                    setVisits(prevVisits => ({
-                        ...prevVisits,
-                        [patientId]: visitData,
-                    }));
-                    setDataCache(prevCache => ({
-                        ...prevCache,
-                        [patientId]: visitData,
-                    }));
-                } catch (error) {
-                    console.error('Ошибка при получении данных о визитах:', error);
-                }
-            };
-
-            fetchData();
-        } else {
-            setVisits(prevVisits => ({
-                ...prevVisits,
-                [patientId]: dataCache[patientId],
-            }));
-        }
-    }, [patientId, dataCache]);
 
     const handleDoctorIdChange = (event) => {
         setDoctorId(event.target.value);
     };
 
+
     const data = [
         {
             label: "Янги қабул",
             value: 1,
-            desc: <AccordionCustomIcon visits={visits} visitId={visitId} mkb10={mkb10} patientId={patientId} value={1} />,
+            desc: <AccordionCustomIcon mostRecentVisit={mostRecentVisit} setMostRecentVisit={setMostRecentVisit} visits={visits} visitId={visitId} mkb10={mkb10} patientId={patientId} value={1} />,
         },
         {
             label: "Тўловлар тарихи",
@@ -90,14 +59,63 @@ function PatientDetailTabs({ patientId, mkb10 }) {
         {
             label: "Қабулларни кўриш",
             value: 3,
-            desc: <div>demo</div>,
+            desc: <div>
+                <table className="text-left" >
+                    <tr>
+                        <th>Қабул санаси:</th>
+                        <td>{mostRecentVisit ? mostRecentVisit.date_at : ''}</td>
+                    </tr>
+                    <tr>
+                    <th>Врач хулосаси:</th>
+                        <td>{remark ? '' : 'Пусто...'}</td>
+                    </tr>
+                    <tr>
+                        <th>Мкб10:</th>
+                        <td>
+                            {mkb10.map(item => (
+                                <div key={item.id}>
+                                    <p>{item.name}</p>
+                                </div>
+                            ))}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Қайта қабул санаси:</th>
+                        <td>{mostRecentVisit ? mostRecentVisit.date_at : ''}</td>
+                    </tr>
+                    <tr>
+                        <th>Диспансер хисобига олинганми:</th>
+                        <td>555 77 855</td>
+                    </tr>
+                    <tr>
+                        <th>Юкланган файллар:</th>
+                        <td>
+                            {mostRecentVisit ? mostRecentVisit.files.map(file => (
+                                <li key={file.id}>
+                                    <a href={file.file} target="_blank" rel="noopener noreferrer">{file.name}</a>
+                                </li>
+                            )) : ''}
+
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Қўриш:</th>
+                        <td>
+                            <IconButton size="sm">
+                                <EyeIcon className="w-4 h-4" />
+                            </IconButton>
+                        </td>
+                    </tr>
+                </table>
+            </div>,
         },
     ];
 
     return (
         <Tabs id="custom-animation" value={selectedTab}>
             <TabsHeader>
-                {data.map(({ label, value }) => (
+                {data.map(({label, value}) => (
                     <Tab className='w-max-content text-sm h-12' key={value} value={value}>
                         {label}
                     </Tab>

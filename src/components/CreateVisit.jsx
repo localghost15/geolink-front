@@ -5,7 +5,7 @@ import Select from "react-select";
 import axiosInstance from "../axios/axiosInstance";
 import toast from "react-hot-toast";
 
-const CreateVisit = ({patientId}) => {
+const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit }) => {
     const [openVisit, setOpenVisit] = React.useState(false);
     const [primaryServices, setPrimaryServices] = useState([]);
     const [doctorId, setDoctorId] = useState('');
@@ -41,11 +41,14 @@ const CreateVisit = ({patientId}) => {
             const response = await axiosInstance.post(`/visit?patient_id=${patientId}&doctor_id=${selectedDoctor.value}&service_id=${selectedService.value}`);
             console.log("New visit created:", response.data);
             setOpenVisit(false);
-            toast.success('Навбат қушилди')
+            toast.success('Visit created successfully');
+            // Update mostRecentVisit here
+            setMostRecentVisit(response.data); // Обновляем mostRecentVisit с новыми данными
         } catch (error) {
             console.error("Error creating new visit:", error);
         }
     };
+
 
     const handleServiceSelect = (selectedOption) => {
         setSelectedService(selectedOption);

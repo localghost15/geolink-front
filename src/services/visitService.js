@@ -13,11 +13,10 @@ export const endVisit = async (visitId) => {
 };
 
 // Функция для получения списка визитов пациента
-export const fetchVisits = async (patientId) => {
+export const fetchVisits = async (patientId, page) => {
     const payload = { signal: new AbortController().signal };
-    return axiosInstance.get(`/visit?patient_id=${patientId}`, payload);
+    return axiosInstance.get(`/visit?patient_id=${patientId}&page=${page}`, payload);
 };
-
 // Функция для отправки данных о дате визита
 export const sendDateToServer = async (visitId, date) => {
     return axiosInstance.post(`/visit/revisit/${visitId}`, date);

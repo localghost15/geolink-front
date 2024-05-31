@@ -21,6 +21,9 @@ import {
 } from "@heroicons/react/24/solid";
 import {MagnifyingGlassIcon} from "@heroicons/react/24/outline";
 import axiosInstance from "../axios/axiosInstance";
+import {useVisitId} from "../context/VisitIdContext";
+import {fetchVisits} from "../services/visitService";
+import CreateVisit from "../components/CreateVisit";
 
 function Icon({ id, open }) {
     return (
@@ -45,9 +48,92 @@ export default function PatientDetails() {
   const [districtName, setDistrictName] = useState(null);
   const [provinceName, setProvinceName] = useState(null);
   const [epidemData, setEpidemData] = useState([]);
-
+  const [visits, setVisits] = useState({});
+  const [visitId, setVisitId] = useState(null);
+  const [dataCache, setDataCache] = useState({});
   const [selectedEpidem, setSelectedEpidem] = useState(null);
   const [selectedEpidemIds, setSelectedEpidemIds] = useState({});
+
+  const [mostRecentVisit, setMostRecentVisit] = useState(null);
+
+  useEffect(() => {
+    if (visits && Object.keys(visits).length > 0) {
+      const patientVisits = visits[index];
+      if (Array.isArray(patientVisits)) {
+        const recentVisit = patientVisits.reduce((latest, visit) => {
+          if (!visit.parent_id && ["queue", "examined"].includes(visit.status)) {
+            if (!latest || new Date(visit.date_at) > new Date(latest.date_at)) {
+              return visit;
+            }
+          }
+          return latest;
+        }, null);
+        setMostRecentVisit(recentVisit);
+      }
+    }
+  }, [visits, index]);
+
+  useEffect(() => {
+    const fetchPatientVisits = async () => {
+      try {
+        let visitData = [];
+        if (!dataCache[index]) {
+          const fetchAllPages = async (patientId) => {
+            let allData = [];
+            let page = 1;
+            let lastPage = 1;
+
+            while (page <= lastPage) {
+              try {
+                const response = await fetchVisits(patientId, page);
+                const pageData = response.data.data;
+                const meta = response.data.meta;
+
+                allData = [...allData, ...pageData];
+
+                lastPage = meta.last_page; // обновляем количество страниц
+                page += 1; // переходим к следующей странице
+              } catch (error) {
+                console.error(`Ошибка при получении данных со страницы ${page}:`, error);
+                break;
+              }
+            }
+
+            return allData;
+          };
+
+          visitData = await fetchAllPages(index);
+
+          setDataCache(prevCache => ({
+            ...prevCache,
+            [index]: visitData,
+          }));
+        } else {
+          visitData = dataCache[index];
+        }
+
+        const recentVisit = visitData.find(visit =>
+            visit.parent_id === null &&
+            visit.bill === "payed" && (visit.status === "examined" || visit.status === "queue")
+        );
+
+        if (recentVisit) {
+          setVisitId(recentVisit.id);
+        } else {
+          setVisitId(null);
+        }
+
+        setVisits(prevVisits => ({
+          ...prevVisits,
+          [index]: visitData,
+        }));
+      } catch (error) {
+        console.error('Ошибка при получении данных о визитах:', error);
+      }
+    };
+
+    fetchPatientVisits();
+  }, [index, dataCache]);
 
   const handleSwitchChange = (epidemId) => {
     setEpidemData(prevState =>
@@ -174,9 +260,6 @@ export default function PatientDetails() {
       return <div>Загрузка...</div>;
   }
 
-
-
-
     return (
         <>
         <div className="pl-5 pb-5">
@@ -209,6 +292,8 @@ export default function PatientDetails() {
                             <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
                           </div>
                         </div>
+                        <Typography className='text-sm font-semibold text-blue-gray-900'>Қабул қўшиш</Typography>
+                        <CreateVisit  visit={visitId} patientId={index}/>
                       </div>
                       <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                         <dt className="text-sm font-medium leading-6 text-gray-900">Иш жойи:</dt>
@@ -327,9 +412,8 @@ export default function PatientDetails() {
                   </div>
                 </div>
             )}
-
             <div className="w-full tabs-part max-w-full overflow-y-auto h-[85vh] pr-3 pl-3">
-              <PatientDetailTabs patientName={patient.name} mkb10={patient.mkb10} patientId={index}/>
+              <PatientDetailTabs mostRecentVisit={mostRecentVisit} setMostRecentVisit={setMostRecentVisit} visits={visits} visitId={visitId} patientName={patient.name} mkb10={patient.mkb10}  remark={patient.remark} patientId={index}/>
             </div>
           </div>
         </>

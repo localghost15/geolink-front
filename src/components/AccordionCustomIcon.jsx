@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import makeAnimated from "react-select/animated";
 import toast from "react-hot-toast";
-import axios from "axios";
+
 import plugins from "suneditor/src/plugins";
 import {
     Accordion,
@@ -25,8 +25,9 @@ import {fetchMkb10Data, saveMKB10Data, searchMkb10Data} from "../services/MKB10S
 import { fetchTemplates} from "../services/templateService";
 import {Icon} from "./PatientDetailTabs";
 import customPluginSubmenu from "../config/customPluginSubmenu";
+import {postDispensaryData} from "../services/dispansery";
 
-export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits  }) {
+export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits, mostRecentVisit,  setMostRecentVisit  }) {
     const [open, setOpen] = React.useState(0);
     const [alwaysOpen, setAlwaysOpen] = React.useState(true);
     const [selectedDisease, setSelectedDisease] = useState(null);
@@ -84,11 +85,16 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits 
         }
     };
 
+    useEffect(() => {
+        const status = localStorage.getItem("visitStatus");
+        setIsVisitStarted(status === "started");
+    }, []);
+
 
     const handleStartVisit = async () => {
         try {
             await startVisit(visitId);
-            setIsVisitStarted(true);
+            setMostRecentVisit(prevVisit => ({ ...prevVisit, status: "examined" }));
             toast.success('Қабул бошланди!');
         } catch (error) {
             console.error('Error starting visit:', error);
@@ -99,7 +105,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits 
     const handleEndVisit = async () => {
         try {
             await endVisit(visitId);
-            setIsVisitStarted(false);
+            setMostRecentVisit(prevVisit => ({ ...prevVisit, status: "closed" }));
             toast.success('Қабул тугади!');
         } catch (error) {
             console.error('Error ending visit:', error);
@@ -173,6 +179,27 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits 
         }
     };
 
+    const sendDateDespansery = async (patientId) => {
+        if (!selectedDate) {
+            toast.error('Илтимос кунни танланг!');
+            return;
+        }
+
+        const payload = {
+            mouth_days: [selectedDate],
+            patient_id: patientId,
+            service_id: 1,
+        };
+
+        try {
+            await postDispensaryData(payload);
+            console.log('sen!!!')
+            toast.success(`Деспансер рўйхати: ${selectedDate}`);
+        } catch (error) {
+            console.error("Error sending date data:", error);
+        }
+    };
+
     const handleSearch = async () => {
         setIsLoading(true);
         try {
@@ -218,194 +245,234 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits 
 
 
 
+
     return (
         <>
             <Typography className='text-sm font-semibold text-blue-gray-900'>Янги қабул харакати ва холати</Typography>
+            {mostRecentVisit ? (
+                <div className="mt-4">
+                    <Typography className='text-sm font-semibold text-blue-gray-900'>
+                        Жорий холат: {mostRecentVisit.status}
+                    </Typography>
+                </div>
+            ) : (
+                <div className="mt-4">
+                    <Typography className='text-sm font-semibold text-blue-gray-900'>
+                        Жорий холат: Пациентни қабулга қушинг
+                    </Typography>
+                </div>
+            )}
 
             <div className="flex items-center mb-3 gap-x-1">
-                {!isVisitStarted ? (
-                    <Button className="bg-[#1d4ed8] rounded-md flex items-center font-medium gap-x-1 capitalize"
-                            onClick={handleStartVisit}>
-                        <PlayCircleIcon className="h-4 w-4"/>
-                        Кабул Бошланиш
+                {mostRecentVisit && (mostRecentVisit.status === "new" || mostRecentVisit.status === "queue" ) ? (
+                    <Button
+                        variant="gradient"
+                        color="green"
+                        onClick={handleStartVisit}
+                        disabled={mostRecentVisit.status === "new"}
+                        className="flex items-center gap-x-1"
+                    >
+                        <PlayCircleIcon className="w-5 h-5 mr-2"/>
+                        Начать визит
                     </Button>
                 ) : (
-                    <Button className="bg-red-500 rounded-md flex items-center font-medium gap-x-1 capitalize"
-                            onClick={handleEndVisit}>
-                        <PauseCircleIcon className="h-4 w-4"/>
-                        Кабул Тугатиш
-                    </Button>
+                    mostRecentVisit && mostRecentVisit.status === "examined" && (
+                        <Button
+                            variant="gradient"
+                            color="red"
+                            onClick={handleEndVisit}
+                            className="flex gap-x-1 items-center"
+                        >
+                            <PauseCircleIcon className="w-5 h-5 mr-2"/>
+                            Закончить визит
+                        </Button>
+                    )
                 )}
             </div>
-            <Typography className='text-sm font-semibold text-blue-gray-900'>Қабул қўшиш</Typography>
-            <CreateVisit patientId={patientId}/>
-            <Accordion open={open === 1} icon={<Icon id={1} open={open}/>}>
-                <AccordionHeader className='text-sm' onClick={() => handleOpen(1)}>Қайта қабул</AccordionHeader>
-                <AccordionBody>
-                    <div className="flex gap-4">
-                        <DatePicker onChange={(date) => setSelectedDate(date)}/>
-                        <Button className='flex gap-x-1' onClick={sendDateData}>
-                            <ArrowPathIcon className='w-4 h-4'/> Қайта қабулга қўшиш
-                        </Button>
-                    </div>
-                </AccordionBody>
-            </Accordion>
-            <Accordion open={open === 2} icon={<Icon id={2} open={open}/>}>
-                <AccordionHeader className='text-sm' onClick={() => handleOpen(2)}>
-                    Процедурага юбориш
-                </AccordionHeader>
-                <AccordionBody>
-                    <SendAnalysis open={open}  visitId={visitId}/>
-                </AccordionBody>
-            </Accordion>
-            <Accordion open={open === 3} icon={<Icon id={3} open={open}/>}>
-                <AccordionHeader className='text-sm' onClick={() => handleOpen(3)}>
-                    Диспансер рўйхати
-                </AccordionHeader>
-                <AccordionBody>
-                    <div className="flex gap-4">
-                        <DatePicker/>
-                        <Button className='flex gap-x-1'><ArrowPathIcon className='w-4 h-4'/>Диспонсер рўйхатига
-                            қўшиш</Button>
-                    </div>
-                </AccordionBody>
-            </Accordion>
-            <Accordion open={open === 4} icon={<Icon id={4} open={open}/>}>
-                <AccordionHeader className='text-sm' onClick={() => handleOpen(4)}>
-                    Врач хулосаси
-                </AccordionHeader>
-                <AccordionBody>
-                    <label
-                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        htmlFor="multiple_files"
-                    >
-                        Рентген, документ , расм ...
-                    </label>
-                    <div>
-                        {selectedFiles.map((file, index) => (
-                            <div key={index}>{file.name}</div>
-                        ))}
-                    </div>
-                    <input
-                        className="block w-full text-sm text-gray-900 border border-gray-300 cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                        id="multiple_files"
-                        type="file"
-                        multiple
-                        onChange={handleFileChange}
-                    />
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG, JPG
-                        (MAX. 800x400px).</p>
-                    <Button onClick={handleUpload}>Upload</Button>
 
-                    {Array.isArray(templates) && (
-                        <SunEditor
-                            key={templates.length}
-                            setOptions={editorOptions}
-                            height="800px"
-                            defaultValue=""
-                            setDefaultStyle="font-family: Arial; font-size: 16px;"
-                            onChange={(content) => {
-                            }}
-                        />
-                    )}
-                </AccordionBody>
-            </Accordion>
-            <Accordion open={open === 5} icon={<Icon id={5} open={open}/>}>
-                <AccordionHeader className='text-sm' onClick={() => handleOpen(5)}>
-                МКБ-10
-                </AccordionHeader>
-                <AccordionBody>
-                    <div className=" px-5">
+            {/*<Typography className='text-sm font-semibold text-blue-gray-900'>Қабул қўшиш</Typography>*/}
+            {/*<CreateVisit mostRecentVisit={mostRecentVisit} setMostRecentVisit={setMostRecentVisit} patientId={patientId}/>*/}
 
-                        <label
-                            className="relative  bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
-                            htmlFor="search-bar"
-                        >
-                            <Mkb10List/>
-                            <input
-                                id="search-bar"
-                                placeholder="Қидириш"
-                                className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
-                                value={searchQuery}
-                                onChange={handleSearchChange}
-                            />
-                            <Button onClick={handleSearch} size="md"><MagnifyingGlassIcon className="h-5 w-5"/></Button>
-                            <Button className='rounded-md' onClick={handleSaveMKB10}>Саклаш</Button>
-
-                        </label>
-                        <Card className="h-[40vh] w-full  rounded-none mt-5 overflow-scroll">
-                            <table className="w-full  min-w-max table-auto text-left">
-                                <thead>
-                                <tr>
-                                    {TABLE_HEAD.map((head) => (
-                                        <th key={head} className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
-                                            <Typography
-                                                variant="small"
-                                                color="blue-gray"
-                                                className="font-normal leading-none opacity-70"
-                                            >
-                                                {head}
-                                            </Typography>
-                                        </th>
-                                    ))}
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {mkb10Data.map(({id, code, name}) => (
-                                    <tr key={id} className="even:bg-blue-gray-50/50">
-                                        <td className="p-4">
-                                            <Typography variant="small" color="blue-gray" className="font-normal">
-                                                {code}
-                                            </Typography>
-                                        </td>
-                                        <td className="p-4">
-                                            <Typography variant="small" color="blue-gray" className="font-normal">
-                                                {name}
-                                            </Typography>
-                                        </td>
-                                        <td className="p-4">
-                                            <Switch id={id} checked={selectedMKB10.includes(id)}
-                                                    onChange={(e) => handleSwitchChange(id, e.target.checked)}/>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </Card>
-                        <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-                            <Button variant="outlined" size="sm">
-                                Previous
-                            </Button>
-                            <div className="flex items-center gap-2">
-                                <IconButton variant="outlined" size="sm">
-                                    1
-                                </IconButton>
-                                <IconButton variant="text" size="sm">
-                                    2
-                                </IconButton>
-                                <IconButton variant="text" size="sm">
-                                    3
-                                </IconButton>
-                                <IconButton variant="text" size="sm">
-                                    ...
-                                </IconButton>
-                                <IconButton variant="text" size="sm">
-                                    8
-                                </IconButton>
-                                <IconButton variant="text" size="sm">
-                                    9
-                                </IconButton>
-                                <IconButton variant="text" size="sm">
-                                    10
-                                </IconButton>
+            {mostRecentVisit && mostRecentVisit.status === "examined" && (
+                <>
+                    <Accordion open={open === 1} icon={<Icon id={1} open={open}/>}>
+                        <AccordionHeader className='text-sm' onClick={() => handleOpen(1)}>Қайта қабул</AccordionHeader>
+                        <AccordionBody>
+                            <div className="flex gap-4">
+                                <DatePicker onChange={(date) => setSelectedDate(date)}/>
+                                <Button className='flex gap-x-1' onClick={sendDateData}>
+                                    <ArrowPathIcon className='w-4 h-4'/> Қайта қабулга қўшиш
+                                </Button>
                             </div>
-                            <Button variant="outlined" size="sm">
-                                Next
-                            </Button>
-                        </CardFooter>
-                    </div>
-                </AccordionBody>
-            </Accordion>
+                        </AccordionBody>
+                    </Accordion>
+                    <Accordion open={open === 2} icon={<Icon id={2} open={open}/>}>
+                        <AccordionHeader className='text-sm' onClick={() => handleOpen(2)}>
+                            Процедурага юбориш
+                        </AccordionHeader>
+                        <AccordionBody>
+                            <SendAnalysis open={open} visitId={visitId}/>
+                        </AccordionBody>
+                    </Accordion>
+                    <Accordion open={open === 3} icon={<Icon id={3} open={open}/>}>
+                        <AccordionHeader className='text-sm' onClick={() => handleOpen(3)}>
+                            Диспансер рўйхати
+                        </AccordionHeader>
+                        <AccordionBody>
+                            <div className="flex gap-4">
+                                <DatePicker onChange={(date) => setSelectedDate(date)}/>
+                                <Button className='flex gap-x-1' onClick={() => sendDateDespansery(patientId)}>
+                                    <ArrowPathIcon className='w-4 h-4'/> {/* Иконка */}
+                                    Диспонсер рўйхатига қўшиш
+                                </Button>
+                            </div>
+                        </AccordionBody>
+                    </Accordion>
+                    <Accordion open={open === 4} icon={<Icon id={4} open={open}/>}>
+                        <AccordionHeader className='text-sm' onClick={() => handleOpen(4)}>
+                            Врач хулосаси
+                        </AccordionHeader>
+                        <AccordionBody>
+                            <label
+                                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                htmlFor="multiple_files"
+                            >
+                                Рентген, документ , расм ...
+                            </label>
+                            <div>
+                                {selectedFiles.map((file, index) => (
+                                    <div key={index}>{file.name}</div>
+                                ))}
+                            </div>
+                            <input
+                                className="block w-full text-sm text-gray-900 border border-gray-300 cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                id="multiple_files"
+                                type="file"
+                                multiple
+                                onChange={handleFileChange}
+                            />
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG,
+                                JPG
+                                (MAX. 800x400px).</p>
+                            <Button onClick={handleUpload}>Upload</Button>
+
+                            {Array.isArray(templates) && (
+                                <SunEditor
+                                    key={templates.length}
+                                    setOptions={editorOptions}
+                                    height="800px"
+                                    defaultValue=""
+                                    setDefaultStyle="font-family: Arial; font-size: 16px;"
+                                    onChange={(content) => {
+                                    }}
+                                />
+                            )}
+                        </AccordionBody>
+                    </Accordion>
+                    <Accordion open={open === 5} icon={<Icon id={5} open={open}/>}>
+                        <AccordionHeader className='text-sm' onClick={() => handleOpen(5)}>
+                            МКБ-10
+                        </AccordionHeader>
+                        <AccordionBody>
+                            <div className=" px-5">
+
+                                <label
+                                    className="relative  bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
+                                    htmlFor="search-bar"
+                                >
+                                    <Mkb10List/>
+                                    <input
+                                        id="search-bar"
+                                        placeholder="Қидириш"
+                                        className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
+                                        value={searchQuery}
+                                        onChange={handleSearchChange}
+                                    />
+                                    <Button onClick={handleSearch} size="md"><MagnifyingGlassIcon className="h-5 w-5"/></Button>
+                                    <Button className='rounded-md' onClick={handleSaveMKB10}>Саклаш</Button>
+
+                                </label>
+                                <Card className="h-[40vh] w-full  rounded-none mt-5 overflow-scroll">
+                                    <table className="w-full  min-w-max table-auto text-left">
+                                        <thead>
+                                        <tr>
+                                            {TABLE_HEAD.map((head) => (
+                                                <th key={head}
+                                                    className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
+                                                    <Typography
+                                                        variant="small"
+                                                        color="blue-gray"
+                                                        className="font-normal leading-none opacity-70"
+                                                    >
+                                                        {head}
+                                                    </Typography>
+                                                </th>
+                                            ))}
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {mkb10Data.map(({id, code, name}) => (
+                                            <tr key={id} className="even:bg-blue-gray-50/50">
+                                                <td className="p-4">
+                                                    <Typography variant="small" color="blue-gray"
+                                                                className="font-normal">
+                                                        {code}
+                                                    </Typography>
+                                                </td>
+                                                <td className="p-4">
+                                                    <Typography variant="small" color="blue-gray"
+                                                                className="font-normal">
+                                                        {name}
+                                                    </Typography>
+                                                </td>
+                                                <td className="p-4">
+                                                    <Switch id={id} checked={selectedMKB10.includes(id)}
+                                                            onChange={(e) => handleSwitchChange(id, e.target.checked)}/>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        </tbody>
+                                    </table>
+                                </Card>
+                                <CardFooter
+                                    className="flex items-center justify-between border-t border-blue-gray-50 p-4">
+                                    <Button variant="outlined" size="sm">
+                                        Previous
+                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        <IconButton variant="outlined" size="sm">
+                                            1
+                                        </IconButton>
+                                        <IconButton variant="text" size="sm">
+                                            2
+                                        </IconButton>
+                                        <IconButton variant="text" size="sm">
+                                            3
+                                        </IconButton>
+                                        <IconButton variant="text" size="sm">
+                                            ...
+                                        </IconButton>
+                                        <IconButton variant="text" size="sm">
+                                            8
+                                        </IconButton>
+                                        <IconButton variant="text" size="sm">
+                                            9
+                                        </IconButton>
+                                        <IconButton variant="text" size="sm">
+                                            10
+                                        </IconButton>
+                                    </div>
+                                    <Button variant="outlined" size="sm">
+                                        Next
+                                    </Button>
+                                </CardFooter>
+                            </div>
+                        </AccordionBody>
+                    </Accordion>
+                </>
+            )}
+
+
         </>
     );
 }
