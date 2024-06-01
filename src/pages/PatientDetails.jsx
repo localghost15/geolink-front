@@ -61,7 +61,7 @@ export default function PatientDetails() {
       const patientVisits = visits[index];
       if (Array.isArray(patientVisits)) {
         const recentVisit = patientVisits.reduce((latest, visit) => {
-          if (!visit.parent_id && ["queue", "examined"].includes(visit.status)) {
+          if (!visit.parent_id && ["queue", "examined", "new"].includes(visit.status)) {
             if (!latest || new Date(visit.date_at) > new Date(latest.date_at)) {
               return visit;
             }
@@ -114,7 +114,7 @@ export default function PatientDetails() {
 
         const recentVisit = visitData.find(visit =>
             visit.parent_id === null &&
-            visit.bill === "payed" && (visit.status === "examined" || visit.status === "queue")
+            ( visit.bill === "payed" || visit.bill === "pending") && (visit.status === "new" || visit.status === "examined" || visit.status === "queue")
         );
 
         if (recentVisit) {

@@ -269,7 +269,6 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                         variant="gradient"
                         color="green"
                         onClick={handleStartVisit}
-                        disabled={mostRecentVisit.status === "new"}
                         className="flex items-center gap-x-1"
                     >
                         <PlayCircleIcon className="w-5 h-5 mr-2"/>
