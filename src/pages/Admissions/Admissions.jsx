@@ -15,7 +15,7 @@ import {
     Dialog,
     Input,
     Checkbox,
-    Radio,
+    Radio, Tooltip,
 } from "@material-tailwind/react";
 import axios from 'axios';
 import AddServiceVisit from "./components/AddServiceVisit";
@@ -61,14 +61,14 @@ export default function Admissions() {
 
     const statusNames = {
         new: "Янги навбат",
-        in_progress: "В процессе",
+        queue: "Қабулда",
         completed: "Завершен",
         cancelled: "Отменен"
     };
 
     const fetchAdmissions = async (page = 1) => {
         try {
-            const response = await axiosInstance.get(`/visit?page=${page}&status=new`);
+            const response = await axiosInstance.get(`/visit?page=${page}&status[0]=new&status[1]=queue`);
             const admissionsData = response.data.data;
 
             // Проверка структуры данных
@@ -145,6 +145,7 @@ export default function Admissions() {
             });
             console.log("Payment successful:", response.data);
             toast.success('Тўлов юборилди !')
+            fetchAdmissions();
             handleClosePayDialog();
         } catch (error) {
             console.error("Error making payment:", error);
@@ -186,6 +187,12 @@ export default function Admissions() {
                     <table className="mt-4 w-full min-w-max table-auto text-left">
                         <thead>
                         <tr>
+                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                                <Typography variant="small" color="blue-gray"
+                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                                    ID{" "}
+                                </Typography>
+                            </th>
                             <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
                                 <Typography variant="small" color="blue-gray"
                                             className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
@@ -248,7 +255,7 @@ export default function Admissions() {
                         {admissions.length > 0 && admissions.map(({
                                                                       id,
                                                                       patient_id,
-                                                                        total_amount,
+                                                                      total_amount,
                                                                       user_id,
                                                                       doctor,
                                                                       date_at,
@@ -259,13 +266,30 @@ export default function Admissions() {
                                                                       debit,
                                                                       order_count,
                                                                       orders
-                                                                  }) => {
+                                                                  }, index) => {
                             const currentId = id;
-                            const isLast = id === admissions.length - 1;
-                            const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
+                            const isLast = index === admissions.length - 1;
+                            const classes = isLast ? "p-3" : "p-3 border-b border-blue-gray-50";
 
                             return (
-                                <tr key={uuidv4()}>
+                                <tr
+                                    className={` ${
+                                        status === 'new'
+                                            ? ''
+                                            : status === 'queue'
+                                                ? 'bg-blue-gray-50/50 cursor-not-allowed opacity-60'
+                                                : ''
+                                    }`}
+                                    key={uuidv4()}>
+                                    <td className={classes}>
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex flex-col">
+                                                <Typography variant="small" color="blue-gray" className="font-normal">
+                                                    {index + 1}
+                                                </Typography>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td className={classes}>
                                         <div className="flex items-center gap-3">
                                             <div className="flex flex-col">
@@ -305,10 +329,18 @@ export default function Admissions() {
                                     <td className={classes}>
                                         <div className="flex items-center gap-3">
                                             <div className="flex flex-col">
-                                                    <span
-                                                        className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-sm font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                                        {statusNames[status]}
-                                                    </span>
+                                                   <span
+                                                       className={`inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                                                           status === 'new'
+                                                               ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
+                                                               : status === 'queue'
+                                                                   ? 'bg-green-50 text-green-700 ring-green-600/20'
+                                                                   : 'bg-green-50 text-green-700 ring-green-600/20'
+                                                       }`}
+                                                   >
+    {statusNames[status] || status}
+</span>
+
                                             </div>
                                         </div>
                                     </td>
@@ -343,10 +375,21 @@ export default function Admissions() {
                                     <td className={classes}>
                                         <div className="flex items-center gap-3">
                                             <div className="flex flex-col">
-                                                <IconButton className="rounded-full"
-                                                            onClick={() => handleOpenPayDialog(id)}>
-                                                    <BanknotesIcon className='w-4 h-4'/>
-                                                </IconButton>
+                                                {
+                                                status === 'new'
+                                                    ?
+                                                    <Tooltip content="Тўлаш">
+                                                        <IconButton className="rounded-full"
+                                                                    onClick={() => handleOpenPayDialog(id)}>
+                                                            <BanknotesIcon className='w-4 h-4'/>
+                                                        </IconButton>
+                                                    </Tooltip>
+
+                                                    : status === 'queue'
+                                                        ?  ''
+                                                        : ''
+                                            }
+
                                             </div>
                                         </div>
                                     </td>

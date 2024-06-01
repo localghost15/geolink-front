@@ -43,7 +43,7 @@ export function PaymentHistoryTable({ patientId }) {
     try {
       const response = await axiosInstance.get(`/visit?patient_id=${patientId}&page=${page}`);
       const uniqueVisits = removeDuplicateVisits(response.data.data);
-      setVisits(uniqueVisits);
+      setVisits(uniqueVisits.reverse());
       setMeta(response.data.meta);
     } catch (error) {
       console.error("Error fetching visits:", error);
@@ -53,7 +53,10 @@ export function PaymentHistoryTable({ patientId }) {
   const removeDuplicateVisits = (visits) => {
     const visitedIds = new Set();
     return visits.filter(visit => {
-      const uniqueKey = `${visit.parent_id}`;
+      if (visit.parent_id !== null) {
+        return false; // Пропустить дочерние визиты
+      }
+      const uniqueKey = `${visit.id}`;
       if (visitedIds.has(uniqueKey)) {
         return false;
       }
@@ -144,7 +147,7 @@ export function PaymentHistoryTable({ patientId }) {
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
           <Typography variant="small" color="blue-gray" className="font-normal">
-            Page {meta.current_page} of {meta.last_page}
+            Сахифа {meta.current_page}/{meta.last_page}
           </Typography>
           <div className="flex gap-2">
             {meta.links && meta.links.map((link, index) => (

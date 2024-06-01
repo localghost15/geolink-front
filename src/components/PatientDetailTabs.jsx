@@ -6,7 +6,7 @@ import {
     TabsHeader,
     TabsBody,
     Tab,
-    TabPanel, IconButton,
+    TabPanel, IconButton, Typography, Button,
 } from "@material-tailwind/react";
 
 import axios from 'axios';
@@ -14,7 +14,9 @@ import axios from 'axios';
 import { PaymentHistoryTable } from './PaymentHistoryTable';
 import AccordionCustomIcon from "./AccordionCustomIcon";
 import {fetchVisits} from "../services/visitService";
-import {EyeIcon} from "@heroicons/react/24/solid";
+import {ClipboardDocumentCheckIcon, EyeIcon} from "@heroicons/react/24/solid";
+import {Link} from "react-router-dom";
+import {getDispensaryDataPatient} from "../services/dispansery";
 
 export function Icon({ id, open }) {
     return (
@@ -44,6 +46,32 @@ function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit
         setDoctorId(event.target.value);
     };
 
+    const [dispensaryData, setDispensaryData] = useState(null);
+
+    useEffect(() => {
+        const fetchDispensaryData = async () => {
+            try {
+                const data = await getDispensaryDataPatient(patientId);
+                setDispensaryData(data);
+            } catch (error) {
+                console.error('Ошибка при получении данных о диспансере:', error);
+            }
+        };
+        fetchDispensaryData();
+    }, [patientId]);
+
+    const renderDispensaryDates = () => {
+        if (dispensaryData && dispensaryData.data) {
+            const mouthDays = dispensaryData.data.map(item => item.mouth_days).flat();
+            if (mouthDays.length > 0) {
+                return mouthDays.map(date => (
+                    <li key={date}>{date}</li>
+                ));
+            }
+        }
+        return <li>No dates available</li>;
+    };
+
 
     const data = [
         {
@@ -59,52 +87,151 @@ function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit
         {
             label: "Қабулларни кўриш",
             value: 3,
-            desc: <div>
-                <table className="text-left" >
+            desc: <div className="w-full">
+                <table className="text-left w-full" >
                     <tr>
-                        <th>Қабул санаси:</th>
-                        <td>{mostRecentVisit ? mostRecentVisit.date_at : ''}</td>
-                    </tr>
-                    <tr>
-                    <th>Врач хулосаси:</th>
-                        <td>{remark ? '' : 'Пусто...'}</td>
-                    </tr>
-                    <tr>
-                        <th>Мкб10:</th>
-                        <td>
-                            {mkb10.map(item => (
-                                <div key={item.id}>
-                                    <p>{item.name}</p>
-                                </div>
-                            ))}
+                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-bold"
+                            >
+                                Қабул санаси:
+                            </Typography>
+                        </th>
+                        <td className="border-y border-blue-gray-100 pl-5">
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-normal"
+                            >
+                                {mostRecentVisit ? mostRecentVisit.date_at : ''}
+                            </Typography>
                         </td>
                     </tr>
                     <tr>
-                        <th>Қайта қабул санаси:</th>
-                        <td>{mostRecentVisit ? mostRecentVisit.date_at : ''}</td>
+                    <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                        <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-bold"
+                        >
+                            Врач хулосаси:
+                        </Typography>
+                    </th>
+                        <td className="border-y border-blue-gray-100 pl-5">
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-normal"
+                            >
+                                {remark ? '' : 'Хулоса йоқ...'}
+                            </Typography>
+                        </td>
                     </tr>
                     <tr>
-                        <th>Диспансер хисобига олинганми:</th>
-                        <td>555 77 855</td>
+                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-bold"
+                            >
+                                Мкб10:
+                            </Typography>
+                        </th>
+                        <td className="border-y border-blue-gray-100 pl-5">
+
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-normal"
+                            >
+                                {mkb10.map(item => (
+                                    <div key={item.id}>
+                                        <p>{item.name}</p>
+                                    </div>
+                                ))}
+                            </Typography>
+                        </td>
                     </tr>
                     <tr>
-                        <th>Юкланган файллар:</th>
-                        <td>
-                            {mostRecentVisit ? mostRecentVisit.files.map(file => (
-                                <li key={file.id}>
-                                    <a href={file.file} target="_blank" rel="noopener noreferrer">{file.name}</a>
-                                </li>
-                            )) : ''}
+                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-bold"
+                            >
+                                Қайта қабул санаси:
+                            </Typography>
+                        </th>
+                        <td className="border-y border-blue-gray-100 pl-5">
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-normal"
+                            >
+                                {mostRecentVisit ? mostRecentVisit.date_at : ''}
+                            </Typography>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-bold"
+                            >
+                                Диспансер хисобига олинганми:
+                            </Typography>
+                        </th>
+                        <td className="border-y border-blue-gray-100 pl-5">
+                            {dispensaryData && (
+                                <Typography variant="small" color="blue-gray" className="font-normal">
+                                    {renderDispensaryDates()}
+                                </Typography>
+                            )}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-bold"
+                            >
+                                Юкланган файллар:
+                            </Typography>
+                        </th>
+                        <td className="border-y border-blue-gray-100 pl-5">
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-normal"
+                            >
+                                {mostRecentVisit ? mostRecentVisit.files.map(file => (
+                                    <li key={file.id}>
+                                        <a href={file.url} target="_blank" rel="noopener noreferrer">{file.name}</a>
+                                    </li>
+                                )) : ''}
+                            </Typography>
 
 
                         </td>
                     </tr>
                     <tr>
-                        <th>Қўриш:</th>
-                        <td>
-                            <IconButton size="sm">
-                                <EyeIcon className="w-4 h-4" />
-                            </IconButton>
+                        <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                            <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-bold"
+                            >
+                                Қўриш:
+                            </Typography>
+                        </th>
+                        <td className="border-y border-blue-gray-100 pl-5">
+                            <Button  className='flex rounded-md font-medium capitalize gap-x-2 my-2'><EyeIcon
+                                className='w-4 h-4'/>Кўриш</Button>
                         </td>
                     </tr>
                 </table>

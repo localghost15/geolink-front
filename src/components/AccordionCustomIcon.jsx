@@ -244,7 +244,12 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
 
 
 
-
+    const statusNames = {
+        new: "Янги навбат",
+        examined: "Қабулда",
+        completed: "Завершен",
+        cancelled: "Отменен"
+    };
 
     return (
         <>
@@ -252,7 +257,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
             {mostRecentVisit ? (
                 <div className="mt-4">
                     <Typography className='text-sm font-semibold text-blue-gray-900'>
-                        Жорий холат: {mostRecentVisit.status}
+                        Жорий холат: {statusNames[mostRecentVisit.status] || mostRecentVisit.status}
                     </Typography>
                 </div>
             ) : (
@@ -264,27 +269,21 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
             )}
 
             <div className="flex items-center mb-3 gap-x-1">
+
+
+
+
                 {mostRecentVisit && (mostRecentVisit.status === "new" || mostRecentVisit.status === "queue" ) ? (
-                    <Button
-                        variant="gradient"
-                        color="green"
-                        onClick={handleStartVisit}
-                        className="flex items-center gap-x-1"
-                    >
-                        <PlayCircleIcon className="w-5 h-5 mr-2"/>
-                        Начать визит
+                    <Button onClick={handleStartVisit} className="bg-[#15803d] rounded-md flex items-center font-medium gap-x-1 capitalize">
+                        <PlayCircleIcon className="h-4 w-4" />
+                        Кабул Бошланиш
                     </Button>
                 ) : (
                     mostRecentVisit && mostRecentVisit.status === "examined" && (
-                        <Button
-                            variant="gradient"
-                            color="red"
-                            onClick={handleEndVisit}
-                            className="flex gap-x-1 items-center"
-                        >
-                            <PauseCircleIcon className="w-5 h-5 mr-2"/>
-                            Закончить визит
-                        </Button>
+                    <Button onClick={handleEndVisit} className="flex bg-[#1d4ed8] rounded-md  items-center font-medium gap-x-1 capitalize">
+                    <PauseCircleIcon className="h-4 w-4" />
+                    Кабул Тугатиш
+                    </Button>
                     )
                 )}
             </div>

@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Avatar, Button, Card, CardBody, CardFooter, CardHeader, IconButton, Tooltip, Typography } from "@material-tailwind/react";
-import { MagnifyingGlassIcon, ChevronUpDownIcon, PencilIcon, EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, ChevronUpDownIcon, } from "@heroicons/react/24/outline";
 import ListsMenu from "./components/ListsMenu";
 import { Link, useNavigate } from "react-router-dom";
 import PatientsPostDialog from "./components/PatientsPostDialog";
 import PatientsUpdateDialog from "./components/PatientsUpdateDialog";
 import toast from "react-hot-toast";
 import debounce from 'lodash/debounce';
+import {EyeIcon, PencilIcon, TrashIcon} from "@heroicons/react/24/solid";
 
-const TABLE_HEAD = ["ФИО", "Туғилган санаси", "Телефон", "Харакат"];
+const TABLE_HEAD = ["ID","ФИО", "Туғилган санаси", "Телефон", "Харакат"];
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -100,7 +101,7 @@ export default function Patients() {
 
   return (
       <Card className="h-full w-full rounded-none pt-5">
-        <Typography className="mx-8 mb-2" variant="h3" color="black">
+        <Typography className="mx-8 mb-4" variant="h3" color="black">
           Барча беморлар
         </Typography>
 
@@ -132,13 +133,13 @@ export default function Patients() {
 
         <CardHeader floated={false} shadow={false} className="rounded-none"></CardHeader>
         <CardBody className="overflow-scroll px-0">
-          <table className="mt-4 w-full min-w-max table-auto text-left">
+          <table className=" w-full min-w-max table-auto text-left">
             <thead>
             <tr>
               {TABLE_HEAD.map((head, index) => (
                   <th
                       key={head}
-                      className="cursor-pointer border-x dark:border-neutral-600 border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+                      className="cursor-pointer  dark:border-neutral-600 border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
                   >
                     <Typography
                         variant="small"
@@ -155,9 +156,18 @@ export default function Patients() {
             </tr>
             </thead>
             <tbody>
-            {patients.map((patient) => (
-                <tr className="cursor-pointer transition-colors" key={patient.id}>
-                  <td className="p-4 border-b border-blue-gray-50">
+            {patients.map((patient, index) => (
+                <tr className="cursor-pointer transition-colors hover:bg-gray-100"   onClick={() => navigate(`/patient/${patient.id}`)} key={patient.id}>
+                  <td className="p-2 border-b border-blue-gray-50">
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col">
+                        <Typography variant="small" color="blue-gray" className="font-normal">
+                          {index+1}
+                        </Typography>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-2 border-b border-blue-gray-50">
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col">
                         <Typography variant="small" color="blue-gray" className="font-normal">
@@ -166,34 +176,40 @@ export default function Patients() {
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 border-b border-blue-gray-50 border-x dark:border-neutral-600">
+                  <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
                     <div className="flex flex-col">
                       <Typography variant="small" color="blue-gray" className="font-normal">
                         {patient.birth_at}
                       </Typography>
                     </div>
                   </td>
-                  <td className="p-4 border-b border-blue-gray-50 border-x dark:border-neutral-600">
+                  <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
                     <Typography variant="small" color="blue-gray" className="font-normal">
                       {patient.phone}
                     </Typography>
                   </td>
 
-                  <td className="p-4 border-b border-blue-gray-50 border-x dark:border-neutral-600">
-                    <Tooltip content="Ўзгартириш">
-                      <IconButton onClick={() => handleOpenUpdateDialog(patient)} variant="text">
+                  <td className="p-2 border-b border-blue-gray-50 space-x-1  dark:border-neutral-600">
+                    <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўзгартириш">
+                      <IconButton onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenUpdateDialog(patient)
+                      }} >
                         <PencilIcon className="h-4 w-4" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip content="Бемор картаси">
-                      <Link to={`/patient/${patient.id}`}>
-                        <IconButton variant="text">
+                    <Link to={`/patient/${patient.id}`}>
+                    <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Бемор картаси">
+                        <IconButton >
                           <EyeIcon className="h-4 w-4" />
                         </IconButton>
-                      </Link>
                     </Tooltip>
-                    <Tooltip content="Ўчириш">
-                      <IconButton variant="text" onClick={() => handleRemovePatient(patient.id)}>
+                    </Link>
+                    <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўчириш">
+                      <IconButton  onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemovePatient(patient.id)
+                      }}>
                         <TrashIcon className="h-4 w-4" />
                       </IconButton>
                     </Tooltip>

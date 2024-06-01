@@ -10,6 +10,16 @@ export const getDispensaryData = async () => {
     }
 };
 
+export const getDispensaryDataPatient = async (patientId) => {
+    try {
+        const response = await axiosInstance.get(`/dispensary?patient=${patientId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Ошибка при получении данных о диспансере:', error);
+        throw error;
+    }
+};
+
 export const postDispensaryData = async (date) => {
     try {
         const response = await axiosInstance.post(`/dispensary`, date);

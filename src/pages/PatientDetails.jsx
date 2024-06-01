@@ -286,13 +286,12 @@ export default function PatientDetails() {
                     <dl className="divide-y divide-gray-100">
                       <div className="px-4 py-3 sm:grid sm:grid-cols-1 sm:gap-1 sm:px-0">
                         <div className="flex items-center gap-4">
-                          <Avatar loading="lazy" src={`${patient.avatar}`} size="xl" alt="avatar" variant="rounded"/>
+                          <Avatar loading="lazy" src={`${patient.avatar}`} size="lg" alt="avatar" variant="rounded"/>
                           <div>
                             <h3 className="text-base font-semibold leading-7 text-gray-900">{patient.name}</h3>
                             <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
                           </div>
                         </div>
-                        <Typography className='text-sm font-semibold text-blue-gray-900'>Қабул қўшиш</Typography>
                         <CreateVisit  visit={visitId} patientId={index}/>
                       </div>
                       <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
