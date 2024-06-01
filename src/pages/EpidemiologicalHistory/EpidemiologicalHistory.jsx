@@ -20,7 +20,7 @@ import {
 } from "@material-tailwind/react";
 import EpidemiologicalList from './components/EpidemiologicalList';
 
-const TABLE_HEAD = ["Номланиши", "Харакат"];
+const TABLE_HEAD = ["ID","Номланиши", "Харакат"];
 
 export default function EpidemiologicalHistory() {
     const [newName, setNewName] = useState('');
@@ -210,10 +210,11 @@ export default function EpidemiologicalHistory() {
                         </tr>
                     </thead>
                     <tbody>
-                        {records.map(record => (
+                        {records.map((record, index) => (
                             <tr key={record.id}>
-                                <td className="p-4">{record.name}</td>
-                                <td className="p-4">
+                                <td className="p-2">{index + 1}</td>
+                                <td className="p-2">{record.name}</td>
+                                <td className="p-2">
                                     <Tooltip content="Ўзгартириш">
                                         <IconButton onClick={() => openModal(record)} variant="text">
                                             <PencilIcon className="h-4 w-4" />

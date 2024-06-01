@@ -430,7 +430,7 @@ export default function Doctors() {
             ) : (
                 users.map((user, index) => (
                     <tr key={index} className={`${index % 2 === 0 ? "bg-blue-gray-50" : "bg-white"}`}>
-                      <td className="p-4">
+                      <td className="p-2">
                         <div className="flex items-center gap-3">
                           <div className="flex flex-col">
                             <Typography variant="small" color="blue-gray" className="font-normal">{user.name}</Typography>
@@ -438,22 +438,22 @@ export default function Doctors() {
                           </div>
                         </div>
                       </td>
-                      <td className="p-4">
+                      <td className="p-2">
                         <div className="flex flex-col">
                           <Typography variant="small" color="blue-gray" className="font-normal">{user.login}</Typography>
                         </div>
                       </td>
-                      <td className="p-4">
+                      <td className="p-2">
                         <Typography variant="small" color="blue-gray" className="font-normal">{user.phone}</Typography>
                       </td>
-                      <td className="p-4">
+                      <td className="p-2">
                         <Typography variant="small" color="blue-gray" className="font-normal">
                           {user.roles.map((role, index) => (
                               <Typography key={index} variant="small" color="blue-gray" className="font-normal">{role}</Typography>
                           ))}
                         </Typography>
                       </td>
-                      <td className="p-4">
+                      <td className="p-2">
                         <Tooltip content="Редактировать">
                           <IconButton variant="text" onClick={() => openEditDialog(user)}>
                             <PencilIcon className="h-4 w-4" />

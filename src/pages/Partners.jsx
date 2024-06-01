@@ -6,7 +6,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { PencilIcon, TrashIcon, UserPlusIcon } from '@heroicons/react/24/solid';
 import { Card, Typography, Button, CardBody, CardFooter, IconButton, Tooltip, Input, Menu, MenuHandler, MenuList, MenuItem } from '@material-tailwind/react';
 
-const TABLE_HEAD = ['ФИО', 'Телефон рақами', 'Харакат'];
+const TABLE_HEAD = ['ID','ФИО', 'Телефон рақами', 'Харакат'];
 
 export default function Partners() {
   const { countries } = useCountries();
@@ -189,9 +189,16 @@ export default function Partners() {
           <tbody>
             {partners.map(({ id, name, phone }, index) => {
               const isLast = index === partners.length - 1;
-              const classes = isLast ? 'p-4' : 'p-4 border-b border-blue-gray-50';
+              const classes = isLast ? 'p-2' : 'p-2 border-b border-blue-gray-50';
               return (
                 <tr key={id}>
+                  <td className={classes}>
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col">
+                        <Typography variant="small" color="blue-gray" className="font-normal">{index+1}</Typography>
+                      </div>
+                    </div>
+                  </td>
                   <td className={classes}>
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col">

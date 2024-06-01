@@ -188,6 +188,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
         const payload = {
             mouth_days: [selectedDate],
             patient_id: patientId,
+            visit_id: mostRecentVisit.id,
             service_id: 1,
         };
 

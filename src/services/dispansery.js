@@ -12,7 +12,7 @@ export const getDispensaryData = async () => {
 
 export const getDispensaryDataPatient = async (patientId) => {
     try {
-        const response = await axiosInstance.get(`/dispensary?patient=${patientId}`);
+        const response = await axiosInstance.get(`/dispensary?visit=${patientId}`);
         return response.data;
     } catch (error) {
         console.error('Ошибка при получении данных о диспансере:', error);

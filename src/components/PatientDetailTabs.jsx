@@ -50,26 +50,31 @@ function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit
 
     useEffect(() => {
         const fetchDispensaryData = async () => {
-            try {
-                const data = await getDispensaryDataPatient(patientId);
-                setDispensaryData(data);
-            } catch (error) {
-                console.error('Ошибка при получении данных о диспансере:', error);
+            if (mostRecentVisit && mostRecentVisit.id) {
+                try {
+                    const data = await getDispensaryDataPatient(mostRecentVisit.id);
+                    setDispensaryData(data);
+                } catch (error) {
+                    console.error('Ошибка при получении данных о диспансере:', error);
+                }
             }
         };
         fetchDispensaryData();
-    }, [patientId]);
+    }, [mostRecentVisit]);
 
     const renderDispensaryDates = () => {
         if (dispensaryData && dispensaryData.data) {
+            const currentVisitDate = dispensaryData.data[0]?.visit?.date;
             const mouthDays = dispensaryData.data.map(item => item.mouth_days).flat();
-            if (mouthDays.length > 0) {
-                return mouthDays.map(date => (
-                    <li key={date}>{date}</li>
-                ));
-            }
+            return (
+                <ul>
+                    {mouthDays.length > 0
+                        ? mouthDays.map(date => <li key={date}>{date}</li>)
+                        : <li>Диспансер рўхатлари йуқ</li>}
+                </ul>
+            );
         }
-        return <li>No dates available</li>;
+        return <li>Диспансер рўхатлари йуқ</li>;
     };
 
 

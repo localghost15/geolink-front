@@ -257,6 +257,10 @@ box-shadow: none !important;
     z-index: 999;
 }
 
+.ps-sidebar-container::-webkit-scrollbar {
+    width: 0px !important;
+}
+
 .ps-menu-button {
     z-index: 10 !important;
 }

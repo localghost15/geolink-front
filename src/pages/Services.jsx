@@ -14,7 +14,7 @@ import {
 } from "@material-tailwind/react";
 import axios from 'axios';
 
-const TABLE_HEAD = ["Номланиши", "Нархи", "Хизмат тури","Харакат"];
+const TABLE_HEAD = ["ID", "Номланиши", "Нархи", "Хизмат тури","Харакат"];
 
 export default function Services() {
   const [isOpen, setIsOpen] = useState(false);
@@ -190,10 +190,11 @@ export default function Services() {
           <tbody>
           {services.map((service, index) => (
               <tr key={service.id} className={`transition-colors hover:bg-blue-gray-50 ${index % 2 === 0 ? "bg-blue-gray-50/50" : ""}`}>
-                <td className="p-4 text-sm">{service.name}</td>
-                <td className="p-4 text-sm">{service.price} сум</td>
-                <td className="p-4 text-sm">{service.primary ? 'Основной' : 'Дополнительный'}</td>
-                <td className="p-4 text-sm">
+                <td className="p-2 text-sm">{index+1}</td>
+                <td className="p-2 text-sm">{service.name}</td>
+                <td className="p-2 text-sm">{service.price} сум</td>
+                <td className="p-2 text-sm">{service.primary ? 'Основной' : 'Дополнительный'}</td>
+                <td className="p-2 text-sm">
                   <div className="flex items-center gap-4">
                     <Tooltip content="Ўзгартириш">
                       <IconButton onClick={() => handleEdit(service)} variant="text">
