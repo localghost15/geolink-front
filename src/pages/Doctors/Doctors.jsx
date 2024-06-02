@@ -7,11 +7,10 @@ import {
   Card,
   CardHeader,
   Typography,
-  Button,
   CardBody,
   CardFooter,
   Avatar,
-  IconButton,
+
   Tooltip,
   Input,
   Menu,
@@ -20,6 +19,7 @@ import {
   MenuItem,
   Textarea
 } from "@material-tailwind/react";
+import {Button} from 'antd'
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import DoctorsList from './components/DoctorsList';
@@ -394,7 +394,7 @@ export default function Doctors() {
                               <Button onClick={closeModal} variant="text" fullWidth>
                                 Отмена
                               </Button>
-                              <Button type="submit" variant="gradient" fullWidth>
+                              <Button htmlType="submit" variant="gradient" fullWidth>
                                 {editUser ? "Узгартириш" : "Саклаш"}
                               </Button>
                             </div>
@@ -429,7 +429,7 @@ export default function Doctors() {
                 </tr>
             ) : (
                 users.map((user, index) => (
-                    <tr key={index} className={`${index % 2 === 0 ? "bg-blue-gray-50" : "bg-white"}`}>
+                    <tr key={index} className="bg-white">
                       <td className="p-2">
                         <div className="flex items-center gap-3">
                           <div className="flex flex-col">
@@ -453,16 +453,16 @@ export default function Doctors() {
                           ))}
                         </Typography>
                       </td>
-                      <td className="p-2">
-                        <Tooltip content="Редактировать">
-                          <IconButton variant="text" onClick={() => openEditDialog(user)}>
+                      <td className="p-2 space-x-1">
+                        <Tooltip className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Редактировать">
+                          <Button type="dashed" variant="text" onClick={() => openEditDialog(user)}>
                             <PencilIcon className="h-4 w-4" />
-                          </IconButton>
+                          </Button>
                         </Tooltip>
-                        <Tooltip content="Удалить">
-                          <IconButton variant="text" onClick={() => deleteUser(user.id)}>
+                        <Tooltip className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Удалить">
+                          <Button type="dashed" variant="text" onClick={() => deleteUser(user.id)}>
                             <TrashIcon className="h-4 w-4" />
-                          </IconButton>
+                          </Button>
                         </Tooltip>
                       </td>
                     </tr>

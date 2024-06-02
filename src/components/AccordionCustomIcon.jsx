@@ -41,6 +41,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isVisitStarted, setIsVisitStarted] = useState(false);
+    const [isButtonLoading, setIsButtonLoading] = useState(false);
     const [templates, setTemplates] = useState([]);
 
     // useEffect(() => {
@@ -92,6 +93,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
 
 
     const handleStartVisit = async () => {
+        setIsButtonLoading(true);
         try {
             await startVisit(visitId);
             setMostRecentVisit(prevVisit => ({ ...prevVisit, status: "examined" }));
@@ -99,10 +101,13 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
         } catch (error) {
             console.error('Error starting visit:', error);
             toast.error('Қабулни бошлашда хатолик юз берди!');
+        } finally {
+            setIsButtonLoading(false);
         }
     };
 
     const handleEndVisit = async () => {
+        setIsButtonLoading(true);
         try {
             await endVisit(visitId);
             setMostRecentVisit(prevVisit => ({ ...prevVisit, status: "closed" }));
@@ -110,6 +115,8 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
         } catch (error) {
             console.error('Error ending visit:', error);
             toast.error('Қабулни тугатишда хатолик юз берди!');
+        } finally {
+            setIsButtonLoading(false);
         }
     };
 
@@ -257,13 +264,13 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
             <Typography className='text-sm font-semibold text-blue-gray-900'>Янги қабул харакати ва холати</Typography>
             {mostRecentVisit ? (
                 <div className="mt-4">
-                    <Typography className='text-sm font-semibold text-blue-gray-900'>
+                    <Typography className='text-sm mb-2 font-semibold text-blue-gray-900'>
                         Жорий холат: {statusNames[mostRecentVisit.status] || mostRecentVisit.status}
                     </Typography>
                 </div>
             ) : (
                 <div className="mt-4">
-                    <Typography className='text-sm font-semibold text-blue-gray-900'>
+                    <Typography className='text-sm mb-2 font-semibold text-blue-gray-900'>
                         Жорий холат: Пациентни қабулга қушинг
                     </Typography>
                 </div>
@@ -271,19 +278,34 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
 
             <div className="flex items-center mb-3 gap-x-1">
 
-
-
-
                 {mostRecentVisit && (mostRecentVisit.status === "new" || mostRecentVisit.status === "queue" ) ? (
-                    <Button onClick={handleStartVisit} className="bg-[#15803d] rounded-md flex items-center font-medium gap-x-1 capitalize">
-                        <PlayCircleIcon className="h-4 w-4" />
-                        Кабул Бошланиш
+                    <Button size="sm" onClick={handleStartVisit} className="bg-[#15803d] rounded-md flex items-center font-medium gap-x-1 capitalize">
+                        {isButtonLoading ? (
+                           <>
+                               <ArrowPathIcon className='h-5 w-5 animate-spin' />
+                               <span className="ml-1">Илтимос кутинг</span>
+                           </>
+                        ) : (
+                            <>
+                                <PlayCircleIcon className="h-5 w-5" />
+                                <span className="ml-1">Қабул бошланиш</span>
+                            </>
+                        )}
                     </Button>
                 ) : (
                     mostRecentVisit && mostRecentVisit.status === "examined" && (
-                    <Button onClick={handleEndVisit} className="flex bg-[#1d4ed8] rounded-md  items-center font-medium gap-x-1 capitalize">
-                    <PauseCircleIcon className="h-4 w-4" />
-                    Кабул Тугатиш
+                    <Button size="sm"  onClick={handleEndVisit} className="flex bg-[#1d4ed8] rounded-md  items-center font-medium gap-x-1 capitalize">
+                        {isButtonLoading ? (
+                           <>
+                               <ArrowPathIcon className='h-5 w-5 animate-spin' />
+                               <span className="ml-1">Илтимос кутинг</span>
+                           </>
+                        ) : (
+                            <>
+                                <PauseCircleIcon className="h-5 w-5" />
+                                <span className="ml-1">Қабул тугатиш</span>
+                            </>
+                        )}
                     </Button>
                     )
                 )}

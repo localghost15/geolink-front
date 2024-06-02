@@ -21,6 +21,7 @@ import axios from 'axios';
 import AddServiceVisit from "../Admissions/components/AddServiceVisit";
 import { v4 as uuidv4 } from 'uuid';
 import toast from "react-hot-toast";
+import {Spin} from "antd";
 
 const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
@@ -54,6 +55,7 @@ export default function NewAdmissions() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const handleOpen = (id) => {
         setOpen((cur) => !cur);
         setSelectedVisitId(id);
@@ -67,22 +69,20 @@ export default function NewAdmissions() {
     };
 
     const fetchAdmissions = async (page = 1) => {
+        setIsLoading(true); // Установить состояние загрузки в true
         try {
-            const response = await axiosInstance.get(`/visit?page=${page}&status=examined`);
+            const response = await axiosInstance.get(`/visit?page=${page}&status[0]=examined`);
             const admissionsData = response.data.data;
-
-            // Проверка структуры данных
 
             // Reverse the admissions array to show the ones at the bottom first
             setAdmissions(admissionsData.reverse());
             setCurrentPage(response.data.meta.current_page);
             setTotalPages(response.data.meta.last_page);
-
-
         } catch (error) {
             console.error("Error fetching admissions:", error);
+        } finally {
+            setIsLoading(false); // Установить состояние загрузки в false после завершения запроса
         }
-
     };
 
     const selectedAdmission = admissions.find(admission => admission.id === selectedAdmissionId);
@@ -167,7 +167,7 @@ export default function NewAdmissions() {
     return (
         <>
             <Card className="h-full w-full rounded-none pt-5">
-                <Typography className="mx-8 mb-2" variant="h3" color="black">Қайта навбатлар</Typography>
+                <Typography className="mx-8 mb-2" variant="h4" color="black">Қайта навбатлар</Typography>
                 <div className="flex mx-8 justify-between gap-8">
                     <label
                         className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
@@ -182,10 +182,18 @@ export default function NewAdmissions() {
                     </label>
                 </div>
                 <CardHeader floated={false} shadow={false} className="rounded-none" />
+                <Spin colorPrimary="#000" tip="Загрузка" spinning={isLoading}>
                 <CardBody className="overflow-scroll px-0">
                     <table className="mt-4 w-full min-w-max table-auto text-left">
                         <thead>
                         <tr>
+                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                                <Typography variant="small" color="blue-gray"
+                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                                    ID{" "}
+                                    <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
+                                </Typography>
+                            </th>
                             <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
                                 <Typography variant="small" color="blue-gray"
                                             className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
@@ -259,14 +267,22 @@ export default function NewAdmissions() {
                                                                       debit,
                                                                       order_count,
                                                                       orders
-                                                                  }) => {
+                                                                  }, index) => {
                             const currentId = id;
                             const isLast = id === admissions.length - 1;
-                            const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
+                            const classes = isLast ? "p-2" : "p-2 border-b border-blue-gray-50";
 
                             return (
                                 <tr key={uuidv4()}>
                                     <td className={classes}>
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex flex-col">
+                                                <Typography variant="small" color="blue-gray" className="font-normal">
+                                                    {index+1}
+                                                </Typography>
+                                            </div>
+                                        </div>
+                                    </td>   <td className={classes}>
                                         <div className="flex items-center gap-3">
                                             <div className="flex flex-col">
                                                 <Typography variant="small" color="blue-gray" className="font-normal">
@@ -306,7 +322,7 @@ export default function NewAdmissions() {
                                         <div className="flex items-center gap-3">
                                             <div className="flex flex-col">
                                                     <span
-                                                        className="inline-flex items-center rounded-md bg-yellow-100 text-yellow-800 px-2 py-1 text-sm font-medium ring-1 ring-inset ring-yellow-300">
+                                                        className="inline-flex items-center rounded-sm bg-yellow-100 text-yellow-800 px-2 py-1 text-xs font-medium ring-1 ring-inset ring-yellow-300">
                                                         {statusNames[status]}
                                                     </span>
                                             </div>
@@ -356,6 +372,7 @@ export default function NewAdmissions() {
                         </tbody>
                     </table>
                 </CardBody>
+                </Spin>
                 <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
                     <Typography variant="small" color="blue-gray" className="font-normal">
                         Сахифа {currentPage} / {totalPages}

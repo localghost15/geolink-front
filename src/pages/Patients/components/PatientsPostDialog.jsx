@@ -1,6 +1,6 @@
 // // PatientsPostDialog.js
 import React, { Fragment, useState } from 'react';
-import { Button, Input, Radio, Textarea, Typography } from "@material-tailwind/react";
+import {Input, Radio, Textarea, Typography} from "@material-tailwind/react";
 import { Dialog, Transition } from '@headlessui/react';
 import { UserPlusIcon } from "@heroicons/react/24/solid";
 import DatePicker from '../../../components/DatePicker';
@@ -14,6 +14,8 @@ import 'react-international-phone/style.css';
 import DateSelect from "../../../components/DateSelect";
 import { PhoneNumberUtil } from 'google-libphonenumber';
 import toast from "react-hot-toast";
+import { DownloadOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 
 // Инициализируем объект PhoneNumberUtil
 const phoneUtil = PhoneNumberUtil.getInstance();
@@ -100,9 +102,10 @@ export default function PatientsPostDialog({ onAddPatient }) {
     return (
         <>
             <div className="inset-0 flex items-center justify-center">
-                <Button onClick={openModal} className="flex h-12 items-center gap-3 normal-case font-normal" size="sm">
-                    <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Янги бемор кушиш
+                <Button icon={<UserPlusIcon  className="h-5 w-5 " />} onClick={openModal} className="flex h-10 items-center gap-3 normal-case font-normal" size="sm">
+                    Янги бемор кушиш
                 </Button>
+
             </div>
 
             <Transition appear show={isOpen} as={Fragment}>
@@ -273,7 +276,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                             </div>
                                         </div>
                                         <div className="mt-4">
-                                            <Button type="submit" variant="gradient" fullWidth>
+                                            <Button htmlType="submit" variant="gradient" fullWidth>
                                                 Save
                                             </Button>
                                         </div>

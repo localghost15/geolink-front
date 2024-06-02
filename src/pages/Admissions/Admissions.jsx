@@ -21,6 +21,7 @@ import axios from 'axios';
 import AddServiceVisit from "./components/AddServiceVisit";
 import { v4 as uuidv4 } from 'uuid';
 import toast from "react-hot-toast";
+import {Spin} from "antd";
 
 const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
@@ -54,6 +55,7 @@ export default function Admissions() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const handleOpen = (id) => {
         setOpen((cur) => !cur);
         setSelectedVisitId(id);
@@ -61,28 +63,26 @@ export default function Admissions() {
 
     const statusNames = {
         new: "Янги навбат",
-        queue: "Қабулда",
+        queue: <span>Навбатда &#8230;</span>,
         completed: "Завершен",
         cancelled: "Отменен"
     };
 
     const fetchAdmissions = async (page = 1) => {
+        setIsLoading(true); // Установить состояние загрузки в true
         try {
             const response = await axiosInstance.get(`/visit?page=${page}&status[0]=new&status[1]=queue`);
             const admissionsData = response.data.data;
-
-            // Проверка структуры данных
 
             // Reverse the admissions array to show the ones at the bottom first
             setAdmissions(admissionsData.reverse());
             setCurrentPage(response.data.meta.current_page);
             setTotalPages(response.data.meta.last_page);
-
-
         } catch (error) {
             console.error("Error fetching admissions:", error);
+        } finally {
+            setIsLoading(false); // Установить состояние загрузки в false после завершения запроса
         }
-
     };
 
     const selectedAdmission = admissions.find(admission => admission.id === selectedAdmissionId);
@@ -167,8 +167,9 @@ export default function Admissions() {
 
     return (
         <>
+
             <Card className="h-full w-full rounded-none pt-5">
-                <Typography className="mx-8 mb-2" variant="h3" color="black">Навбатда</Typography>
+                <Typography className="mx-8 mb-2" variant="h4" color="black">Навбатда</Typography>
                 <div className="flex mx-8 justify-between gap-8">
                     <label
                         className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
@@ -183,6 +184,7 @@ export default function Admissions() {
                     </label>
                 </div>
                 <CardHeader floated={false} shadow={false} className="rounded-none" />
+                <Spin colorPrimary="#000" tip="Загрузка" spinning={isLoading}>
                 <CardBody className="overflow-scroll px-0">
                     <table className="mt-4 w-full min-w-max table-auto text-left">
                         <thead>
@@ -399,6 +401,7 @@ export default function Admissions() {
                         </tbody>
                     </table>
                 </CardBody>
+                </Spin>
                 <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
                     <Typography variant="small" color="blue-gray" className="font-normal">
                         Сахифа {currentPage} / {totalPages}

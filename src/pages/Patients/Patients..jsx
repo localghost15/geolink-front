@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Avatar, Button, Card, CardBody, CardFooter, CardHeader, IconButton, Tooltip, Typography } from "@material-tailwind/react";
+import { Avatar, Card, CardBody, CardFooter, CardHeader, Tooltip, Typography } from "@material-tailwind/react";
 import { MagnifyingGlassIcon, ChevronUpDownIcon, } from "@heroicons/react/24/outline";
 import ListsMenu from "./components/ListsMenu";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,8 +9,10 @@ import PatientsUpdateDialog from "./components/PatientsUpdateDialog";
 import toast from "react-hot-toast";
 import debounce from 'lodash/debounce';
 import {EyeIcon, PencilIcon, TrashIcon} from "@heroicons/react/24/solid";
+import {Button} from 'antd'
+import {Spin} from "antd";
 
-const TABLE_HEAD = ["ID","ФИО", "Туғилган санаси", "Телефон", "Харакат"];
+const TABLE_HEAD = ["ID","ФИО", "Туғилган санаси","Манзил" , "Телефон", "Харакат"];
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -18,10 +20,12 @@ export default function Patients() {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCategory, setSearchCategory] = useState("name");
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   const fetchPatients = useCallback(
       debounce(async (query, category) => {
+        setIsLoading(true); // Set loading state to true
         try {
           const token = localStorage.getItem('token');
           const response = await axios.get(`https://back.geolink.uz/api/v1/patients`, {
@@ -33,6 +37,8 @@ export default function Patients() {
           setPatients(response.data.data);
         } catch (error) {
           console.error("Ошибка при получении пациентов:", error);
+        } finally {
+          setIsLoading(false); // Set loading state to false
         }
       }, 300),
       []
@@ -101,7 +107,7 @@ export default function Patients() {
 
   return (
       <Card className="h-full w-full rounded-none pt-5">
-        <Typography className="mx-8 mb-4" variant="h3" color="black">
+        <Typography className="mx-8 mb-4" variant="h4" color="black">
           Барча беморлар
         </Typography>
 
@@ -117,7 +123,7 @@ export default function Patients() {
                 className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
                 onChange={handleSearchChange}
             />
-            <Button size="md">
+            <Button className="bg-black text-white" size="md">
               <MagnifyingGlassIcon className="h-5 w-5" />
             </Button>
           </label>
@@ -132,93 +138,102 @@ export default function Patients() {
         </div>
 
         <CardHeader floated={false} shadow={false} className="rounded-none"></CardHeader>
-        <CardBody className="overflow-scroll px-0">
-          <table className=" w-full min-w-max table-auto text-left">
-            <thead>
-            <tr>
-              {TABLE_HEAD.map((head, index) => (
-                  <th
-                      key={head}
-                      className="cursor-pointer  dark:border-neutral-600 border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                  >
-                    <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+        <Spin colorPrimary="#000" tip="Загрузка" spinning={isLoading}>
+          <CardBody className="overflow-scroll px-0">
+            <table className=" w-full min-w-max table-auto text-left">
+              <thead>
+              <tr>
+                {TABLE_HEAD.map((head, index) => (
+                    <th
+                        key={head}
+                        className="cursor-pointer  dark:border-neutral-600 border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
                     >
-                      {head}{" "}
-                      {index !== TABLE_HEAD.length - 1 && (
-                          <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
-                      )}
-                    </Typography>
-                  </th>
-              ))}
-            </tr>
-            </thead>
-            <tbody>
-            {patients.map((patient, index) => (
-                <tr className="cursor-pointer transition-colors hover:bg-gray-100"   onClick={() => navigate(`/patient/${patient.id}`)} key={patient.id}>
-                  <td className="p-2 border-b border-blue-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="flex flex-col">
-                        <Typography variant="small" color="blue-gray" className="font-normal">
-                          {index+1}
-                        </Typography>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-2 border-b border-blue-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="flex flex-col">
-                        <Typography variant="small" color="blue-gray" className="font-normal">
-                          {patient.name}
-                        </Typography>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
-                    <div className="flex flex-col">
-                      <Typography variant="small" color="blue-gray" className="font-normal">
-                        {patient.birth_at}
+                      <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+                      >
+                        {head}{" "}
+                        {index !== TABLE_HEAD.length - 1 && (
+                            <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
+                        )}
                       </Typography>
-                    </div>
-                  </td>
-                  <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
-                    <Typography variant="small" color="blue-gray" className="font-normal">
-                      {patient.phone}
-                    </Typography>
-                  </td>
+                    </th>
+                ))}
+              </tr>
+              </thead>
+              <tbody>
+              {patients.map((patient, index) => (
+                  <tr className="cursor-pointer transition-colors hover:bg-gray-100"   onClick={() => navigate(`/patient/${patient.id}`)} key={patient.id}>
+                    <td className="p-2 border-b border-blue-gray-50">
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col">
+                          <Typography variant="small" color="blue-gray" className="font-normal">
+                            {index+1}
+                          </Typography>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-2 border-b border-blue-gray-50">
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col">
+                          <Typography variant="small" color="blue-gray" className="font-normal">
+                            {patient.name}
+                          </Typography>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
+                      <div className="flex flex-col">
+                        <Typography variant="small" color="blue-gray" className="font-normal">
+                          {patient.birth_at}
+                        </Typography>
+                      </div>
+                    </td>
+                    <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
+                      <div className="flex flex-col">
+                        <Typography variant="small" color="blue-gray" className="font-normal">
+                          {patient.home_address}
+                        </Typography>
+                      </div>
+                    </td>
+                    <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
+                      <Typography variant="small" color="blue-gray" className="font-normal">
+                        {patient.phone}
+                      </Typography>
+                    </td>
 
-                  <td className="p-2 border-b border-blue-gray-50 space-x-1  dark:border-neutral-600">
-                    <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўзгартириш">
-                      <IconButton onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenUpdateDialog(patient)
-                      }} >
-                        <PencilIcon className="h-4 w-4" />
-                      </IconButton>
-                    </Tooltip>
-                    <Link to={`/patient/${patient.id}`}>
-                    <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Бемор картаси">
-                        <IconButton >
-                          <EyeIcon className="h-4 w-4" />
-                        </IconButton>
-                    </Tooltip>
-                    </Link>
-                    <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўчириш">
-                      <IconButton  onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemovePatient(patient.id)
-                      }}>
-                        <TrashIcon className="h-4 w-4" />
-                      </IconButton>
-                    </Tooltip>
-                  </td>
-                </tr>
-            ))}
-            </tbody>
-          </table>
-        </CardBody>
+                    <td className="p-2 border-b border-blue-gray-50 space-x-1  dark:border-neutral-600">
+                      <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўзгартириш">
+                        <Button type="dashed" className="rounded-full" size="sm" variant="gradient" onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenUpdateDialog(patient)
+                        }} >
+                          <PencilIcon className="h-4 w-4" />
+                        </Button>
+                      </Tooltip>
+                      <Link to={`/patient/${patient.id}`}>
+                        <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Бемор картаси">
+                          <Button type="dashed" className="rounded-full" size="sm" variant="gradient" >
+                            <EyeIcon className="h-4 w-4" />
+                          </Button>
+                        </Tooltip>
+                      </Link>
+                      <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўчириш">
+                        <Button type="dashed" className="rounded-full"  size="sm" variant="gradient"  onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemovePatient(patient.id)
+                        }}>
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </Tooltip>
+                    </td>
+                  </tr>
+              ))}
+              </tbody>
+            </table>
+          </CardBody>
+        </Spin>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
           <Typography variant="small" color="blue-gray" className="font-normal">
             Сахифа 1/10

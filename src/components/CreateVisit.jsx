@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Dialog, Drawer, IconButton, Typography} from "@material-tailwind/react";
+import {Dialog, Drawer, IconButton, Typography} from "@material-tailwind/react";
 import {ClipboardDocumentCheckIcon} from "@heroicons/react/24/solid";
 import Select from "react-select";
 import axiosInstance from "../axios/axiosInstance";
 import toast from "react-hot-toast";
+import {Button} from 'antd'
 
 const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit }) => {
     const [openVisit, setOpenVisit] = React.useState(false);
@@ -71,8 +72,8 @@ const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit }) => {
 
     return (
         <div>
-            <Button fullWidth onClick={openDrawer} className='flex  gap-x-1 my-2'><ClipboardDocumentCheckIcon
-                className='w-4 h-4'/> қабулга қўшиш</Button>
+            <Button icon={<ClipboardDocumentCheckIcon
+                className='w-4 h-4'/>} fullWidth onClick={openDrawer} type="dashed" size="middle" className='capitalize w-full my-2'> қабулга қўшиш</Button>
             <Dialog open={openVisit} handler={openDrawer} className="p-4 z-[999999]">
                 <div className="mb-6 flex items-center justify-between">
                     <Typography variant="h5" color="blue-gray" className="capitalize">

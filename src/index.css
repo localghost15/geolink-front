@@ -33,6 +33,8 @@
     box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
 }
 
+
+
 .react-datepicker__calendar-icon {
     top: 3px;
 }
@@ -45,6 +47,10 @@
 .react-international-phone-country-selector, .react-international-phone-country-selector-button {
     height: 44px !important;
 
+}
+
+.profile-card-bg {
+    background-image: url('/public/9.jpg');
 }
 
 

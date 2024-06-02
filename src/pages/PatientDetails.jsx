@@ -24,6 +24,7 @@ import axiosInstance from "../axios/axiosInstance";
 import {useVisitId} from "../context/VisitIdContext";
 import {fetchVisits} from "../services/visitService";
 import CreateVisit from "../components/CreateVisit";
+import {Spin} from "antd";
 
 function Icon({ id, open }) {
     return (
@@ -257,7 +258,7 @@ export default function PatientDetails() {
   };
   
   if (!patient) {
-      return <div>Загрузка...</div>;
+      return <Spin colorPrimary="#000" tip="Загрузка" ></Spin>;
   }
 
     return (
