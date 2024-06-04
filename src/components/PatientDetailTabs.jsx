@@ -35,7 +35,7 @@ export function Icon({ id, open }) {
 
 
 
-function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit, remark ,setMostRecentVisit }) {
+function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit, remark ,setMostRecentVisit, onUpdateVisits }) {
 
 
     const [selectedTab, setSelectedTab] = useState(1);
@@ -82,7 +82,7 @@ function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit
         {
             label: "Янги қабул",
             value: 1,
-            desc: <AccordionCustomIcon mostRecentVisit={mostRecentVisit} setMostRecentVisit={setMostRecentVisit} visits={visits} visitId={visitId} mkb10={mkb10} patientId={patientId} value={1} />,
+            desc: <AccordionCustomIcon onUpdateVisits={onUpdateVisits} mostRecentVisit={mostRecentVisit} setMostRecentVisit={setMostRecentVisit} visits={visits} visitId={visitId} mkb10={mkb10} patientId={patientId} value={1} />,
         },
         {
             label: "Тўловлар тарихи",

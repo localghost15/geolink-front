@@ -7,7 +7,9 @@ import {
 import {DocumentArrowDownIcon} from "@heroicons/react/24/outline";
 import {PrinterIcon} from "@heroicons/react/24/solid";
 import toast, {Toaster} from "react-hot-toast";
-const POSReceipt = ({ selectedServices, visitId }) => {
+
+
+const AdmissionReceipt = ({ selectedServices}) => {
     const [open, setOpen] = useState(false);
     const [amount, setAmount] = useState(0);
 
@@ -28,7 +30,10 @@ const POSReceipt = ({ selectedServices, visitId }) => {
         }
     );
 
-    const handleOpen = () => setOpen(!open);
+    const handleOpen = (selectedService) => {
+        setOpen(true);
+        // Выполнение действий с выбранным сервисом
+    };
 
     const calculateTotal = () => {
         return selectedServices.reduce((total, service) => {
@@ -37,12 +42,17 @@ const POSReceipt = ({ selectedServices, visitId }) => {
     };
 
     const countQuantities = () => {
+        if (!selectedServices || !Array.isArray(selectedServices)) {
+            return {};
+        }
+
         const counts = {};
         selectedServices.forEach((service) => {
             counts[service.id] = (counts[service.id] || 0) + 1;
         });
         return counts;
     };
+
 
     const quantities = countQuantities();
 
@@ -56,24 +66,7 @@ const POSReceipt = ({ selectedServices, visitId }) => {
         return selectedServices.findIndex((s) => s.id === service.id) === index;
     });
 
-    const handleSubmit = () => {
-        const serviceCountArray = buildServiceCountArray();
 
-        axiosInstance.post(`visit/service_mass/${visitId}`, {
-            service: selectedServices.map(service => service.id),
-            type: "cash",
-            cash: 1,
-            service_count: serviceCountArray
-        })
-            .then(response => {
-                console.log(response.data);
-                handleOpen(open);
-            })
-            .catch(error => {
-                toast.error('Хизмат ни танланг!')
-                console.error('There was an error!', error);
-            });
-    };
 
     const remainingAmount = calculateTotal() - amount;
 
@@ -115,7 +108,7 @@ const POSReceipt = ({ selectedServices, visitId }) => {
                                                 <Input label="Общая сумма" value={calculateTotal().toFixed(2)} disabled type="number" size="lg" />
                                             </CardBody>
                                             <CardFooter className="pt-0">
-                                                <Button onClick={handleSubmit}
+                                                <Button
                                                         className="flex items-center gap-x-1 justify-center"><PrinterIcon className="w-4 h-4"/>Тўлаш ва чекни
                                                     чикариш</Button>
                                             </CardFooter>
@@ -227,4 +220,4 @@ const POSReceipt = ({ selectedServices, visitId }) => {
     );
 };
 
-export default POSReceipt;
+export default AdmissionReceipt;

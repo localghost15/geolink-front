@@ -6,7 +6,7 @@ import axiosInstance from "../axios/axiosInstance";
 import toast from "react-hot-toast";
 import {Button} from 'antd'
 
-const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit }) => {
+const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit ,onUpdateVisits  }) => {
     const [openVisit, setOpenVisit] = React.useState(false);
     const [primaryServices, setPrimaryServices] = useState([]);
     const [doctorId, setDoctorId] = useState('');
@@ -42,7 +42,8 @@ const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit }) => {
             const response = await axiosInstance.post(`/visit?patient_id=${patientId}&doctor_id=${selectedDoctor.value}&service_id=${selectedService.value}`);
             console.log("New visit created:", response.data);
             setOpenVisit(false);
-            toast.success('Visit created successfully');
+            toast.success('Қабул қушилди!');
+            onUpdateVisits();
             // Update mostRecentVisit here
             setMostRecentVisit(response.data); // Обновляем mostRecentVisit с новыми данными
         } catch (error) {

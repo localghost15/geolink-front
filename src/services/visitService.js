@@ -34,3 +34,18 @@ export const uploadFiles = async (visitId, files) => {
         throw error;
     }
 };
+
+export const uploadRemark = async (visitId, editorContent) => {
+    try {
+        const response = await axiosInstance.post(`/visit/remark/${visitId}`, editorContent, {
+            headers: {
+                'Content-Type': 'form-data',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+

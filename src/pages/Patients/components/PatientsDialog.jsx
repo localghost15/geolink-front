@@ -1,91 +1,111 @@
-import React, { Fragment, useState, useEffect } from 'react';
-import { Button, Input, Radio, Textarea, Typography } from "@material-tailwind/react";
+// // PatientsPostDialog.js
+import React, { Fragment, useState } from 'react';
+import {Input, Radio, Textarea, Typography} from "@material-tailwind/react";
 import { Dialog, Transition } from '@headlessui/react';
 import { UserPlusIcon } from "@heroicons/react/24/solid";
 import DatePicker from '../../../components/DatePicker';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
 import LocationSelect from '../../../components/LocationSelect';
 import Dropzone from '../../../components/Dropzone';
 import DoctorsSelect from './DoctorsList';
+import { PhoneInput } from 'react-international-phone';
+import 'react-international-phone/style.css';
+import DateSelect from "../../../components/DateSelect";
+import { PhoneNumberUtil } from 'google-libphonenumber';
+import toast from "react-hot-toast";
+import { DownloadOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 
-export default function PatientsDialog({ selectedPatient, onUpdatePatient }) {
+// Инициализируем объект PhoneNumberUtil
+const phoneUtil = PhoneNumberUtil.getInstance();
+
+
+const validationSchema = yup.object({
+    name: yup.string().required('ФИО майдони шарт'),
+    pinfl: yup.string().optional(),
+    home_address: yup.string().required('Яшаш манзили майдони шарт'),
+    work_address: yup.string().optional(),
+    remark: yup.string().optional(),
+    phone: yup.string()
+        .matches(/^\d{12}$/, 'Телефон рақами 12 та рақамдан иборат бўлиши керак')
+        .required('Телефон обязателен'),
+    profession: yup.string().optional(),
+    district_id: yup.string().required('Район обязателен'),
+    partner_id: yup.string().required('Партнер обязателен'),
+    gender: yup.string().required('Жинси танланг'),
+    birth_at: yup.date().required('Дата рождения обязательна'),
+});
+
+export default function PatientsPostDialog({ onAddPatient }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [patientData, setPatientData] = useState({
-        name: "",
-        pinfl: "",
-        home_address: "",
-        work_address: "",
-        remark: "",
-        phone: "",
-        profession: "",
-        district_id: "",
-        partner_id: "",
-        gender: "",
-        birth_at: "",
-        file: null,
-    });
 
-    useEffect(() => {
-        if (selectedPatient) {
-            setPatientData(selectedPatient); // Initialize patientData with selectedPatient
-            setIsOpen(true);
-        } else {
-            setPatientData({
-                name: "",
-                pinfl: "",
-                home_address: "",
-                work_address: "",
-                remark: "",
-                phone: "",
-                profession: "",
-                district_id: "",
-                partner_id: "",
-                gender: "",
-                birth_at: "",
-                file: null,
+    const formik = useFormik({
+        initialValues: {
+            name: "",
+            pinfl: "",
+            home_address: "",
+            work_address: "",
+            remark: "",
+            phone: "",
+            profession: "",
+            district_id: "",
+            partner_id: "",
+            gender: "",
+            birth_at: "",
+            file: null,
+        },
+        validationSchema: validationSchema,
+        onSubmit: async (values) => {
+            const token = localStorage.getItem("token");
+
+            const formData = new FormData();
+            Object.keys(values).forEach((key) => {
+                if (values[key] !== undefined && values[key] !== null) {
+                    formData.append(key, values[key]);
+                }
             });
-            setIsOpen(false);
-        }
-    }, [selectedPatient]);
+
+            try {
+                const response = await fetch("https://back.geolink.uz/api/v1/patients", {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                });
+
+                const responseData = await response.json();
+                if (response.status === 400 && responseData.message === "The phone has already been taken.") {
+                    formik.setFieldError('phone', "Телефон ракам ишлатилмокда");
+                } else {
+                    onAddPatient(responseData.data);
+                    formik.resetForm();
+                    closeModal();
+                    toast.success('Бемор кушилди!')
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        },
+
+    });
 
     const closeModal = () => {
         setIsOpen(false);
     };
 
-    const handleChange = (e) => {
-        if (e.target) {
-            const { name, value } = e.target;
-            setPatientData((prevData) => ({
-                ...prevData,
-                [name]: value,
-            }));
-        } else {
-            // Handle the case when handleChange is called with a value directly
-            setPatientData((prevData) => ({
-                ...prevData,
-                birth_at: e, // Assuming e is the selected date value
-            }));
-        }
+    const openModal = () => {
+        setIsOpen(true);
     };
-
-    const handleFileChange = (file) => {
-        setPatientData((prevData) => ({
-            ...prevData,
-            file: file, // Сохраняем выбранный файл в состоянии
-        }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        onUpdatePatient(patientData);
-    };
-
 
     return (
         <>
             <div className="inset-0 flex items-center justify-center">
-                <Button onClick={closeModal} className="flex h-12 items-center gap-3 normal-case font-normal" size="sm">
-                    <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Янги бемор қўшиш
+                <Button icon={<UserPlusIcon  className="h-5 w-5 " />} onClick={openModal} className="flex h-10 items-center gap-3 normal-case font-normal" size="sm">
+                    Янги бемор кушиш
                 </Button>
+
             </div>
 
             <Transition appear show={isOpen} as={Fragment}>
@@ -104,7 +124,6 @@ export default function PatientsDialog({ selectedPatient, onUpdatePatient }) {
 
                     <div className="fixed inset-0 overflow-y-auto">
                         <div className="flex min-h-full items-center justify-center p-4 text-center">
-
                             <Transition.Child
                                 as={Fragment}
                                 enter="ease-out duration-300"
@@ -119,54 +138,149 @@ export default function PatientsDialog({ selectedPatient, onUpdatePatient }) {
                                         as="h3"
                                         className="text-lg font-medium leading-6 text-gray-900"
                                     >
-                                        Беморни рўйхатдан ўтказиш
+                                        Add New Patient
                                     </Dialog.Title>
-                                    <div className="mt-2">
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <Input label="ФИО: *" size="lg" name="name" value={patientData.name} onChange={handleChange} />
-                                            <Input label="Иш жойи" size="lg" name="work_address" value={patientData.work_address} onChange={handleChange} />
-                                            <DatePicker label="Туғилган кун" value={patientData.birth_at} onChange={handleChange}  />
-                                        </div>
-                                        <div className="mt-4 grid grid-cols-3 gap-4">
-                                            <LocationSelect label="Туман"  onChange={(selectedValues) => setPatientData({ ...patientData, ...selectedValues })} />
-                                            <DoctorsSelect
-                                                label="Ҳамкор"
-                                                onChange={(partnerId) => setPatientData({ ...patientData, partner_id: partnerId })}
-                                            />
-                                        </div>
-                                        <div className="mt-4 grid grid-cols-3 gap-4">
-                                            <Input label="Касби:" size="lg" name="profession" value={patientData.profession} onChange={handleChange} />
-                                            <Input label="Телефон номер:" size="lg" name="phone" value={patientData.phone} onChange={handleChange} />
-                                            <Input label="Яшаш манзили:" size="lg" name="home_address" value={patientData.home_address} onChange={handleChange} />
-                                        </div>
-                                        <div className="mt-4 grid grid-cols-3 gap-4">
-                                            <Radio
-                                                name="gender"
-                                                value="men"
-                                                checked={patientData.gender === 'men'}
-                                                onChange={() => handleChange({ target: { name: 'gender', value: 'men' } })}
-                                                label="Еркак"
-                                            />
-                                            <Radio
-                                                name="gender"
-                                                value="female"
-                                                checked={patientData.gender === 'women'}
-                                                onChange={() => handleChange({ target: { name: 'gender', value: 'women' } })}
-                                                label="Айол"
-                                            />
-                                            <Input label="ПИНФЛ:" size="lg" name="pinfl" value={patientData.pinfl} onChange={handleChange} />
-                                        </div>
-                                        <div className="mt-4 flex gap-4">
-                                            <Textarea label="Изоҳ:" fullWidth name="remark" value={patientData.remark} onChange={handleChange} />
-                                            <Dropzone onFilesChange={(file) => setPatientData({ ...patientData, file: file })} />
-                                        </div>
-                                    </div>
+                                    <form onSubmit={formik.handleSubmit}>
+                                        <div className="mt-2">
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div>
+                                                    <Input
+                                                        label="ФИО: *"
+                                                        size="lg"
+                                                        name="name"
+                                                        value={formik.values.name}
+                                                        onChange={formik.handleChange}
+                                                        error={formik.touched.name && formik.errors.name}
+                                                        helperText={formik.touched.name && formik.errors.name ? formik.errors.name : ''}
+                                                    />
+                                                    {formik.touched.name && formik.errors.name && (
+                                                        <Typography className="text-xs" color="red" size="xs">
+                                                            {formik.errors.name}
+                                                        </Typography>
+                                                    )}
+                                                </div>
+                                                <Input
+                                                    label="Иш Манзили"
+                                                    size="lg"
+                                                    name="work_address"
+                                                    value={formik.values.work_address}
+                                                    onChange={formik.handleChange}
+                                                />
+                                                <div>
+                                                    <DateSelect
+                                                        value={formik.values.birth_at}
+                                                        error={formik.touched.birth_at && formik.errors.birth_at}
+                                                        onChange={(date) => formik.setFieldValue('birth_at', date)}
+                                                    />
+                                                    {formik.touched.birth_at && formik.errors.birth_at && (
+                                                        <Typography className="text-xs" color="red" size="xs">
+                                                            {formik.errors.birth_at}
+                                                        </Typography>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="mt-4 grid grid-cols-3 gap-4">
+                                                <LocationSelect
+                                                    label="District"
+                                                    error={formik.touched.district_id && formik.errors.district_id}
+                                                    onChange={(selectedValues) => formik.setFieldValue('district_id', selectedValues.district_id)}
+                                                />
+                                                <DoctorsSelect
+                                                    label="Ким йуборилди"
+                                                    onChange={(partnerId) => formik.setFieldValue('partner_id', partnerId)}
+                                                />
+                                            </div>
+                                            <div className="mt-4 grid grid-cols-3 gap-4">
+                                                <Input
+                                                    label="Касби:"
+                                                    size="lg"
+                                                    name="profession"
+                                                    value={formik.values.profession}
+                                                    onChange={formik.handleChange}
+                                                />
+                                                <div>
+                                                    <PhoneInput
+                                                        hideDropdown={true}
+                                                        international={false}
+                                                        defaultCountry="uz"
+                                                        prefix=""
+                                                        value={formik.values.phone}
+                                                        onChange={(phone) => formik.setFieldValue('phone', phone)}
+                                                        inputClass="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    />
+                                                    {formik.touched.phone && formik.errors.phone && (
+                                                        <Typography className="text-xs" color="red" size="xs">
+                                                            {formik.errors.phone}
+                                                        </Typography>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <Input
+                                                        label="Яшаш манзили"
+                                                        size="lg"
+                                                        name="home_address"
+                                                        value={formik.values.home_address}
+                                                        onChange={formik.handleChange}
+                                                        error={formik.touched.home_address && formik.errors.home_address}
+                                                        helperText={formik.touched.home_address && formik.errors.home_address ? formik.errors.home_address : ''}
+                                                    />
+                                                    {formik.touched.home_address && formik.errors.home_address && (
+                                                        <Typography className="text-xs" color="red" size="xs">
+                                                            {formik.errors.home_address}
+                                                        </Typography>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="mt-4 grid grid-cols-3 gap-4">
+                                                <div>
+                                                    <Radio
+                                                        name="gender"
+                                                        value="men"
+                                                        checked={formik.values.gender === 'men'}
+                                                        onChange={() => formik.setFieldValue('gender', 'men')}
+                                                        label="Еркак"
+                                                    />
+                                                    <Radio
+                                                        name="gender"
+                                                        value="women"
+                                                        checked={formik.values.gender === 'women'}
+                                                        onChange={() => formik.setFieldValue('gender', 'women')}
+                                                        label="Айол"
+                                                    />
 
-                                    <div className="mt-4">
-                                        <Button onClick={handleSubmit} variant="gradient" fullWidth>
-                                            Сақлаш
-                                        </Button>
-                                    </div>
+                                                    {formik.touched.gender && formik.errors.gender && (
+                                                        <Typography className="text-xs" color="red" size="xs">
+                                                            {formik.errors.gender}
+                                                        </Typography>
+                                                    )}
+                                                </div>
+                                                <Input
+                                                    label="ПИНФЛ:"
+                                                    size="lg"
+                                                    name="pinfl"
+                                                    value={formik.values.pinfl}
+                                                    onChange={formik.handleChange}
+                                                    error={formik.touched.pinfl && formik.errors.pinfl}
+                                                    helperText={formik.touched.pinfl && formik.errors.pinfl ? formik.errors.pinfl : ''}
+                                                />
+                                            </div>
+                                            <div className="mt-4 flex gap-4">
+                                                <Textarea
+                                                    label="Исох:"
+                                                    fullWidth
+                                                    name="remark"
+                                                    value={formik.values.remark}
+                                                    onChange={formik.handleChange}
+                                                />
+                                                <Dropzone onFilesChange={(file) => formik.setFieldValue('file', file)} />
+                                            </div>
+                                        </div>
+                                        <div className="mt-4">
+                                            <Button htmlType="submit" variant="gradient" fullWidth>
+                                                Save
+                                            </Button>
+                                        </div>
+                                    </form>
                                 </Dialog.Panel>
                             </Transition.Child>
                         </div>
@@ -174,6 +288,7 @@ export default function PatientsDialog({ selectedPatient, onUpdatePatient }) {
                 </Dialog>
             </Transition>
         </>
-    )
+    );
 }
+
 

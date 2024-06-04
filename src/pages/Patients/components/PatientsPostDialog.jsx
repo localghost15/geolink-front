@@ -143,22 +143,22 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                     <form onSubmit={formik.handleSubmit}>
                                         <div className="mt-2">
                                             <div className="grid grid-cols-3 gap-4">
-                                              <div>
-                                                  <Input
-                                                      label="ФИО: *"
-                                                      size="lg"
-                                                      name="name"
-                                                      value={formik.values.name}
-                                                      onChange={formik.handleChange}
-                                                      error={formik.touched.name && formik.errors.name}
-                                                      helperText={formik.touched.name && formik.errors.name ? formik.errors.name : ''}
-                                                  />
-                                                  {formik.touched.name && formik.errors.name && (
-                                                      <Typography className="text-xs" color="red" size="xs">
-                                                          {formik.errors.name}
-                                                      </Typography>
-                                                  )}
-                                              </div>
+                                                <div>
+                                                    <Input
+                                                        label="ФИО: *"
+                                                        size="lg"
+                                                        name="name"
+                                                        value={formik.values.name}
+                                                        onChange={formik.handleChange}
+                                                        error={formik.touched.name && formik.errors.name}
+                                                        helperText={formik.touched.name && formik.errors.name ? formik.errors.name : ''}
+                                                    />
+                                                    {formik.touched.name && formik.errors.name && (
+                                                        <Typography className="text-xs" color="red" size="xs">
+                                                            {formik.errors.name}
+                                                        </Typography>
+                                                    )}
+                                                </div>
                                                 <Input
                                                     label="Иш Манзили"
                                                     size="lg"
@@ -198,62 +198,62 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                     value={formik.values.profession}
                                                     onChange={formik.handleChange}
                                                 />
-                                               <div>
-                                                   <PhoneInput
-                                                       hideDropdown={true}
-                                                       international={false}
-                                                       defaultCountry="uz"
-                                                       prefix=""
-                                                       value={formik.values.phone}
-                                                       onChange={(phone) => formik.setFieldValue('phone', phone)}
-                                                       inputClass="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                                   />
-                                                   {formik.touched.phone && formik.errors.phone && (
-                                                       <Typography className="text-xs" color="red" size="xs">
-                                                           {formik.errors.phone}
-                                                       </Typography>
-                                                   )}
-                                               </div>
-                                              <div>
-                                                  <Input
-                                                      label="Яшаш манзили"
-                                                      size="lg"
-                                                      name="home_address"
-                                                      value={formik.values.home_address}
-                                                      onChange={formik.handleChange}
-                                                      error={formik.touched.home_address && formik.errors.home_address}
-                                                      helperText={formik.touched.home_address && formik.errors.home_address ? formik.errors.home_address : ''}
-                                                  />
-                                                  {formik.touched.home_address && formik.errors.home_address && (
-                                                      <Typography className="text-xs" color="red" size="xs">
-                                                          {formik.errors.home_address}
-                                                      </Typography>
-                                                  )}
-                                              </div>
+                                                <div>
+                                                    <PhoneInput
+                                                        hideDropdown={true}
+                                                        international={false}
+                                                        defaultCountry="uz"
+                                                        prefix=""
+                                                        value={formik.values.phone}
+                                                        onChange={(phone) => formik.setFieldValue('phone', phone)}
+                                                        inputClass="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    />
+                                                    {formik.touched.phone && formik.errors.phone && (
+                                                        <Typography className="text-xs" color="red" size="xs">
+                                                            {formik.errors.phone}
+                                                        </Typography>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <Input
+                                                        label="Яшаш манзили"
+                                                        size="lg"
+                                                        name="home_address"
+                                                        value={formik.values.home_address}
+                                                        onChange={formik.handleChange}
+                                                        error={formik.touched.home_address && formik.errors.home_address}
+                                                        helperText={formik.touched.home_address && formik.errors.home_address ? formik.errors.home_address : ''}
+                                                    />
+                                                    {formik.touched.home_address && formik.errors.home_address && (
+                                                        <Typography className="text-xs" color="red" size="xs">
+                                                            {formik.errors.home_address}
+                                                        </Typography>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="mt-4 grid grid-cols-3 gap-4">
-                                               <div>
-                                                   <Radio
-                                                       name="gender"
-                                                       value="men"
-                                                       checked={formik.values.gender === 'men'}
-                                                       onChange={() => formik.setFieldValue('gender', 'men')}
-                                                       label="Еркак"
-                                                   />
-                                                   <Radio
-                                                       name="gender"
-                                                       value="women"
-                                                       checked={formik.values.gender === 'women'}
-                                                       onChange={() => formik.setFieldValue('gender', 'women')}
-                                                       label="Айол"
-                                                   />
+                                                <div>
+                                                    <Radio
+                                                        name="gender"
+                                                        value="men"
+                                                        checked={formik.values.gender === 'men'}
+                                                        onChange={() => formik.setFieldValue('gender', 'men')}
+                                                        label="Еркак"
+                                                    />
+                                                    <Radio
+                                                        name="gender"
+                                                        value="women"
+                                                        checked={formik.values.gender === 'women'}
+                                                        onChange={() => formik.setFieldValue('gender', 'women')}
+                                                        label="Айол"
+                                                    />
 
-                                                   {formik.touched.gender && formik.errors.gender && (
-                                                       <Typography className="text-xs" color="red" size="xs">
-                                                           {formik.errors.gender}
-                                                       </Typography>
-                                                   )}
-                                               </div>
+                                                    {formik.touched.gender && formik.errors.gender && (
+                                                        <Typography className="text-xs" color="red" size="xs">
+                                                            {formik.errors.gender}
+                                                        </Typography>
+                                                    )}
+                                                </div>
                                                 <Input
                                                     label="ПИНФЛ:"
                                                     size="lg"

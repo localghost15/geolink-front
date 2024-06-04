@@ -13,7 +13,7 @@ import {
     Switch,
     Typography
 } from "@material-tailwind/react";
-import {ArrowPathIcon, PauseCircleIcon, PlayCircleIcon} from "@heroicons/react/24/solid";
+import {ArrowPathIcon, PauseCircleIcon, PlayCircleIcon, PlayPauseIcon} from "@heroicons/react/24/solid";
 import CreateVisit from "./CreateVisit";
 import DatePicker from "./DatePicker";
 import SendAnalysis from "./SignAnalysis";
@@ -26,8 +26,10 @@ import { fetchTemplates} from "../services/templateService";
 import {Icon} from "./PatientDetailTabs";
 import customPluginSubmenu from "../config/customPluginSubmenu";
 import {postDispensaryData} from "../services/dispansery";
+import {Upload, Button as ButtonAnt} from "antd";
+import {DownloadOutlined} from "@ant-design/icons";
 
-export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits, mostRecentVisit,  setMostRecentVisit  }) {
+export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits, mostRecentVisit,  setMostRecentVisit, onUpdateVisits  }) {
     const [open, setOpen] = React.useState(0);
     const [alwaysOpen, setAlwaysOpen] = React.useState(true);
     const [selectedDisease, setSelectedDisease] = useState(null);
@@ -62,8 +64,8 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
 
     const [selectedFiles, setSelectedFiles] = useState([]);
 
-    const handleFileChange = (e) => {
-        setSelectedFiles(Array.from(e.target.files));
+    const handleFileChange = ({ fileList }) => {
+        setSelectedFiles(fileList);
     };
 
     const handleUpload = async () => {
@@ -74,15 +76,16 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
             }
 
             const formData = new FormData();
-            for (let i = 0; i < selectedFiles.length; i++) {
-                formData.append(`upload[${i}]`, selectedFiles[i]);
-            }
+            selectedFiles.forEach((file, index) => {
+                formData.append(`upload[${index}]`, file.originFileObj);
+            });
 
             await uploadFiles(visitId, formData);
             console.log("Files uploaded successfully");
-            toast.success('Расмлар юборилди !')
+            toast.success('Расмлар юборилди !');
         } catch (error) {
             console.error("Error uploading files:", error);
+            toast.error('Файлларни юклашда хатолик юз берди!');
         }
     };
 
@@ -255,7 +258,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
     const statusNames = {
         new: "Янги навбат",
         examined: "Қабулда",
-        completed: "Завершен",
+        queue: "Навбатда",
         cancelled: "Отменен"
     };
 
@@ -294,7 +297,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                     </Button>
                 ) : (
                     mostRecentVisit && mostRecentVisit.status === "examined" && (
-                    <Button size="sm"  onClick={handleEndVisit} className="flex bg-[#1d4ed8] rounded-md  items-center font-medium gap-x-1 capitalize">
+                    <Button size="sm"  onClick={handleEndVisit} className="flex bg-[#be123c] rounded-md  items-center font-medium gap-x-1 capitalize">
                         {isButtonLoading ? (
                            <>
                                <ArrowPathIcon className='h-5 w-5 animate-spin' />
@@ -302,7 +305,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                            </>
                         ) : (
                             <>
-                                <PauseCircleIcon className="h-5 w-5" />
+                                <PlayPauseIcon className="h-5 w-5" />
                                 <span className="ml-1">Қабул тугатиш</span>
                             </>
                         )}
@@ -321,9 +324,9 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                         <AccordionBody>
                             <div className="flex gap-4">
                                 <DatePicker onChange={(date) => setSelectedDate(date)}/>
-                                <Button className='flex gap-x-1' onClick={sendDateData}>
-                                    <ArrowPathIcon className='w-4 h-4'/> Қайта қабулга қўшиш
-                                </Button>
+                                <ButtonAnt icon={<ArrowPathIcon className='w-4 h-4'/>} onClick={sendDateData}>
+                                     Қайта қабулга қўшиш
+                                </ButtonAnt>
                             </div>
                         </AccordionBody>
                     </Accordion>
@@ -342,10 +345,10 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                         <AccordionBody>
                             <div className="flex gap-4">
                                 <DatePicker onChange={(date) => setSelectedDate(date)}/>
-                                <Button className='flex gap-x-1' onClick={() => sendDateDespansery(patientId)}>
+                                <ButtonAnt className='flex gap-x-1' onClick={() => sendDateDespansery(patientId)}>
                                     <ArrowPathIcon className='w-4 h-4'/> {/* Иконка */}
                                     Диспонсер рўйхатига қўшиш
-                                </Button>
+                                </ButtonAnt>
                             </div>
                         </AccordionBody>
                     </Accordion>
@@ -354,28 +357,13 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                             Врач хулосаси
                         </AccordionHeader>
                         <AccordionBody>
-                            <label
-                                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                htmlFor="multiple_files"
-                            >
-                                Рентген, документ , расм ...
-                            </label>
-                            <div>
-                                {selectedFiles.map((file, index) => (
-                                    <div key={index}>{file.name}</div>
-                                ))}
-                            </div>
-                            <input
-                                className="block w-full text-sm text-gray-900 border border-gray-300 cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                                id="multiple_files"
-                                type="file"
-                                multiple
-                                onChange={handleFileChange}
-                            />
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG,
-                                JPG
-                                (MAX. 800x400px).</p>
-                            <Button onClick={handleUpload}>Upload</Button>
+
+                            <Upload  beforeUpload={() => false} fileList={selectedFiles} multiple={true} onChange={handleFileChange}>
+                                <ButtonAnt icon={<DownloadOutlined />}>   Рентген, документ , расм ...</ButtonAnt>
+                            </Upload>
+
+                            <ButtonAnt className="my-2" type="primary" onClick={handleUpload}>Саклаш ва юбориш</ButtonAnt>
+
 
                             {Array.isArray(templates) && (
                                 <SunEditor
@@ -409,8 +397,8 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                                         value={searchQuery}
                                         onChange={handleSearchChange}
                                     />
-                                    <Button onClick={handleSearch} size="md"><MagnifyingGlassIcon className="h-5 w-5"/></Button>
-                                    <Button className='rounded-md' onClick={handleSaveMKB10}>Саклаш</Button>
+                                    <ButtonAnt onClick={handleSearch} size="md"><MagnifyingGlassIcon className="h-5 w-5"/></ButtonAnt>
+                                    <ButtonAnt className='rounded-md' onClick={handleSaveMKB10}>Саклаш</ButtonAnt>
 
                                 </label>
                                 <Card className="h-[40vh] w-full  rounded-none mt-5 overflow-scroll">
@@ -457,9 +445,9 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                                 </Card>
                                 <CardFooter
                                     className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-                                    <Button variant="outlined" size="sm">
+                                    <ButtonAnt variant="outlined" size="sm">
                                         Previous
-                                    </Button>
+                                    </ButtonAnt>
                                     <div className="flex items-center gap-2">
                                         <IconButton variant="outlined" size="sm">
                                             1
@@ -483,9 +471,9 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                                             10
                                         </IconButton>
                                     </div>
-                                    <Button variant="outlined" size="sm">
+                                    <ButtonAnt   variant="outlined" size="sm">
                                         Next
-                                    </Button>
+                                    </ButtonAnt>
                                 </CardFooter>
                             </div>
                         </AccordionBody>

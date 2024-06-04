@@ -5,7 +5,6 @@ import {
   Accordion,
   AccordionHeader,
   AccordionBody,
-  Button,
   IconButton,
   Drawer,
   Input,
@@ -24,7 +23,7 @@ import axiosInstance from "../axios/axiosInstance";
 import {useVisitId} from "../context/VisitIdContext";
 import {fetchVisits} from "../services/visitService";
 import CreateVisit from "../components/CreateVisit";
-import {Spin} from "antd";
+import {Spin, Button} from "antd";
 
 function Icon({ id, open }) {
     return (
@@ -74,65 +73,64 @@ export default function PatientDetails() {
     }
   }, [visits, index]);
 
-  useEffect(() => {
-    const fetchPatientVisits = async () => {
-      try {
-        let visitData = [];
-        if (!dataCache[index]) {
-          const fetchAllPages = async (patientId) => {
-            let allData = [];
-            let page = 1;
-            let lastPage = 1;
+  const fetchPatientVisits = async () => {
+    try {
+      let visitData = [];
+      if (!dataCache[index]) {
+        const fetchAllPages = async (patientId) => {
+          let allData = [];
+          let page = 1;
+          let lastPage = 1;
 
-            while (page <= lastPage) {
-              try {
-                const response = await fetchVisits(patientId, page);
-                const pageData = response.data.data;
-                const meta = response.data.meta;
+          while (page <= lastPage) {
+            try {
+              const response = await fetchVisits(patientId, page);
+              const pageData = response.data.data;
+              const meta = response.data.meta;
 
-                allData = [...allData, ...pageData];
-
-                lastPage = meta.last_page; // обновляем количество страниц
-                page += 1; // переходим к следующей странице
-              } catch (error) {
-                console.error(`Ошибка при получении данных со страницы ${page}:`, error);
-                break;
-              }
+              allData = [...allData, ...pageData];
+              lastPage = meta.last_page; // обновляем количество страниц
+              page += 1; // переходим к следующей странице
+            } catch (error) {
+              console.error(`Ошибка при получении данных со страницы ${page}:`, error);
+              break;
             }
+          }
 
-            return allData;
-          };
+          return allData;
+        };
 
-          visitData = await fetchAllPages(index);
+        visitData = await fetchAllPages(index);
 
-          setDataCache(prevCache => ({
-            ...prevCache,
-            [index]: visitData,
-          }));
-        } else {
-          visitData = dataCache[index];
-        }
-
-        const recentVisit = visitData.find(visit =>
-            visit.parent_id === null &&
-            ( visit.bill === "payed" || visit.bill === "pending") && (visit.status === "new" || visit.status === "examined" || visit.status === "queue")
-        );
-
-        if (recentVisit) {
-          setVisitId(recentVisit.id);
-        } else {
-          setVisitId(null);
-        }
-
-        setVisits(prevVisits => ({
-          ...prevVisits,
+        setDataCache(prevCache => ({
+          ...prevCache,
           [index]: visitData,
         }));
-      } catch (error) {
-        console.error('Ошибка при получении данных о визитах:', error);
+      } else {
+        visitData = dataCache[index];
       }
-    };
 
+      const recentVisit = visitData.find(visit =>
+          visit.parent_id === null &&
+          (visit.bill === "payed" || visit.bill === "pending") && (visit.status === "new" || visit.status === "examined" || visit.status === "queue")
+      );
+
+      if (recentVisit) {
+        setVisitId(recentVisit.id);
+      } else {
+        setVisitId(null);
+      }
+
+      setVisits(prevVisits => ({
+        ...prevVisits,
+        [index]: visitData,
+      }));
+    } catch (error) {
+      console.error('Ошибка при получении данных о визитах:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchPatientVisits();
   }, [index, dataCache]);
 
@@ -261,6 +259,8 @@ export default function PatientDetails() {
       return <Spin colorPrimary="#000" tip="Загрузка" ></Spin>;
   }
 
+
+
     return (
         <>
         <div className="pl-5 pb-5">
@@ -293,7 +293,7 @@ export default function PatientDetails() {
                             <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
                           </div>
                         </div>
-                        <CreateVisit  visit={visitId} patientId={index}/>
+                        <CreateVisit onUpdateVisits={fetchPatientVisits} visit={visitId} patientId={index}/>
                       </div>
                       <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                         <dt className="text-sm font-medium leading-6 text-gray-900">Иш жойи:</dt>
@@ -413,7 +413,7 @@ export default function PatientDetails() {
                 </div>
             )}
             <div className="w-full tabs-part max-w-full overflow-y-auto h-[85vh] pr-3 pl-3">
-              <PatientDetailTabs mostRecentVisit={mostRecentVisit} setMostRecentVisit={setMostRecentVisit} visits={visits} visitId={visitId} patientName={patient.name} mkb10={patient.mkb10}  remark={patient.remark} patientId={index}/>
+              <PatientDetailTabs onUpdateVisits={fetchPatientVisits} mostRecentVisit={mostRecentVisit} setMostRecentVisit={setMostRecentVisit} visits={visits} visitId={visitId} patientName={patient.name} mkb10={patient.mkb10}  remark={patient.remark} patientId={index}/>
             </div>
           </div>
         </>
