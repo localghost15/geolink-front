@@ -3,7 +3,7 @@ import {
     MagnifyingGlassIcon,
     ChevronUpDownIcon,
 } from "@heroicons/react/24/outline";
-import { BanknotesIcon } from "@heroicons/react/24/solid";
+import {BanknotesIcon, PrinterIcon} from "@heroicons/react/24/solid";
 import {
     Card,
     CardHeader,
@@ -61,6 +61,10 @@ export default function Admissions() {
     const handleOpen = (id) => {
         setOpen((cur) => !cur);
         setSelectedVisitId(id);
+    };
+
+    const handlePrint = () => {
+        window.print(); // Эта функция открывает окно печати браузера
     };
 
 
@@ -608,11 +612,16 @@ export default function Admissions() {
                             </>
                         )}
                     </CardBody>
-                    {!isPaymentCompleted && (
+                    {!isPaymentCompleted ? (
                         <CardFooter className="pt-0">
-                            <Button onClick={handlePayment}>Оплатить</Button>
+                            <Button className="w-full" onClick={handlePayment}>Оплатить</Button>
+                        </CardFooter>
+                    ) : (
+                        <CardFooter className="pt-0">
+                            <Button className="w-full" onClick={handlePrint}>Чекни чиқариш</Button>
                         </CardFooter>
                     )}
+
                 </Card>
             </Dialog>
 
