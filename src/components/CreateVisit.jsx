@@ -73,7 +73,7 @@ const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit ,onUpdateVi
 
     return (
         <div>
-            <Button icon={<ClipboardDocumentCheckIcon
+            <Button disabled={mostRecentVisit ? mostRecentVisit.status === "examined" : ''}  icon={<ClipboardDocumentCheckIcon
                 className='w-4 h-4'/>} fullWidth onClick={openDrawer} type="dashed" size="middle" className='capitalize w-full my-2'> қабулга қўшиш</Button>
             <Dialog open={openVisit} handler={openDrawer} className="p-4 z-[999999]">
                 <div className="mb-6 flex items-center justify-between">

@@ -293,7 +293,7 @@ export default function PatientDetails() {
                             <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
                           </div>
                         </div>
-                        <CreateVisit onUpdateVisits={fetchPatientVisits} visit={visitId} patientId={index}/>
+                        <CreateVisit mostRecentVisit={mostRecentVisit} onUpdateVisits={fetchPatientVisits} visit={visitId} patientId={index}/>
                       </div>
                       <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                         <dt className="text-sm font-medium leading-6 text-gray-900">Иш жойи:</dt>

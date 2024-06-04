@@ -8,7 +8,7 @@ import {
     Tab,
     TabPanel, IconButton, Typography, Button,
 } from "@material-tailwind/react";
-
+import {Image} from "antd";
 import axios from 'axios';
 
 import { PaymentHistoryTable } from './PaymentHistoryTable';
@@ -215,9 +215,16 @@ function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit
                                 className="font-normal"
                             >
                                 {mostRecentVisit ? mostRecentVisit.files.map(file => (
-                                    <li key={file.id}>
-                                        <a href={file.url} target="_blank" rel="noopener noreferrer">{file.name}</a>
-                                    </li>
+                                        <Image.PreviewGroup key={file.id}
+                                            preview={{
+                                                onChange: (current, prev) => console.log(`current index: ${current}, prev index: ${prev}`),
+                                            }}
+                                        >
+                                            <Image
+                                                width={50}
+                                                src={file.url}
+                                            />
+                                        </Image.PreviewGroup>
                                 )) : ''}
                             </Typography>
 
