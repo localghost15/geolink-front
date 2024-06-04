@@ -21,7 +21,7 @@ import axios from 'axios';
 import AddServiceVisit from "../Admissions/components/AddServiceVisit";
 import { v4 as uuidv4 } from 'uuid';
 import toast from "react-hot-toast";
-import {Spin} from "antd";
+import {Spin, Tag} from "antd";
 
 const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
@@ -321,10 +321,15 @@ export default function NewAdmissions() {
                                     <td className={classes}>
                                         <div className="flex items-center gap-3">
                                             <div className="flex flex-col">
-                                                    <span
-                                                        className="inline-flex items-center rounded-sm bg-yellow-100 text-yellow-800 px-2 py-1 text-xs font-medium ring-1 ring-inset ring-yellow-300">
-                                                        {statusNames[status]}
-                                                    </span>
+                                                <Tag bordered={false} color={`${
+                                                    status === 'new'
+                                                        ? 'blue'
+                                                        : status === 'queue'
+                                                            ? 'gold'
+                                                            : 'success'
+                                                }`}>
+                                                    {statusNames[status] || status}
+                                                </Tag>
                                             </div>
                                         </div>
                                     </td>

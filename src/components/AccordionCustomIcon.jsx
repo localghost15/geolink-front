@@ -26,8 +26,11 @@ import { fetchTemplates} from "../services/templateService";
 import {Icon} from "./PatientDetailTabs";
 import customPluginSubmenu from "../config/customPluginSubmenu";
 import {postDispensaryData} from "../services/dispansery";
-import {Upload, Button as ButtonAnt} from "antd";
+import {Upload, Button as ButtonAnt, Badge, Tag} from "antd";
 import {DownloadOutlined} from "@ant-design/icons";
+import {MdOutlineSync} from "react-icons/md";
+import {BsFillStopCircleFill} from "react-icons/bs";
+import {BiSolidHourglassTop} from "react-icons/bi";
 
 export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits, mostRecentVisit,  setMostRecentVisit, onUpdateVisits  }) {
     const [open, setOpen] = React.useState(0);
@@ -268,8 +271,11 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
             {mostRecentVisit ? (
                 <div className="mt-4">
                     <Typography className='text-sm mb-2 font-semibold text-blue-gray-900'>
-                        Жорий холат: {statusNames[mostRecentVisit.status] || mostRecentVisit.status}
+                        Жорий холат: <Tag  bordered={false} color="gold">
+                        {statusNames[mostRecentVisit.status] || mostRecentVisit.status}
+                    </Tag>
                     </Typography>
+
                 </div>
             ) : (
                 <div className="mt-4">
@@ -305,7 +311,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                            </>
                         ) : (
                             <>
-                                <PlayPauseIcon className="h-5 w-5" />
+                                <BiSolidHourglassTop className="h-5 w-5" />
                                 <span className="ml-1">Қабул тугатиш</span>
                             </>
                         )}

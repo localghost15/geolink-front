@@ -6,16 +6,16 @@ import {
     TabsHeader,
     TabsBody,
     Tab,
-    TabPanel, IconButton, Typography, Button,
+    TabPanel, IconButton, Typography
 } from "@material-tailwind/react";
-import {Image} from "antd";
+import {Image, Button} from "antd";
 import axios from 'axios';
 
 import { PaymentHistoryTable } from './PaymentHistoryTable';
 import AccordionCustomIcon from "./AccordionCustomIcon";
 import {fetchVisits} from "../services/visitService";
 import {ClipboardDocumentCheckIcon, EyeIcon} from "@heroicons/react/24/solid";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {getDispensaryDataPatient} from "../services/dispansery";
 
 export function Icon({ id, open }) {
@@ -40,6 +40,12 @@ function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit
 
     const [selectedTab, setSelectedTab] = useState(1);
     const [doctorId, setDoctorId] = useState('');
+
+    const navigate = useNavigate();
+
+    const handleClick = () => {
+        navigate(`/patient/admission/${patientId}`); // Replace with your desired route
+    };
 
 
     const handleDoctorIdChange = (event) => {
@@ -214,18 +220,20 @@ function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit
                                 color="blue-gray"
                                 className="font-normal"
                             >
-                                {mostRecentVisit ? mostRecentVisit.files.map(file => (
-                                        <Image.PreviewGroup key={file.id}
+
+                                        <Image.PreviewGroup
                                             preview={{
                                                 onChange: (current, prev) => console.log(`current index: ${current}, prev index: ${prev}`),
                                             }}
                                         >
-                                            <Image
+                                            {mostRecentVisit ? mostRecentVisit.files.map(file => (
+                                            <Image key={file.id}
                                                 width={50}
                                                 src={file.url}
                                             />
+                                            )) : ''}
                                         </Image.PreviewGroup>
-                                )) : ''}
+
                             </Typography>
 
 
@@ -242,8 +250,8 @@ function PatientDetailTabs({ patientId, mkb10, visits, visitId , mostRecentVisit
                             </Typography>
                         </th>
                         <td className="border-y border-blue-gray-100 pl-5">
-                            <Button  className='flex rounded-md font-medium capitalize gap-x-2 my-2'><EyeIcon
-                                className='w-4 h-4'/>Кўриш</Button>
+                            <Button onClick={handleClick} icon={<EyeIcon
+                                className='w-4 h-4'/>} className='flex rounded-md items-center font-medium capitalize my-2'>Кўриш</Button>
                         </td>
                     </tr>
                 </table>

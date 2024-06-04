@@ -9,10 +9,10 @@ import PatientsUpdateDialog from "./components/PatientsUpdateDialog";
 import toast from "react-hot-toast";
 import debounce from 'lodash/debounce';
 import {EyeIcon, PencilIcon, TrashIcon} from "@heroicons/react/24/solid";
-import {Button} from 'antd'
+import {Badge, Button, Tag} from 'antd'
 import {Spin} from "antd";
 
-const TABLE_HEAD = ["ID","ФИО", "Туғилган санаси","Манзил" , "Телефон", "Харакат"];
+const TABLE_HEAD = ["ID","ФИО", "Туғилган санаси","Холати","Манзил" , "Телефон", "Харакат"];
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -105,6 +105,24 @@ export default function Patients() {
     setSearchQuery(e.target.value);
   };
 
+  const statusLabels = {
+    queue: 'Навбатда...',
+    examined: 'Қабулда...',
+    new: 'Янги кабул',
+    pending: 'Ожидает оплаты',
+    payed: 'Оплачено',
+    revisit: 'Повторный визит'
+  };
+
+  const statusColors = {
+    queue: 'gold',
+    examined: 'green',
+    new: 'blue',
+    pending: 'orange',
+    payed: 'purple',
+    revisit: 'red'
+  };
+
   return (
       <Card className="h-full w-full rounded-none pt-5">
         <Typography className="mx-8 mb-4" variant="h4" color="black">
@@ -188,6 +206,14 @@ export default function Patients() {
                         <Typography variant="small" color="blue-gray" className="font-normal">
                           {patient.birth_at}
                         </Typography>
+                      </div>
+                    </td>
+                    <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
+                      <div className="">
+                        <Tag bordered={false} color={statusColors[patient.visit_status.status]}>
+                          {statusLabels[patient.visit_status.status]}
+                        </Tag>
+
                       </div>
                     </td>
                     <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">

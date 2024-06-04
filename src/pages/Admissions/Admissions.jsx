@@ -21,7 +21,7 @@ import axios from 'axios';
 import AddServiceVisit from "./components/AddServiceVisit";
 import { v4 as uuidv4 } from 'uuid';
 import toast from "react-hot-toast";
-import {InputNumber, Spin, Button, Select} from "antd";
+import {InputNumber, Spin, Button, Select, Tag} from "antd";
 
 const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
@@ -355,17 +355,15 @@ export default function Admissions() {
                                     <td className={classes}>
                                         <div className="flex items-center gap-3">
                                             <div className="flex flex-col">
-                                                   <span
-                                                       className={`inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                                                           status === 'new'
-                                                               ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
-                                                               : status === 'queue'
-                                                                   ? 'bg-green-50 text-green-700 ring-green-600/20'
-                                                                   : 'bg-green-50 text-green-700 ring-green-600/20'
-                                                       }`}
-                                                   >
-    {statusNames[status] || status}
-</span>
+                                                <Tag bordered={false} color={`${
+                                                    status === 'new'
+                                                        ? 'blue'
+                                                        : status === 'queue'
+                                                            ? 'gold'
+                                                            : 'success'
+                                                }`}>
+                                                    {statusNames[status] || status}
+                                                </Tag>
 
                                             </div>
                                         </div>
@@ -454,9 +452,7 @@ export default function Admissions() {
             <Dialog size="sm" open={openPayDialog} handler={setOpenPayDialog} className="bg-transparent shadow-none">
                 <Card className="p-0">
                     <CardBody className="flex flex-col gap-4">
-                        {/*<div className="border border-gray-300 rounded-md px-3 py-2 mb-4">*/}
-                        {/*    Выбранная услуга: {selectedOrder && admissions.find(admission => admission.orders.id === selectedOrder)?.orders.service.name}*/}
-                        {/*</div>*/}
+
 
                         {/*<div className="border border-gray-300 rounded-md px-3 py-2 mb-4">*/}
                         {/*    Заплачено: {selectedOrder && admissions.find(admission => admission.orders.id === selectedOrder)?.orders.payed}*/}

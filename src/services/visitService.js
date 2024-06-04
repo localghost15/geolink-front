@@ -17,6 +17,10 @@ export const fetchVisits = async (patientId, page) => {
     const payload = { signal: new AbortController().signal };
     return axiosInstance.get(`/visit?patient_id=${patientId}&page=${page}`, payload);
 };
+export const fetchRevisits = async (patientId, page) => {
+    const payload = { signal: new AbortController().signal };
+    return axiosInstance.get(`/visit?patient_id=${patientId}&page=${page}&status[0]=revisit`, payload);
+};
 // Функция для отправки данных о дате визита
 export const sendDateToServer = async (visitId, date) => {
     return axiosInstance.post(`/visit/revisit/${visitId}`, date);
