@@ -8,7 +8,9 @@ import {
   IconButton,
   Drawer,
   Input,
-  Switch
+  Switch,
+  Dialog,
+  Card, CardBody, DialogFooter
 } from "@material-tailwind/react";
 import { useParams } from 'react-router-dom';
 import Select from 'react-select';
@@ -18,27 +20,28 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/solid";
-import {MagnifyingGlassIcon} from "@heroicons/react/24/outline";
+import {ChevronUpDownIcon, MagnifyingGlassIcon} from "@heroicons/react/24/outline";
 import axiosInstance from "../axios/axiosInstance";
 import {useVisitId} from "../context/VisitIdContext";
 import {fetchVisits} from "../services/visitService";
 import CreateVisit from "../components/CreateVisit";
-import {Spin, Button} from "antd";
+import {Spin, Button, Checkbox} from "antd";
+import toast from "react-hot-toast";
 
 function Icon({ id, open }) {
-    return (
+  return (
       <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2}
-        stroke="currentColor"
-        className={`${id === open ? "rotate-180" : ""} h-5 w-5 transition-transform`}
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className={`${id === open ? "rotate-180" : ""} h-5 w-5 transition-transform`}
       >
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
       </svg>
-    );
-  }
+  );
+}
 
 export default function PatientDetails() {
   const { index } = useParams();
@@ -157,47 +160,17 @@ export default function PatientDetails() {
 
   const handleOpen = (value) => setOpen(open === value ? 0 : value);
 
+  const [openEpidem, setOpenEpidem] = React.useState(false);
 
+  const handleOpenEpidem = () => {
+    setOpenEpidem(!openEpidem);
+    if (!openEpidem) {
+      fetchRecords(); // Вызываем fetchRecords только при открытии раздела
+    }
+  };
 
+  const token = localStorage.getItem('token');
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const fetchPatient = async () => {
-      try {
-        const response = await axios.get(`https://back.geolink.uz/api/v1/patients/${index}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        });
-        setPatient(response.data.data);
-        const initialSelectedEpidemIds = response.data.data.epidem.map(item => item.id);
-        setSelectedEpidemIds(initialSelectedEpidemIds);
-
-        // Отфильтровать выбранные эпидемии и поместить их в начало массива
-        const selectedEpidemData = response.data.data.epidem.filter(item => initialSelectedEpidemIds.includes(item.id));
-        const unselectedEpidemData = response.data.data.epidem.filter(item => !initialSelectedEpidemIds.includes(item.id));
-        const sortedEpidemData = [...selectedEpidemData, ...unselectedEpidemData];
-        setEpidemData(sortedEpidemData);
-        if (response.data.data.partner_id) {
-          const partnerResponse = await axios.get(`https://back.geolink.uz/api/v1/partners/${response.data.data.partner_id}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            }
-          });
-          setPartnerName(partnerResponse.data.data.name);
-        }
-        if (response.data.data.district_id) {
-          const districtResponse = await axios.get(`https://back.geolink.uz/api/v1/global/district/${response.data.data.district_id}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            }
-          });
-          setProvinceName(districtResponse.data.data.province.name);
-          setDistrictName(districtResponse.data.data.name);
-        }
-      } catch (error) {
-        console.error("Ошибка при получении информации о пациенте:", error);
-      }
-    };
     fetchRecords();
     fetchPatient();
   }, [index]);
@@ -207,27 +180,50 @@ export default function PatientDetails() {
       const response = await axiosInstance.get("/epidemiological");
       const epidemData = response.data.data;
       setEpidemData(epidemData);
-
-      // Устанавливаем начальное состояние для выбранных эпидемий
-      const initialSelectedEpidemIds = {};
-      epidemData.forEach(item => {
-        initialSelectedEpidemIds[item.id] = item.active;
-      });
-      setSelectedEpidem(initialSelectedEpidemIds); // Установить начальные выбранные эпидемии
     } catch (error) {
       console.error("Ошибка при получении списка эпидемии:", error);
+    }
+  };
+  const fetchPatient = async () => {
+    try {
+      const response = await axios.get(`https://back.geolink.uz/api/v1/patients/${index}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      setPatient(response.data.data);
+      const initialSelectedEpidemIds = response.data.data.epidem.map(item => item.id);
+      setSelectedEpidemIds(initialSelectedEpidemIds);
+
+      // Отфильтровать выбранные эпидемии и поместить их в начало массива
+      const selectedEpidemData = response.data.data.epidem.filter(item => initialSelectedEpidemIds.includes(item.id));
+      const unselectedEpidemData = response.data.data.epidem.filter(item => !initialSelectedEpidemIds.includes(item.id));
+      const sortedEpidemData = [...selectedEpidemData, ...unselectedEpidemData];
+      setEpidemData(sortedEpidemData);
+      if (response.data.data.partner_id) {
+        const partnerResponse = await axios.get(`https://back.geolink.uz/api/v1/partners/${response.data.data.partner_id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        });
+        setPartnerName(partnerResponse.data.data.name);
+      }
+      if (response.data.data.district_id) {
+        const districtResponse = await axios.get(`https://back.geolink.uz/api/v1/global/district/${response.data.data.district_id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        });
+        setProvinceName(districtResponse.data.data.province.name);
+        setDistrictName(districtResponse.data.data.name);
+      }
+    } catch (error) {
+      console.error("Ошибка при получении информации о пациенте:", error);
     }
   };
 
   const sendEpidemData = async () => {
     const activeEpidems = epidemData.filter(item => item.active).map(item => item.id);
-    if (activeEpidems.length === 0) {
-      alert("The epidem field is required.");
-      return;
-    }
-
-    setSelectedEpidem(activeEpidems); // Установить выбранные эпидемии
-
     const data = { epidem: activeEpidems };
 
     const config = {
@@ -243,6 +239,9 @@ export default function PatientDetails() {
     try {
       const response = await axios.request(config);
       console.log("Epidem data sent successfully:", response.data);
+      fetchPatient();
+      toast.success('Епидемиологик қушилди !');
+      setOpenEpidem(false);
     } catch (error) {
       console.error("Error sending epidem data:", error);
     }
@@ -250,19 +249,22 @@ export default function PatientDetails() {
 
 
 
+
+
+
   const CUSTOM_ANIMATION = {
     mount: { scale: 1 },
     unmount: { scale: 0.9 },
   };
-  
+
   if (!patient) {
-      return <Spin colorPrimary="#000" tip="Загрузка" ></Spin>;
+    return <Spin colorPrimary="#000" tip="Загрузка" ></Spin>;
   }
 
 
 
-    return (
-        <>
+  return (
+      <>
         <div className="pl-5 pb-5">
           <Switch  label={isVisible ? <div className="flex gap-x-1 items-center">
                 <EyeSlashIcon className="w-4 h-4"/> Бемор картасини яшириш
@@ -277,145 +279,193 @@ export default function PatientDetails() {
 
         </div>
 
-          <div className="flex w-full sticky top-0 relative space-x-10">
-            {isVisible && (
-                <div className='pl-10  w-1/2'>
-                  <div className="px-4 sm:px-0 ">
-                    <h3 className="text-xl font-semibold leading-7 text-gray-900">Бемор картаси</h3>
-                  </div>
-                  <div className="mt-3 border-t border-gray-100">
-                    <dl className="divide-y divide-gray-100">
-                      <div className="px-4 py-3 sm:grid sm:grid-cols-1 sm:gap-1 sm:px-0">
-                        <div className="flex items-center gap-4">
-                          <Avatar loading="lazy" src={`${patient.avatar}`} size="lg" alt="avatar" variant="rounded"/>
-                          <div>
-                            <h3 className="text-base font-semibold leading-7 text-gray-900">{patient.name}</h3>
-                            <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
-                          </div>
-                        </div>
-                        <CreateVisit mostRecentVisit={mostRecentVisit} onUpdateVisits={fetchPatientVisits} visit={visitId} patientId={index}/>
-                      </div>
-                      <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                        <dt className="text-sm font-medium leading-6 text-gray-900">Иш жойи:</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{patient.work_address}</dd>
-                      </div>
-                      <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                        <dt className="text-sm font-medium leading-6 text-gray-900">Туғилган сана:</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">1988-04-13</dd>
-                      </div>
-                      <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                        <dt className="text-sm font-medium leading-6 text-gray-900">Манзил:</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{patient.home_address}</dd>
-                      </div>
-                      <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                        <dt className="text-sm font-medium leading-6 text-gray-900">Телефон номер:</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          {patient.phone}
-                        </dd>
-                      </div>
-                      <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                        <dt className="text-sm font-medium leading-6 text-gray-900">Вилоят:</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          {provinceName ? provinceName : 'Нет данных о районе'}
-                        </dd>
-                      </div>
-                      <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                        <dt className="text-sm font-medium leading-6 text-gray-900">Шаҳар/туман:</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          {districtName ? districtName : 'Нет данных о районе'}
-                        </dd>
-                      </div>
-                      <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                        <dt className="text-sm font-medium leading-6 text-gray-900">Касби:</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          {patient.profession}
-                        </dd>
-                      </div>
-                      <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                        <dt className="text-sm font-medium leading-6 text-gray-900">Ким юборди:</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          {partnerName ? partnerName : 'Нет данных о партнере'}
-                        </dd>
-                      </div>
-                      <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                        <dt className="text-sm font-medium leading-6 text-gray-900">Изоҳ:</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          {patient.remark}
-                        </dd>
-                      </div>
-                      <div className="px-4 py-1 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-0">
-                        <Accordion animate={CUSTOM_ANIMATION} open={open === 1} icon={<Icon id={1} open={open}/>}>
-                          <AccordionHeader className='text-sm'
-                                           onClick={() => handleOpen(1)}>Эпиданамнез</AccordionHeader>
-                          <AccordionBody>
-                            <div className='flex gap-4'>
-                              {/*<Select*/}
-                              {/*    options={epidemData.map(item => ({value: item.id, label: item.name}))}*/}
-                              {/*    value={selectedEpidem}*/}
-                              {/*    onChange={(selectedOption) => setSelectedEpidem(selectedOption)}*/}
-                              {/*    placeholder="Выберите эпидемиологическую запись..."*/}
-                              {/*/>*/}
-                              <label
-                                  className="relative w-full bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
-                                  htmlFor="search-bar"
-                              >
-
-                                <input
-                                    id="search-bar"
-                                    placeholder="Қидириш"
-                                    className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
-
-                                />
-                                <Button  size="md"><MagnifyingGlassIcon
-                                    className="h-5 w-5"/></Button>
-                                <Button onClick={() => sendEpidemData(selectedEpidem)}>Саклаш</Button>
-
-                              </label>
-
-                            </div>
-                            <div className="px-4 py-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:px-0">
-                              <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                  <thead className="bg-gray-50">
-                                  <tr>
-                                    <th scope="col"
-                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                      Номланиши
-                                    </th>
-                                    <th scope="col"
-                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                      Харакат
-                                    </th>
-                                  </tr>
-                                  </thead>
-                                  <tbody className="bg-white divide-y divide-gray-200">
-                                  {epidemData.map((item) => (
-                                      <tr key={item.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                          <Switch
-                                              checked={selectedEpidemIds[item.id]}
-                                              onChange={() => handleSwitchChange(item.id)}
-                                          />
-                                        </td>
-                                      </tr>
-                                  ))}
-                                  </tbody>
-                                </table>
-                              </dd>
-                            </div>
-
-                          </AccordionBody>
-                        </Accordion>
-                      </div>
-                    </dl>
-                  </div>
+        <div className="flex w-full sticky top-0 relative space-x-10">
+          {isVisible && (
+              <div className='pl-10  w-1/2'>
+                <div className="px-4 sm:px-0 ">
+                  <h3 className="text-xl font-semibold leading-7 text-gray-900">Бемор картаси</h3>
                 </div>
-            )}
-            <div className="w-full tabs-part max-w-full overflow-y-auto h-[85vh] pr-3 pl-3">
-              <PatientDetailTabs onUpdateVisits={fetchPatientVisits} mostRecentVisit={mostRecentVisit} setMostRecentVisit={setMostRecentVisit} visits={visits} visitId={visitId} patientName={patient.name} mkb10={patient.mkb10}  remark={patient.remark} patientId={index}/>
-            </div>
+                <div className="mt-3 border-t border-gray-100">
+                  <dl className="divide-y divide-gray-100">
+                    <div className="px-4 py-3 sm:grid sm:grid-cols-1 sm:gap-1 sm:px-0">
+                      <div className="flex items-center gap-4">
+                        <Avatar loading="lazy" src={`${patient.avatar}`} size="lg" alt="avatar" variant="rounded"/>
+                        <div>
+                          <h3 className="text-base font-semibold leading-7 text-gray-900">{patient.name}</h3>
+                          <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
+                        </div>
+                      </div>
+                      <CreateVisit mostRecentVisit={mostRecentVisit} onUpdateVisits={fetchPatientVisits} visit={visitId} patientId={index}/>
+                    </div>
+                    <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">Иш жойи:</dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{patient.work_address}</dd>
+                    </div>
+                    <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">Туғилган сана:</dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">1988-04-13</dd>
+                    </div>
+                    <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">Манзил:</dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{patient.home_address}</dd>
+                    </div>
+                    <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">Телефон номер:</dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {patient.phone}
+                      </dd>
+                    </div>
+                    <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">Вилоят:</dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {provinceName ? provinceName : 'Нет данных о районе'}
+                      </dd>
+                    </div>
+                    <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">Шаҳар/туман:</dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {districtName ? districtName : 'Нет данных о районе'}
+                      </dd>
+                    </div>
+                    <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">Касби:</dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {patient.profession}
+                      </dd>
+                    </div>
+                    <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">Ким юборди:</dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {partnerName ? partnerName : 'Нет данных о партнере'}
+                      </dd>
+                    </div>
+                    <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">Изоҳ:</dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {patient.remark}
+                      </dd>
+                    </div>
+                    <div className="px-4 py-1 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-0">
+                      <Accordion animate={CUSTOM_ANIMATION} open={open === 1} icon={<Icon id={1} open={open}/>}>
+                        <AccordionHeader className='text-sm'
+                                         onClick={() => handleOpen(1)}>Эпиданамнез</AccordionHeader>
+                        <AccordionBody>
+                          <div className='flex gap-4'>
+                            {/*<Select*/}
+                            {/*    options={epidemData.map(item => ({value: item.id, label: item.name}))}*/}
+                            {/*    value={selectedEpidem}*/}
+                            {/*    onChange={(selectedOption) => setSelectedEpidem(selectedOption)}*/}
+                            {/*    placeholder="Выберите эпидемиологическую запись..."*/}
+                            {/*/>*/}
+                            <label
+                                className="relative w-full bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
+                                htmlFor="search-bar"
+                            >
+
+                              <input
+                                  id="search-bar"
+                                  placeholder="Қидириш"
+                                  className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
+
+                              />
+
+
+                              <Button  size="md"><MagnifyingGlassIcon
+                                  className="h-5 w-5"/></Button>
+                              <Button onClick={handleOpenEpidem}>Саклаш</Button>
+
+
+                            </label>
+
+                          </div>
+                          <div className="px-4 py-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:px-0">
+                            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                              <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                <tr>
+                                  <th scope="col"
+                                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Номланиши
+                                  </th>
+                                  <th scope="col"
+                                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Харакат
+                                  </th>
+                                </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+
+
+                                {patient.epidem.map(epidem => (
+                                    <tr key={epidem.id}>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{epidem.name}</td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {epidem.description ? epidem.description : 'Малумот йоқ'}
+                                      </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                              </table>
+                            </dd>
+                          </div>
+
+                        </AccordionBody>
+                      </Accordion>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+          )}
+          <div className="w-full tabs-part max-w-full overflow-y-auto h-[85vh] pr-3 pl-3">
+            <PatientDetailTabs onUpdateVisits={fetchPatientVisits} mostRecentVisit={mostRecentVisit} setMostRecentVisit={setMostRecentVisit} visits={visits} visitId={visitId} patientName={patient.name} mkb10={patient.mkb10}  remark={patient.remark} patientId={index}/>
           </div>
-        </>
-    );
+        </div>
+
+        <Dialog size="lg" className="bg-transparent shadow-none" open={openEpidem} handler={handleOpenEpidem}>
+          <Card className="mx-auto w-full ">
+            <CardBody className="flex flex-col gap-4">
+              <table className="mt-4 w-full min-w-max table-auto text-left">
+                <thead>
+                <tr>
+                  <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                    <Typography variant="small" color="blue-gray"
+                                className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                      ID{" "}
+                    </Typography>
+                  </th>
+                  <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                    <Typography variant="small" color="blue-gray"
+                                className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                      Бемор ФИО{" "}
+                      <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
+                    </Typography>
+                  </th>
+                </tr>
+                </thead>
+                <tbody>
+                {epidemData.map((item) => (
+                    <tr key={item.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <Checkbox
+                            checked={item.active}
+                            onChange={() => handleSwitchChange(item.id)}
+                        >
+                          Қушиш
+                        </Checkbox>
+                      </td>
+                    </tr>
+                ))}
+                </tbody>
+              </table>
+            </CardBody>
+
+            <DialogFooter>
+              <Button className="w-full" onClick={sendEpidemData}>Саклаш</Button>
+            </DialogFooter>
+
+          </Card>
+        </Dialog>
+      </>
+  );
 }
