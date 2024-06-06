@@ -20,6 +20,10 @@ const ParentAdmission = () => {
 
     const [dispensaryData, setDispensaryData] = useState(null);
 
+    const printPage = () => {
+        window.print();
+    }
+
     useEffect(() => {
         const fetchDispensaryData = async () => {
             if (mostRecentVisit && mostRecentVisit.id) {
@@ -187,7 +191,7 @@ const ParentAdmission = () => {
                       <Descriptions.Item label="Код">SHH7FX6DG</Descriptions.Item>
                       <Descriptions.Item label="ФИО">{patient.name}</Descriptions.Item>
                       <Descriptions.Item label="Тугилган куни">{patient.birth_at}</Descriptions.Item>
-                      <Descriptions.Item label="Печать"> <Button   icon={<BsPrinterFill className='w-4 h-4'/>} fullWidth  type="dashed" size="middle" className='capitalize flex items-center  my-2'> Принтердан чиқариш</Button></Descriptions.Item>
+                      <Descriptions.Item label="Печать"> <Button onClick={printPage}  icon={<BsPrinterFill className='w-4 h-4'/>} fullWidth  type="dashed" size="middle" className='capitalize flex items-center  my-2'> Принтердан чиқариш</Button></Descriptions.Item>
 
                   </Descriptions>
                   <Descriptions

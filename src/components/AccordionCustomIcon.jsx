@@ -303,7 +303,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
                     </Button>
                 ) : (
                     mostRecentVisit && mostRecentVisit.status === "examined" && (
-                    <Button size="sm"  onClick={handleEndVisit} className="flex bg-[#be123c] rounded-md  items-center font-medium gap-x-1 capitalize">
+                    <Button size="sm"  onClick={handleEndVisit} className="flex bg-[#2563eb] rounded-md  items-center font-medium gap-x-1 capitalize">
                         {isButtonLoading ? (
                            <>
                                <ArrowPathIcon className='h-5 w-5 animate-spin' />

@@ -180,6 +180,14 @@ export default function PatientDetails() {
       const response = await axiosInstance.get("/epidemiological");
       const epidemData = response.data.data;
       setEpidemData(epidemData);
+      if (patient) {
+        const initialSelectedEpidemIds = patient.epidem.map(item => item.id);
+        const updatedEpidemData = epidemData.map(item => ({
+          ...item,
+          active: initialSelectedEpidemIds.includes(item.id)
+        }));
+        setEpidemData(updatedEpidemData);
+      }
     } catch (error) {
       console.error("Ошибка при получении списка эпидемии:", error);
     }
@@ -372,7 +380,7 @@ export default function PatientDetails() {
 
                               <Button  size="md"><MagnifyingGlassIcon
                                   className="h-5 w-5"/></Button>
-                              <Button onClick={handleOpenEpidem}>Саклаш</Button>
+                              <Button onClick={handleOpenEpidem}>Қушиш</Button>
 
 
                             </label>
@@ -451,7 +459,7 @@ export default function PatientDetails() {
                             checked={item.active}
                             onChange={() => handleSwitchChange(item.id)}
                         >
-                          Қушиш
+                           {item.active ? `Қушиш` : `Қушилди`}
                         </Checkbox>
                       </td>
                     </tr>
