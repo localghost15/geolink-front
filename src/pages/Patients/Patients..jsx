@@ -111,7 +111,7 @@ export default function Patients() {
     new: 'Янги кабул',
     pending: 'Ожидает оплаты',
     payed: 'Оплачено',
-    revisit: 'Повторный визит'
+    revisit: 'Қайта қабул'
   };
 
   const statusColors = {
@@ -210,9 +210,10 @@ export default function Patients() {
                     </td>
                     <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
                       <div className="">
-                        <Tag bordered={false} color={statusColors[patient.visit_status.status]}>
-                          {statusLabels[patient.visit_status.status]}
+                        <Tag bordered={false} color={patient.visit_status ? statusColors[patient.visit_status.status] : 'defaultColor'}>
+                          {patient.visit_status ? statusLabels[patient.visit_status.status] : 'Статус неизвестен'}
                         </Tag>
+
 
                       </div>
                     </td>

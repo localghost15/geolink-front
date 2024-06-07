@@ -53,7 +53,7 @@ const LocationSelect = ({ value, onChange, error }) => {
       <>
         <div className='flex flex-row  col-span-2 w-full gap-x-4'>
           <Select
-              className='text-sm '
+              className='text-sm  z-20'
               id="province"
               value={selectedProvince}
               onChange={handleProvinceChange}

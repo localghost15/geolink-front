@@ -1,9 +1,9 @@
 // // PatientsPostDialog.js
 import React, { Fragment, useState } from 'react';
-import {Input, Radio, Textarea, Typography} from "@material-tailwind/react";
+import {Textarea, Typography} from "@material-tailwind/react";
 import { Dialog, Transition } from '@headlessui/react';
 import { UserPlusIcon } from "@heroicons/react/24/solid";
-import DatePicker from '../../../components/DatePicker';
+// import DatePicker from '../../../components/DatePicker';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import LocationSelect from '../../../components/LocationSelect';
@@ -15,7 +15,18 @@ import DateSelect from "../../../components/DateSelect";
 import { PhoneNumberUtil } from 'google-libphonenumber';
 import toast from "react-hot-toast";
 import { DownloadOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button, Input, Form,Radio, DatePicker } from 'antd';
+import {BiInfoCircle} from "react-icons/bi";
+
+import dayjs from 'dayjs';
+import moment from 'moment';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import TextArea from "antd/es/input/TextArea";
+dayjs.extend(customParseFormat);
+const { RangePicker } = DatePicker;
+const dateFormat = 'YYYY/MM/DD';
+const weekFormat = 'MM/DD';
+const monthFormat = 'YYYY/MM';
 
 // Инициализируем объект PhoneNumberUtil
 const phoneUtil = PhoneNumberUtil.getInstance();
@@ -36,6 +47,13 @@ const validationSchema = yup.object({
     gender: yup.string().required('Жинси танланг'),
     birth_at: yup.date().required('Дата рождения обязательна'),
 });
+
+const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY', 'DD-MM-YYYY', 'DD-MM-YY'];
+const customFormat = (value) => `custom format: ${value.format(dateFormat)}`;
+const customWeekStartEndFormat = (value) =>
+    `${dayjs(value).startOf('week').format(weekFormat)} ~ ${dayjs(value)
+        .endOf('week')
+        .format(weekFormat)}`;
 
 export default function PatientsPostDialog({ onAddPatient }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -138,67 +156,164 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                         as="h3"
                                         className="text-lg font-medium leading-6 text-gray-900"
                                     >
-                                        Add New Patient
+                                       Янги бемор қушиш -> Малумотларни киритиш
                                     </Dialog.Title>
-                                    <form onSubmit={formik.handleSubmit}>
+                                    <Form  layout="vertical" onFinish={formik.handleSubmit}>
                                         <div className="mt-2">
                                             <div className="grid grid-cols-3 gap-4">
                                                 <div>
-                                                    <Input
-                                                        label="ФИО: *"
-                                                        size="lg"
-                                                        name="name"
-                                                        value={formik.values.name}
-                                                        onChange={formik.handleChange}
-                                                        error={formik.touched.name && formik.errors.name}
-                                                        helperText={formik.touched.name && formik.errors.name ? formik.errors.name : ''}
-                                                    />
-                                                    {formik.touched.name && formik.errors.name && (
-                                                        <Typography className="text-xs" color="red" size="xs">
-                                                            {formik.errors.name}
-                                                        </Typography>
-                                                    )}
+                                                    <Form.Item
+                                                        layout="vertical"
+                                                        label="ФИО"
+                                                        name="username"
+                                                        rules={[
+                                                            {
+                                                                required: true,
+                                                                message: 'ФИО майдони шарт',
+                                                            },
+                                                        ]}
+                                                    >
+                                                        <Input
+                                                            className="h-11 rounded-md"
+                                                            placeholder="ФИО: *"
+                                                            size="large"
+                                                            name="name"
+                                                            value={formik.values.name}
+                                                            onChange={formik.handleChange}
+                                                            error={formik.touched.name && formik.errors.name}
+                                                            helperText={formik.touched.name && formik.errors.name ? formik.errors.name : ''}
+                                                        />
+                                                    </Form.Item>
+
                                                 </div>
-                                                <Input
+                                                <Form.Item
+                                                    layout="vertical"
                                                     label="Иш Манзили"
-                                                    size="lg"
+                                                    name="address"
+                                                    rules={[
+                                                        {
+                                                            required: false,
+                                                            message: 'Please input your username!',
+                                                        },
+                                                    ]}
+                                                >
+                                                <Input
+                                                    className="h-11 rounded-md"
+                                                    placeholder="Иш Манзили"
+                                                    size="large"
                                                     name="work_address"
                                                     value={formik.values.work_address}
                                                     onChange={formik.handleChange}
                                                 />
+                                                </Form.Item>
                                                 <div>
-                                                    <DateSelect
-                                                        value={formik.values.birth_at}
-                                                        error={formik.touched.birth_at && formik.errors.birth_at}
-                                                        onChange={(date) => formik.setFieldValue('birth_at', date)}
-                                                    />
-                                                    {formik.touched.birth_at && formik.errors.birth_at && (
-                                                        <Typography className="text-xs" color="red" size="xs">
-                                                            {formik.errors.birth_at}
-                                                        </Typography>
-                                                    )}
+                                                    <Form.Item
+                                                        layout="vertical"
+                                                        label="Тугилган куни"
+                                                        name="birth_at"
+                                                        rules={[
+                                                            {
+                                                                required: true,
+                                                                message: 'Тугилган куни майдони шарт',
+                                                            },
+                                                        ]}
+                                                        >
+                                                    {/*>*/}
+                                                    {/*<DateSelect*/}
+                                                    {/*    value={formik.values.birth_at}*/}
+                                                    {/*    error={formik.touched.birth_at && formik.errors.birth_at}*/}
+                                                    {/*    onChange={(date) => formik.setFieldValue('birth_at', date)}*/}
+                                                    {/*/>*/}
+
+                                                        <DatePicker
+                                                            className="h-11 rounded-md w-full"
+                                                            // Преобразуем значение из formik в объект moment, если оно существует
+                                                            value={formik.values.birth_at ? moment(formik.values.birth_at, 'YYYY-MM-DD') : null}
+                                                            onChange={(date) => {
+                                                                if (date) {
+                                                                    // Преобразуем выбранную дату в формат YYYY-MM-DD
+                                                                    const formattedDate = date.format('YYYY-MM-DD');
+                                                                    formik.setFieldValue('birth_at', formattedDate);
+                                                                } else {
+                                                                    // Если дата не выбрана, устанавливаем значение в null
+                                                                    formik.setFieldValue('birth_at', null);
+                                                                }
+                                                            }}
+                                                        />
+                                                    </Form.Item>
                                                 </div>
                                             </div>
-                                            <div className="mt-4 grid grid-cols-3 gap-4">
+                                            <div className="flex items-center gap-4">
+                                                <Form.Item
+                                                    layout="vertical"
+                                                    label="Яшаш Манзили"
+                                                    name="location"
+                                                    rules={[
+                                                        {
+                                                            required: true,
+                                                            message: 'Яшаш тумани майдони шарт',
+                                                        },
+                                                    ]}
+                                                >
                                                 <LocationSelect
                                                     label="District"
                                                     error={formik.touched.district_id && formik.errors.district_id}
                                                     onChange={(selectedValues) => formik.setFieldValue('district_id', selectedValues.district_id)}
                                                 />
+                                                </Form.Item>
+                                                <Form.Item
+                                                    layout="vertical"
+                                                    label="Ким юборилди"
+                                                    name="partner"
+                                                    rules={[
+                                                        {
+                                                            required: true,
+                                                            message: 'Партнерни танланг!',
+                                                        },
+                                                    ]}
+                                                >
                                                 <DoctorsSelect
                                                     label="Ким йуборилди"
                                                     onChange={(partnerId) => formik.setFieldValue('partner_id', partnerId)}
                                                 />
+                                                </Form.Item>
                                             </div>
-                                            <div className="mt-4 grid grid-cols-3 gap-4">
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <Form.Item
+                                                    layout="vertical"
+                                                    label="Касби"
+                                                    name="profession"
+                                                    rules={[
+                                                        {
+                                                            required: false,
+                                                            message: 'Please input your username!',
+                                                        },
+                                                    ]}
+                                                >
                                                 <Input
-                                                    label="Касби:"
-                                                    size="lg"
+                                                    className="h-11 rounded-md"
+                                                    placeholder="Касби:"
+                                                    size="large"
                                                     name="profession"
                                                     value={formik.values.profession}
                                                     onChange={formik.handleChange}
                                                 />
-                                                <div>
+                                                </Form.Item>
+                                                <Form.Item
+                                                    layout="vertical"
+                                                    label="Телефон рақами"
+                                                    name="phone"
+                                                    tooltip={{
+                                                        title: 'Тугри телефон рақамни киритинг код билан',
+                                                        icon: <BiInfoCircle />,
+                                                    }}
+                                                    rules={[
+                                                        {
+                                                            required: true,
+                                                            message: 'Please input your username!',
+                                                        },
+                                                    ]}
+                                                >
                                                     <PhoneInput
                                                         hideDropdown={true}
                                                         international={false}
@@ -213,74 +328,114 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                             {formik.errors.phone}
                                                         </Typography>
                                                     )}
-                                                </div>
-                                                <div>
+                                                </Form.Item>
+                                                <Form.Item
+                                                    layout="vertical"
+                                                    label="Яшаш манзили"
+                                                    name="home_address"
+                                                    rules={[
+                                                        {
+                                                            required: true,
+                                                            message: 'Яшаш манзили майдони шарт',
+                                                        },
+                                                    ]}
+                                                >
                                                     <Input
-                                                        label="Яшаш манзили"
-                                                        size="lg"
+                                                        className="h-11 rounded-md"
+                                                        placeholder="Яшаш манзили"
+                                                        size="large"
                                                         name="home_address"
                                                         value={formik.values.home_address}
                                                         onChange={formik.handleChange}
                                                         error={formik.touched.home_address && formik.errors.home_address}
                                                         helperText={formik.touched.home_address && formik.errors.home_address ? formik.errors.home_address : ''}
                                                     />
-                                                    {formik.touched.home_address && formik.errors.home_address && (
-                                                        <Typography className="text-xs" color="red" size="xs">
-                                                            {formik.errors.home_address}
-                                                        </Typography>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="mt-4 grid grid-cols-3 gap-4">
-                                                <div>
-                                                    <Radio
-                                                        name="gender"
-                                                        value="men"
-                                                        checked={formik.values.gender === 'men'}
-                                                        onChange={() => formik.setFieldValue('gender', 'men')}
-                                                        label="Еркак"
-                                                    />
-                                                    <Radio
-                                                        name="gender"
-                                                        value="women"
-                                                        checked={formik.values.gender === 'women'}
-                                                        onChange={() => formik.setFieldValue('gender', 'women')}
-                                                        label="Айол"
-                                                    />
 
-                                                    {formik.touched.gender && formik.errors.gender && (
-                                                        <Typography className="text-xs" color="red" size="xs">
-                                                            {formik.errors.gender}
-                                                        </Typography>
-                                                    )}
-                                                </div>
+                                                </Form.Item>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <Form.Item
+                                                    layout="vertical"
+                                                    label="Жинси"
+                                                    name="gender"
+                                                    rules={[
+                                                        {
+                                                            required: true,
+                                                            message: 'Жинсни танланг',
+                                                        },
+                                                    ]}
+                                                >
+                                                    <Radio.Group size="large">
+                                                        <Radio.Button
+                                                            name="gender"
+                                                            value="men"
+                                                            checked={formik.values.gender === 'men'}
+                                                            onChange={() => formik.setFieldValue('gender', 'men')}
+                                                            label="Еркак"
+                                                        >
+                                                            Еркак
+                                                        </Radio.Button>
+                                                        <Radio.Button
+                                                            className="z-0"
+                                                            name="gender"
+                                                            value="women"
+                                                            checked={formik.values.gender === 'women'}
+                                                            onChange={() => formik.setFieldValue('gender', 'women')}
+                                                            label="Айол"
+                                                        >Айол</Radio.Button>
+                                                    </Radio.Group>
+                                                </Form.Item>
+                                                <Form.Item
+                                                    layout="vertical"
+                                                    label="ПИНФЛ"
+                                                    name="pinfl"
+                                                    rules={[
+                                                        {
+                                                            required: false,
+                                                            message: 'Please input your username!',
+                                                        },
+                                                    ]}
+                                                >
                                                 <Input
-                                                    label="ПИНФЛ:"
-                                                    size="lg"
+                                                    className="h-11 rounded-md"
+                                                    placeholder="ПИНФЛ:"
+                                                    size="large"
                                                     name="pinfl"
                                                     value={formik.values.pinfl}
                                                     onChange={formik.handleChange}
                                                     error={formik.touched.pinfl && formik.errors.pinfl}
                                                     helperText={formik.touched.pinfl && formik.errors.pinfl ? formik.errors.pinfl : ''}
                                                 />
+                                                </Form.Item>
                                             </div>
                                             <div className="mt-4 flex gap-4">
-                                                <Textarea
-                                                    label="Исох:"
-                                                    fullWidth
-                                                    name="remark"
-                                                    value={formik.values.remark}
+                                                {/*<Textarea*/}
+                                                {/*    label="Исох:"*/}
+                                                {/*    fullWidth*/}
+                                                {/*    name="remark"*/}
+                                                {/*    value={formik.values.remark}*/}
+                                                {/*    onChange={formik.handleChange}*/}
+                                                {/*/>*/}
+                                                <TextArea
+                                                    showCount
                                                     onChange={formik.handleChange}
+                                                    value={formik.values.remark}
+                                                    maxLength={100}
+                                                    placeholder="Исох:"
+                                                    style={{
+                                                        height: 170,
+                                                        resize: 'none',
+                                                    }}
                                                 />
                                                 <Dropzone onFilesChange={(file) => formik.setFieldValue('file', file)} />
                                             </div>
                                         </div>
                                         <div className="mt-4">
-                                            <Button htmlType="submit" variant="gradient" fullWidth>
-                                                Save
+                                            <Button type="primary" className="w-full" htmlType="submit" variant="gradient" fullWidth>
+                                                Сақлаш
                                             </Button>
                                         </div>
-                                    </form>
+                                    </Form>
                                 </Dialog.Panel>
                             </Transition.Child>
                         </div>
