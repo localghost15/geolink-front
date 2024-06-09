@@ -5,6 +5,7 @@ import './index.css';
 import App from './App';
 import { ThemeProvider } from "@material-tailwind/react";
 import toast, { Toaster } from 'react-hot-toast';
+import {VisitProvider} from "./context/VisitIdContext";
 
 const rootElement = document.getElementById("root");
 const root = ReactDOMClient.createRoot(rootElement);
@@ -14,7 +15,9 @@ root.render(
   <StrictMode>
     <BrowserRouter>
     <ThemeProvider>
+        <VisitProvider>
       <App />
+        </VisitProvider>
       <Toaster
   position="top-center"
   reverseOrder={false}

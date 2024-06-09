@@ -43,9 +43,9 @@ const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit ,onUpdateVi
             console.log("New visit created:", response.data);
             setOpenVisit(false);
             toast.success('Қабул қушилди!');
-            onUpdateVisits();
-            // Update mostRecentVisit here
-            setMostRecentVisit(response.data); // Обновляем mostRecentVisit с новыми данными
+            setMostRecentVisit(response.data, () => {
+                onUpdateVisits();
+            });
         } catch (error) {
             console.error("Error creating new visit:", error);
         }
@@ -70,10 +70,11 @@ const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit ,onUpdateVi
         }
     };
 
+    const isButtonDisabled = mostRecentVisit ? ["examined", "new", /* другие условия */].includes(mostRecentVisit.status) : false;
 
     return (
         <div>
-            <Button disabled={mostRecentVisit ? mostRecentVisit.status === "examined" : ''}  icon={<ClipboardDocumentCheckIcon
+            <Button disabled={isButtonDisabled}   icon={<ClipboardDocumentCheckIcon
                 className='w-4 h-4'/>} fullWidth onClick={openDrawer} type="dashed" size="middle" className='capitalize w-full my-2'> қабулга қўшиш</Button>
             <Dialog open={openVisit} handler={openDrawer} className="p-4 z-[999999]">
                 <div className="mb-6 flex items-center justify-between">

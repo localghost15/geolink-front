@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { Table } from 'antd';
 import {
     MagnifyingGlassIcon,
     ChevronUpDownIcon,
@@ -9,6 +9,60 @@ import {
 
 import EpidemiologicalList from '../../components/Lists/EpidemiologicalList';
 import PaymentsList from './components/PaymentsList';
+
+const columns = [
+    {
+        title: 'Name',
+        dataIndex: 'name',
+        key: 'name',
+    },
+    {
+        title: 'Age',
+        dataIndex: 'age',
+        key: 'age',
+    },
+    {
+        title: 'Address',
+        dataIndex: 'address',
+        key: 'address',
+    },
+    {
+        title: 'Action',
+        dataIndex: '',
+        key: 'x',
+        render: () => <a>Delete</a>,
+    },
+];
+const data = [
+    {
+        key: 1,
+        name: 'John Brown',
+        age: 32,
+        address: 'New York No. 1 Lake Park',
+        description: 'My name is John Brown, I am 32 years old, living in New York No. 1 Lake Park.',
+    },
+    {
+        key: 2,
+        name: 'Jim Green',
+        age: 42,
+        address: 'London No. 1 Lake Park',
+        description: 'My name is Jim Green, I am 42 years old, living in London No. 1 Lake Park.',
+    },
+    {
+        key: 3,
+        name: 'Not Expandable',
+        age: 29,
+        address: 'Jiangsu No. 1 Lake Park',
+        description: 'This not expandable',
+    },
+    {
+        key: 4,
+        name: 'Joe Black',
+        age: 32,
+        address: 'Sydney No. 1 Lake Park',
+        description: 'My name is Joe Black, I am 32 years old, living in Sydney No. 1 Lake Park.',
+    },
+];
    
  
    
@@ -58,132 +112,22 @@ import PaymentsList from './components/PaymentsList';
          
         </CardHeader>
         <CardBody className="overflow-scroll px-0">
-          <table className="mt-4  w-full min-w-max table-auto text-left">
-            <thead>
-              <tr>
-                {TABLE_HEAD.map((head, index) => (
-                  <th
-                    key={head}
-                    className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                  >
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
-                    >
-                      {head}{" "}
-                      {index !== TABLE_HEAD.length - 1 && (
-                        <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
-                      )}
-                    </Typography>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {TABLE_ROWS.map(
-                ({ name, id,phone, service, price, sum, payment }, index) => {
-                  const isLast = index === TABLE_ROWS.length - 1;
-                  const classes = isLast
-                    ? "p-4"
-                    : "p-4 border-b border-blue-gray-50";
-   
-                  return (
-                    <tr key={name}>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {name}
-                            </Typography>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {id}
-                            </Typography>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {phone}
-                            </Typography>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {service}
-                            </Typography>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {price} сум
-                            </Typography>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {sum} сум
-                            </Typography>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col">
-                          <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-sm font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                          {payment}
-                          </span>
-                          </div>
-                        </div>
-                      </td>
-                      
-                    </tr>
-                  );
-                },
-              )}
-            </tbody>
-          </table>
+            <Table
+                columns={columns}
+                expandable={{
+                    expandedRowRender: (record) => (
+                        <p
+                            style={{
+                                margin: 0,
+                            }}
+                        >
+                            {record.description}
+                        </p>
+                    ),
+                    rowExpandable: (record) => record.name !== 'Not Expandable',
+                }}
+                dataSource={data}
+            />
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
           <Typography variant="small" color="blue-gray" className="font-normal">

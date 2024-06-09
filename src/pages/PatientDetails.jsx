@@ -137,6 +137,8 @@ export default function PatientDetails() {
     fetchPatientVisits();
   }, [index, dataCache]);
 
+
+
   const handleSwitchChange = (epidemId) => {
     setEpidemData(prevState =>
         prevState.map(item =>

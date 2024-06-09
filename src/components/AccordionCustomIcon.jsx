@@ -49,22 +49,6 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const [templates, setTemplates] = useState([]);
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-    //             const data = await fetchMkb10Data();
-    //             const initialSelectedMKB10 = mkb10.map(item => item.id);
-    //             const selectedData = data.filter(item => initialSelectedMKB10.includes(item.id));
-    //             const remainingData = data.filter(item => !initialSelectedMKB10.includes(item.id));
-    //             setMkb10Data([...selectedData, ...remainingData]);
-    //             setSelectedMKB10(initialSelectedMKB10);
-    //         } catch (error) {
-    //             console.error("Error fetching MKB-10 data:", error);
-    //         }
-    //     };
-    //     fetchData();
-    // }, [currentPage, mkb10]);
-
     const [selectedFiles, setSelectedFiles] = useState([]);
 
     const handleFileChange = ({ fileList }) => {
@@ -262,7 +246,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
         new: "Янги навбат",
         examined: "Қабулда",
         queue: "Навбатда",
-        cancelled: "Отменен"
+        closed: "Қабул тугади"
     };
 
     return (
@@ -287,37 +271,40 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
 
             <div className="flex items-center mb-3 gap-x-1">
 
-                {mostRecentVisit && (mostRecentVisit.status === "new" || mostRecentVisit.status === "queue" ) ? (
-                    <Button size="sm" onClick={handleStartVisit} className="bg-[#15803d] rounded-md flex items-center font-medium gap-x-1 capitalize">
-                        {isButtonLoading ? (
-                           <>
-                               <ArrowPathIcon className='h-5 w-5 animate-spin' />
-                               <span className="ml-1">Илтимос кутинг</span>
-                           </>
-                        ) : (
-                            <>
-                                <PlayCircleIcon className="h-5 w-5" />
-                                <span className="ml-1">Қабул бошланиш</span>
-                            </>
-                        )}
-                    </Button>
-                ) : (
-                    mostRecentVisit && mostRecentVisit.status === "examined" && (
-                    <Button size="sm"  onClick={handleEndVisit} className="flex bg-[#2563eb] rounded-md  items-center font-medium gap-x-1 capitalize">
-                        {isButtonLoading ? (
-                           <>
-                               <ArrowPathIcon className='h-5 w-5 animate-spin' />
-                               <span className="ml-1">Илтимос кутинг</span>
-                           </>
-                        ) : (
-                            <>
-                                <BiSolidHourglassTop className="h-5 w-5" />
-                                <span className="ml-1">Қабул тугатиш</span>
-                            </>
-                        )}
-                    </Button>
+                {mostRecentVisit && mostRecentVisit.orders.transactions.some(transaction => ['credit', 'cash', 'debit'].includes(transaction.type)) && (
+                    mostRecentVisit.status === "new" || mostRecentVisit.status === "queue" ? (
+                        <Button size="sm" onClick={handleStartVisit} className="bg-[#15803d] rounded-md flex items-center font-medium gap-x-1 capitalize">
+                            {isButtonLoading ? (
+                                <>
+                                    <ArrowPathIcon className='h-5 w-5 animate-spin' />
+                                    <span className="ml-1">Илтимос кутинг</span>
+                                </>
+                            ) : (
+                                <>
+                                    <PlayCircleIcon className="h-5 w-5" />
+                                    <span className="ml-1">Қабул бошланиш</span>
+                                </>
+                            )}
+                        </Button>
+                    ) : (
+                        mostRecentVisit.status === "examined" && (
+                            <Button size="sm"  onClick={handleEndVisit} className="flex bg-[#2563eb] rounded-md  items-center font-medium gap-x-1 capitalize">
+                                {isButtonLoading ? (
+                                    <>
+                                        <ArrowPathIcon className='h-5 w-5 animate-spin' />
+                                        <span className="ml-1">Илтимос кутинг</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <BiSolidHourglassTop className="h-5 w-5" />
+                                        <span className="ml-1">Қабул тугатиш</span>
+                                    </>
+                                )}
+                            </Button>
+                        )
                     )
                 )}
+
             </div>
 
             {/*<Typography className='text-sm font-semibold text-blue-gray-900'>Қабул қўшиш</Typography>*/}
