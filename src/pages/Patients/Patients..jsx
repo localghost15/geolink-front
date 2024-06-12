@@ -213,8 +213,6 @@ export default function Patients() {
                         <Tag bordered={false} color={patient.visit_status ? statusColors[patient.visit_status.status] : 'defaultColor'}>
                           {patient.visit_status ? statusLabels[patient.visit_status.status] : 'Статус неизвестен'}
                         </Tag>
-
-
                       </div>
                     </td>
                     <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">

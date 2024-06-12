@@ -74,6 +74,11 @@ const ExpandedSidebar = ({
                         <CustomLink to="/patients">  <MenuItem icon={<MinusIcon className="h-6 w-6"/>}> Барча Беморлар </MenuItem>
                         </CustomLink>
                     </SubMenu>
+                    {/*<SubMenu icon={<UserGroupIcon className="h-6 w-6"/>} label="Беморлар" style={{ paddingLeft: '20px', borderLeft: '2px solid #000' }}>*/}
+                    {/*    <CustomLink to="/patients">*/}
+                    {/*        <MenuItem icon={<MinusIcon className="h-6 w-6"/>} style={{ paddingLeft: '40px', borderLeft: '2px solid #000' }}> Барча Беморлар </MenuItem>*/}
+                    {/*    </CustomLink>*/}
+                    {/*</SubMenu>*/}
                     <SubMenu icon={<RectangleStackIcon className="h-6 w-6"/>} label="Каталог">
                         <CustomLink to="/doctors"><MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>Докторлар</MenuItem> </CustomLink>
                         <CustomLink to="/services"><MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>Хизматлар</MenuItem></CustomLink>

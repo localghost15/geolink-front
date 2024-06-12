@@ -6,7 +6,7 @@ import axiosInstance from "../axios/axiosInstance";
 import toast from "react-hot-toast";
 import {Button} from 'antd'
 
-const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit ,onUpdateVisits  }) => {
+const CreateVisit = ({patientId, mostRecentVisit, onUpdateVisits  }) => {
     const [openVisit, setOpenVisit] = React.useState(false);
     const [primaryServices, setPrimaryServices] = useState([]);
     const [doctorId, setDoctorId] = useState('');
@@ -15,6 +15,7 @@ const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit ,onUpdateVi
     const openDrawer = () => setOpenVisit((cur) => !cur);
     const closeDrawer = () => setOpenVisit(false);
     const [selectedService, setSelectedService] = useState(null);
+    
 
     useEffect(() => {
         fetchDoctors();
@@ -43,9 +44,8 @@ const CreateVisit = ({patientId, mostRecentVisit, setMostRecentVisit ,onUpdateVi
             console.log("New visit created:", response.data);
             setOpenVisit(false);
             toast.success('Қабул қушилди!');
-            setMostRecentVisit(response.data, () => {
-                onUpdateVisits();
-            });
+            // Instead of directly calling mostRecentVisit as a function, update it using the setter function
+            onUpdateVisits(response.data);
         } catch (error) {
             console.error("Error creating new visit:", error);
         }

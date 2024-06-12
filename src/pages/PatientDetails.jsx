@@ -58,6 +58,7 @@ export default function PatientDetails() {
   const [selectedEpidemIds, setSelectedEpidemIds] = useState({});
 
   const [mostRecentVisit, setMostRecentVisit] = useState(null);
+  
 
   useEffect(() => {
     if (visits && Object.keys(visits).length > 0) {
@@ -78,64 +79,52 @@ export default function PatientDetails() {
 
   const fetchPatientVisits = async () => {
     try {
-      let visitData = [];
-      if (!dataCache[index]) {
+        let visitData = [];
         const fetchAllPages = async (patientId) => {
-          let allData = [];
-          let page = 1;
-          let lastPage = 1;
+            let allData = [];
+            let page = 1;
+            let lastPage = 1;
 
-          while (page <= lastPage) {
-            try {
-              const response = await fetchVisits(patientId, page);
-              const pageData = response.data.data;
-              const meta = response.data.meta;
+            while (page <= lastPage) {
+                try {
+                    const response = await fetchVisits(patientId, page);
+                    const pageData = response.data.data;
+                    const meta = response.data.meta;
 
-              allData = [...allData, ...pageData];
-              lastPage = meta.last_page; // обновляем количество страниц
-              page += 1; // переходим к следующей странице
-            } catch (error) {
-              console.error(`Ошибка при получении данных со страницы ${page}:`, error);
-              break;
+                    allData = [...allData, ...pageData];
+                    lastPage = meta.last_page; // обновляем количество страниц
+                    page += 1; // переходим к следующей странице
+                } catch (error) {
+                    console.error(`Ошибка при получении данных со страницы ${page}:`, error);
+                    break;
+                }
             }
-          }
 
-          return allData;
+            return allData;
         };
-
         visitData = await fetchAllPages(index);
 
-        setDataCache(prevCache => ({
-          ...prevCache,
-          [index]: visitData,
+        // Находим последний визит пациента
+        const recentVisit = visitData.find(visit =>
+            visit.parent_id === null &&
+            (visit.bill === "payed" || visit.bill === "pending") && (visit.status === "new" || visit.status === "examined" || visit.status === "queue")
+        );
+
+        // Устанавливаем состояния
+        setVisitId(recentVisit ? recentVisit.id : null);
+        setVisits(prevVisits => ({
+            ...prevVisits,
+            [index]: visitData,
         }));
-      } else {
-        visitData = dataCache[index];
-      }
-
-      const recentVisit = visitData.find(visit =>
-          visit.parent_id === null &&
-          (visit.bill === "payed" || visit.bill === "pending") && (visit.status === "new" || visit.status === "examined" || visit.status === "queue")
-      );
-
-      if (recentVisit) {
-        setVisitId(recentVisit.id);
-      } else {
-        setVisitId(null);
-      }
-
-      setVisits(prevVisits => ({
-        ...prevVisits,
-        [index]: visitData,
-      }));
+        setMostRecentVisit(recentVisit);
     } catch (error) {
-      console.error('Ошибка при получении данных о визитах:', error);
+        console.error('Error fetching patient visits:', error);
     }
-  };
+};
 
   useEffect(() => {
     fetchPatientVisits();
-  }, [index, dataCache]);
+  }, [index]);
 
 
 
@@ -289,7 +278,7 @@ export default function PatientDetails() {
 
         </div>
 
-        <div className="flex w-full sticky top-0 relative space-x-10">
+        <div className="flex w-full sticky top-0 relative space-x-10  patient-card-page">
           {isVisible && (
               <div className='pl-10  w-1/2'>
                 <div className="px-4 sm:px-0 ">
@@ -305,7 +294,7 @@ export default function PatientDetails() {
                           <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
                         </div>
                       </div>
-                      <CreateVisit mostRecentVisit={mostRecentVisit} onUpdateVisits={fetchPatientVisits} visit={visitId} patientId={index}/>
+                      <CreateVisit mostRecentVisit={mostRecentVisit} onUpdateVisits={fetchPatient} visit={visitId} patientId={index}/>
                     </div>
                     <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                       <dt className="text-sm font-medium leading-6 text-gray-900">Иш жойи:</dt>

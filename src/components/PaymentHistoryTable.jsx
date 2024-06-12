@@ -11,9 +11,8 @@ import {
   Button,
   CardBody,
   CardFooter,
-  IconButton,
-  Tooltip, Dialog, DialogBody,
 } from "@material-tailwind/react";
+import { Modal } from "antd";
 
 const TABLE_HEAD = ["ID", "Навбат сони", "Сана", "Умумий қиймат", "Хизматлар", "Чек"];
 const TABLE_DIALOG = ["Чек", "Хизматлар", "Нархи"];
@@ -24,16 +23,6 @@ export function PaymentHistoryTable({ patientId }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [meta, setMeta] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
-
-  const handleRowClick = (visit) => {
-    setSelectedVisit(visit);
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedVisit(null);
-    setModalOpen(false);
-  };
 
   useEffect(() => {
     fetchVisits(currentPage);
@@ -63,6 +52,16 @@ export function PaymentHistoryTable({ patientId }) {
       visitedIds.add(uniqueKey);
       return true;
     });
+  };
+
+  const handleRowClick = (visit) => {
+    setSelectedVisit(visit);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedVisit(null);
+    setModalOpen(false);
   };
 
   const handlePageChange = (page) => {
@@ -96,7 +95,11 @@ export function PaymentHistoryTable({ patientId }) {
             </thead>
             <tbody>
             {visits.map((visit, index) => (
-                <tr key={visit.patient_id} onClick={() => handleRowClick(visit)} className="transition-colors hover:bg-gray-100">
+                <tr
+                    key={visit.id}
+                    onClick={() => handleRowClick(visit)}
+                    className="transition-colors hover:bg-gray-100"
+                >
                   <td className="p-4 border-b border-blue-gray-50">
                     <Typography variant="small" color="blue-gray" className="font-normal">
                       {index + 1}
@@ -164,8 +167,13 @@ export function PaymentHistoryTable({ patientId }) {
           </div>
         </CardFooter>
 
-        <Dialog className="backdrop:bg-white/50 backdrop:backdrop-blur-md" open={modalOpen} handler={handleCloseModal}>
-          <DialogBody className="h-[22rem] overflow-scroll">
+        <Modal
+            title="Тўлов малумоти"
+            open={modalOpen}
+            onCancel={handleCloseModal}
+            footer={null} // Убираем нижнюю часть с кнопками
+        >
+          <div className="h-[22rem] overflow-scroll">
             <table className="w-full">
               <thead>
               <tr>
@@ -180,7 +188,7 @@ export function PaymentHistoryTable({ patientId }) {
                           className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
                       >
                         {head}{" "}
-                        {index !== TABLE_HEAD.length - 1 && (
+                        {index !== TABLE_DIALOG.length - 1 && (
                             <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
                         )}
                       </Typography>
@@ -207,8 +215,8 @@ export function PaymentHistoryTable({ patientId }) {
                   </tbody>
               )}
             </table>
-          </DialogBody>
-        </Dialog>
+          </div>
+        </Modal>
       </Card>
   );
 }

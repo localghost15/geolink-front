@@ -22,6 +22,7 @@ import Login from './auth/Login';
 import { isLoggedIn, getUserRole } from './services/authServices';
 import Users from "./pages/Users/Users";
 import PatientAdmission from "./pages/PatientAdmission";
+import PatientBioCard from './pages/PatientBioCard';
 
 function PrivateRoute({ children }) {
   const navigate = useNavigate();
@@ -73,7 +74,8 @@ function App() {
         <Route path="roles" element={<AdminRoute><Roles /></AdminRoute>} />
       )}
       <Route path="patients" element={<Patients />} />
-      <Route path="/patient/:index" element={<PatientDetails />} />
+      {/*<Route path="/patient/:index" element={<PatientDetails />} />*/}
+      <Route path="/patient/:index" element={<PatientBioCard />} />
       <Route path="/patient/admission/:index" element={<PatientAdmission />} />
       <Route path="doctors" element={<Doctors />} />
       {/*<Route path="users" element={<Users />} />*/}

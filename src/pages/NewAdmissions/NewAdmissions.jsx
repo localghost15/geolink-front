@@ -1,491 +1,292 @@
-import React, { useState, useEffect } from 'react';
-import {
-    MagnifyingGlassIcon,
-    ChevronUpDownIcon,
-} from "@heroicons/react/24/outline";
-import { BanknotesIcon } from "@heroicons/react/24/solid";
-import {
-    Card,
-    CardHeader,
-    Typography,
-    Button,
-    CardBody,
-    CardFooter,
-    IconButton,
-    Dialog,
-    Input,
-    Checkbox,
-    Radio,
-} from "@material-tailwind/react";
-import axios from 'axios';
-import AddServiceVisit from "../Admissions/components/AddServiceVisit";
-import { v4 as uuidv4 } from 'uuid';
-import toast from "react-hot-toast";
-import {Spin, Tag} from "antd";
+import { useState, useEffect } from 'react';
+import { Table, Button, Modal, Typography, Input, Radio, Spin } from 'antd';
+import axiosInstance from "../../axios/axiosInstance";
+import toast from 'react-hot-toast';
 
-const axiosInstance = axios.create({
-    baseURL: 'https://back.geolink.uz/api/v1'
-});
-
-axiosInstance.interceptors.request.use(
-    config => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    error => {
-        return Promise.reject(error);
-    }
-);
-
-export default function NewAdmissions() {
+const NewAdmissions = () => {
     const [admissions, setAdmissions] = useState([]);
-    const [selectedAdmissionId, setSelectedAdmissionId] = useState(null);
-    const [services, setServices] = useState([]);
-    const [selectedService, setSelectedService] = useState(null);
-    const [paymentMethod, setPaymentMethod] = useState(null);
-    const [open, setOpen] = React.useState(false);
-    const [openPayDialog, setOpenPayDialog] = useState(false);
+    const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
+    const [filters, setFilters] = useState({});
+    const [sorter, setSorter] = useState({ field: 'id_visit', order: 'descend' });
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [selectedVisit, setSelectedVisit] = useState(null);
     const [paymentAmount, setPaymentAmount] = useState('');
-    const [paymentType, setPaymentType] = useState('');
-    const [selectedOrderId, setSelectedOrderId] = useState(null);
-    const [selectedVisitId, setSelectedVisitId] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [selectedOrder, setSelectedOrder] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const handleOpen = (id) => {
-        setOpen((cur) => !cur);
-        setSelectedVisitId(id);
-    };
+    const [paymentType, setPaymentType] = useState('cash');
+    const [loading, setLoading] = useState(false);
+    const [totalDebit, setTotalDebit] = useState(0);
 
-    const statusNames = {
-        new: "Янги навбат",
-        examined: "Қабулда...",
-        completed: "Завершен",
-        cancelled: "Отменен"
-    };
-
-    const fetchAdmissions = async (page = 1) => {
-        setIsLoading(true); // Установить состояние загрузки в true
+    // Функция для получения визитов с фильтром по статусу оплаты "pending"
+    const fetchAdmissions = async (page = 1, pageSize = 10, sortField = 'id_visit', sortOrder = 'descend') => {
+        setLoading(true);
         try {
-            const response = await axiosInstance.get(`/visit?page=${page}&status[0]=examined`);
-            const admissionsData = response.data.data;
+            const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=examined`);
+            const admissionsData = response.data.data
+                .filter(admission => admission.bill === 'payed' || admission.bill === 'pending') // Фильтрация по статусу оплаты
+                .map((item, index) => ({
+                    key: index + 1,
+                    id_visit: item.id,
+                    patient_name: item.patient_id.name,
+                    doctor_name: item.doctor.name,
+                    total_amount: item.total_amount,
+                    total_payed: item.total_payed,
+                    total_debit: item.total_debit,
+                    date_at: item.date_at,
+                    status: item.status,
+                    bill: item.bill,
+                    chilrens: item.chilrens,
+                    orders: item.orders
+                }));
+            const total = response.data.meta.total;
 
-            // Reverse the admissions array to show the ones at the bottom first
-            setAdmissions(admissionsData.reverse());
-            setCurrentPage(response.data.meta.current_page);
-            setTotalPages(response.data.meta.last_page);
+            const sortedData = admissionsData.sort((a, b) => {
+                if (sortField && sortOrder) {
+                    const orderMultiplier = sortOrder === 'ascend' ? 1 : -1;
+                    if (sortField === 'id_visit' || sortField === 'key') {
+                        return (a[sortField] - b[sortField]) * orderMultiplier;
+                    }
+                    return a[sortField].localeCompare(b[sortField]) * orderMultiplier;
+                }
+                return 0;
+            });
+
+            setAdmissions(sortedData);
+            setPagination({ ...pagination, current: page, pageSize, total });
         } catch (error) {
             console.error("Error fetching admissions:", error);
         } finally {
-            setIsLoading(false); // Установить состояние загрузки в false после завершения запроса
-        }
-    };
-
-    const selectedAdmission = admissions.find(admission => admission.id === selectedAdmissionId);
-
-    const handleAdmissionSelect = (admissionId) => {
-        setSelectedAdmissionId(admissionId);
-    };
-
-    const fetchServices = async () => {
-        try {
-            const response = await axiosInstance.get('/admin/service');
-            setServices(response.data.data);
-        } catch (error) {
-            console.error("Error fetching services:", error);
-        }
-    };
-
-    const handleServiceSelect = (service) => {
-        setSelectedService(service);
-    };
-
-    const handlePaymentMethodSelect = (method) => {
-        setPaymentMethod(method);
-    };
-
-    const handleSave = async (id) => {
-        try {
-            const response = await axiosInstance.post(`/visit/service/${id}`, {
-                service_id: selectedService,
-                type: paymentMethod
-            });
-            console.log("Saved:", response.data);
-            setOpen(false);
-        } catch (error) {
-            console.error("Error saving data:", error);
-        }
-    };
-
-    const handleOpenPayDialog = (orderId) => {
-        setSelectedOrderId(orderId);
-        setOpenPayDialog((cur) => !cur);
-    };
-
-    const handleClosePayDialog = () => {
-        setSelectedOrderId(null);
-        setOpenPayDialog(false);
-    };
-
-    const handlePaymentTypeChange = (type) => {
-        setPaymentType(type);
-    };
-
-    const handlePayment = async () => {
-        try {
-            console.log("Выбранный orderId:", selectedOrder);
-
-            const response = await axiosInstance.post(`/visit/pay/${selectedOrder}`, {
-                amount: paymentAmount,
-                type: paymentType
-            });
-            console.log("Payment successful:", response.data);
-            toast.success('Тўлов юборилди !')
-            handleClosePayDialog();
-        } catch (error) {
-            console.error("Error making payment:", error);
-        }
-    };
-
-    const handlePageChange = (newPage) => {
-        if (newPage > 0 && newPage <= totalPages) {
-            setCurrentPage(newPage);
-            fetchAdmissions(newPage);
+            setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchServices();
-        fetchAdmissions(currentPage);
-    }, [currentPage]);
+        fetchAdmissions();
+    }, []);
 
+    const handleTableChange = (pagination, filters, sorter) => {
+        fetchAdmissions(pagination.current, pagination.pageSize, sorter.field, sorter.order);
+        setFilters(filters);
+        setSorter(sorter);
+    };
+
+    const getStatusName = (status) => {
+        const statusNames = {
+            new: 'Янги',
+            queue: 'Навбатда',
+            pending: 'Ожидание',
+            examined: 'Қабулда',
+            completed: 'Завершён',
+            canceled: 'Отменён',
+        };
+        return statusNames[status] || status;
+    };
+
+    const paymentTypeNames = {
+        cash: 'Нақд',
+        credit: 'Қарзга',
+        card: 'Кредит карта'
+    };
+
+    const paymentBillNames = {
+        pending: 'Тўлов кутилмоқда',
+        payed: 'Тўланган',
+    };
+
+    const handlePaymentClick = (record) => {
+        setSelectedVisit(record);
+        setIsModalVisible(true);
+    };
+
+    const payForServices = async (orderId, amount, paymentType) => {
+        try {
+            const response = await axiosInstance.post(`/visit/pay/${orderId}`, {
+                amount: parseInt(amount),
+                type: paymentType,
+                mass: 1
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Ошибка при оплате сервисов:", error);
+            throw error;
+        }
+    };
+
+
+
+    const handlePayment = () => {
+        if (selectedVisit) {
+            const orderId = selectedVisit.orders?.id;
+            if (!orderId) {
+                console.error('Нет доступного ID ордера для оплаты');
+                return;
+            }
+
+            const amount = paymentAmount;
+
+            payForServices(orderId, amount, paymentType)
+                .then(response => {
+                    console.log('Оплата выполнена успешно:', response);
+                    fetchAdmissions();
+                    setIsModalVisible(false);
+                    setPaymentAmount('');
+                    setPaymentType('cash');
+                    toast.success(`Оплачен: ${orderId}`);
+                })
+                .catch(error => {
+                    console.error('Ошибка при выполнении оплаты:', error);
+                });
+        } else {
+            console.error('Выбранный заказ отсутствует для оплаты');
+        }
+    };
+
+    const handleModalClose = () => {
+        setIsModalVisible(false);
+        setSelectedVisit(null);
+    };
+
+    const columns = [
+        {
+            title: 'ID',
+            dataIndex: 'key',
+            key: 'id',
+            sorter: (a, b) => a.key - b.key,
+            sortOrder: sorter.field === 'key' && sorter.order,
+        },
+        {
+            title: 'ID визита',
+            dataIndex: 'id_visit',
+            key: 'id_visit',
+            sorter: (a, b) => a.id_visit - b.id_visit,
+            sortOrder: sorter.field === 'id_visit' && sorter.order,
+            defaultSortOrder: sorter.field === 'id_visit' ? sorter.order : 'descend',
+        },
+        {
+            title: 'Беморнинг ФИО',
+            dataIndex: 'patient_name',
+            key: 'patient_name',
+            sorter: (a, b) => a.patient_name.localeCompare(b.patient_name),
+            sortOrder: sorter.field === 'patient_name' && sorter.order,
+        },
+        {
+            title: 'Доктор',
+            dataIndex: 'doctor_name',
+            key: 'doctor_name',
+            sorter: (a, b) => a.doctor_name.localeCompare(b.doctor_name),
+            sortOrder: sorter.field === 'doctor_name' && sorter.order,
+        },
+        {
+            title: 'Миқдори',
+            dataIndex: 'total_amount',
+            key: 'total_amount',
+            sorter: (a, b) => a.total_amount - b.total_amount,
+            sortOrder: sorter.field === 'total_amount' && sorter.order,
+            render: (text) => `${text} сўм`
+        },
+        {
+            title: 'Тўланган',
+            dataIndex: 'total_payed',
+            key: 'total_payed',
+            sorter: (a, b) => a.total_payed - b.total_payed,
+            sortOrder: sorter.field === 'total_payed' && sorter.order,
+            render: (text) => `${text} сўм`
+        },
+        {
+            title: 'Қолган сумма',
+            dataIndex: 'total_debit',
+            key: 'total_debit',
+            sorter: (a, b) => a.total_debit - b.total_debit,
+            sortOrder: sorter.field === 'total_debit' && sorter.order,
+            render: (text) => `${text} сўм`
+        },
+        {
+            title: 'Статус',
+            dataIndex: 'status',
+            key: 'status',
+            sorter: (a, b) => a.status.localeCompare(b.status),
+            sortOrder: sorter.field === 'status' && sorter.order,
+            render: (text) => getStatusName(text),
+        },
+        {
+            title: 'Оплата',
+            key: 'payment',
+            render: (_, record) => (
+                <Button
+                    type="primary"
+                    onClick={() => handlePaymentClick(record)}
+                    disabled={typeof record.total_debit === 'number' && record.total_debit === 0 ? 'disabled-row' : ''}
+                >
+                    Оплатить
+                </Button>
+            ),
+        },
+    ];
 
     return (
-        <>
-            <Card className="h-full w-full rounded-none pt-5">
-                <Typography className="mx-8 mb-2" variant="h4" color="black">Қайта навбатлар</Typography>
-                <div className="flex mx-8 justify-between gap-8">
-                    <label
-                        className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
-                        htmlFor="search-bar"
-                    >
-                        <input
-                            id="search-bar"
-                            placeholder="Қидириш"
-                            className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
-                        />
-                        <Button size="md"><MagnifyingGlassIcon className="h-5 w-5" /></Button>
-                    </label>
-                </div>
-                <CardHeader floated={false} shadow={false} className="rounded-none" />
-                <Spin colorPrimary="#000" tip="Загрузка" spinning={isLoading}>
-                <CardBody className="overflow-scroll px-0">
-                    <table className="mt-4 w-full min-w-max table-auto text-left">
-                        <thead>
-                        <tr>
-                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                                <Typography variant="small" color="blue-gray"
-                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                    ID{" "}
-                                    <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                                </Typography>
-                            </th>
-                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                                <Typography variant="small" color="blue-gray"
-                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                    Бемор ФИО{" "}
-                                    <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                                </Typography>
-                            </th>
-                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                                <Typography variant="small" color="blue-gray"
-                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                    Шифокор Доктор{" "}
-                                    <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                                </Typography>
-                            </th>
-                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                                <Typography variant="small" color="blue-gray"
-                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                    Хизмат қушиш{" "}
-                                    <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                                </Typography>
-                            </th>
-                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                                <Typography variant="small" color="blue-gray"
-                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                    Статус{" "}
-                                    <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                                </Typography>
-                            </th>
-                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                                <Typography variant="small" color="blue-gray"
-                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                    Tўлов{" "}
-                                    <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                                </Typography>
-                            </th>
-                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                                <Typography variant="small" color="blue-gray"
-                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                    Жами{" "}
-                                    <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                                </Typography>
-                            </th>
-                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                                <Typography variant="small" color="blue-gray"
-                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                    Навбат сана{" "}
-                                    <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                                </Typography>
-                            </th>
-                            <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                                <Typography variant="small" color="blue-gray"
-                                            className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                                    Tўлов килиш{" "}
-                                    <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
-                                </Typography>
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {admissions.length > 0 && admissions.map(({
-                                                                      id,
-                                                                      patient_id,
-                                                                      total_amount,
-                                                                      user_id,
-                                                                      doctor,
-                                                                      date_at,
-                                                                      remark,
-                                                                      status,
-                                                                      bill,
-                                                                      visit_at,
-                                                                      debit,
-                                                                      order_count,
-                                                                      orders
-                                                                  }, index) => {
-                            const currentId = id;
-                            const isLast = id === admissions.length - 1;
-                            const classes = isLast ? "p-2" : "p-2 border-b border-blue-gray-50";
+        <div>
+            <h1>Қайта навбатлар</h1>
+            <Spin spinning={loading}>
+                <Table
+                    columns={columns}
+                    dataSource={admissions}
+                    pagination={pagination}
+                    onChange={handleTableChange}
+                    rowKey="key"
+                    rowClassName={(record) => (typeof record.total_debit === 'number' && record.total_debit === 0 ? 'disabled-row' : '')}
+                />
+            </Spin>
+            <Modal
+                title="Тўлов малумоти"
+                visible={isModalVisible}
+                onCancel={handleModalClose}
+                footer={[
+                    <Button key="back" onClick={handleModalClose}>
+                        Орқага
+                    </Button>,
+                    <Button key="submit" type="primary" onClick={handlePayment}>
+                        Тўлаш
+                    </Button>,
+                ]}
+            >
+                {selectedVisit && (
+                    <div>
+                        <p><strong>Тўлов холати:</strong> {paymentBillNames[selectedVisit.bill]}</p>
+                        <p><strong>Сана:</strong> {selectedVisit.date_at}</p>
+                        <p><strong>Миқдори:</strong> {selectedVisit.total_amount} сўм</p>
+                        <p><strong>Тўланган:</strong> {selectedVisit.total_payed} сўм</p>
+                        <p><strong>Қолган:</strong> {selectedVisit.total_debit} сўм</p>
 
-                            return (
-                                <tr key={uuidv4()}>
-                                    <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <Typography variant="small" color="blue-gray" className="font-normal">
-                                                    {index+1}
-                                                </Typography>
-                                            </div>
-                                        </div>
-                                    </td>   <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <Typography variant="small" color="blue-gray" className="font-normal">
-                                                    {patient_id.name}
-                                                </Typography>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <Typography variant="small" color="blue-gray" className="font-normal">
-                                                    {doctor.name}
-                                                </Typography>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <Typography onClick={() => handleOpen(currentId)} variant="small" color="blue-gray" className="text-sm font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">
-                                                    Услуга кушиш
-                                                </Typography>
-                                                <AddServiceVisit
-                                                    open={open}
-                                                    onClose={() => setOpen((false))}
-                                                    services={services}
-                                                    handleServiceSelect={handleServiceSelect}
-                                                    handlePaymentMethodSelect={handlePaymentMethodSelect}
-                                                    handleSave={handleSave}
-                                                    id={selectedVisitId}
-                                                />
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <Tag bordered={false} color={`${
-                                                    status === 'new'
-                                                        ? 'blue'
-                                                        : status === 'queue'
-                                                            ? 'gold'
-                                                            : 'success'
-                                                }`}>
-                                                    {statusNames[status] || status}
-                                                </Tag>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <Typography variant="small" color="blue-gray" className="font-normal">
-                                                    {total_amount} сўм
-                                                </Typography>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <Typography variant="small" color="blue-gray" className="font-normal">
-                                                    {debit} сўм
-                                                </Typography>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <Typography variant="small" color="blue-gray" className="font-normal">
-                                                    {date_at}
-                                                </Typography>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <IconButton className="rounded-full"
-                                                            onClick={() => handleOpenPayDialog(id)}>
-                                                    <BanknotesIcon className='w-4 h-4'/>
-                                                </IconButton>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        </tbody>
-                    </table>
-                </CardBody>
-                </Spin>
-                <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-                    <Typography variant="small" color="blue-gray" className="font-normal">
-                        Сахифа {currentPage} / {totalPages}
-                    </Typography>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outlined"
-                            size="sm"
-                            disabled={currentPage === 1}
-                            onClick={() => handlePageChange(currentPage - 1)}
-                        >
-                            Олдинги
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            size="sm"
-                            disabled={currentPage === totalPages}
-                            onClick={() => handlePageChange(currentPage + 1)}
-                        >
-                            Кейингиси
-                        </Button>
-                    </div>
-                </CardFooter>
-            </Card>
-
-            <Dialog size="sm" open={openPayDialog} handler={setOpenPayDialog} className="bg-transparent shadow-none">
-                <Card>
-                    <CardBody className="flex flex-col gap-4">
-
-                        {/*<select*/}
-                        {/*    value={selectedOrder}*/}
-                        {/*    onChange={(e) => setSelectedOrder(e.target.value)}*/}
-                        {/*    className="border border-gray-300 rounded-md px-3 py-2"*/}
-                        {/*>*/}
-                        {/*    {admissions.map((admission) => {*/}
-                        {/*        return (*/}
-                        {/*            <option key={admission.orders.id} value={admission.orders.id}>*/}
-                        {/*                {`${admission.orders.service.name} - Общая сумма: ${admission.orders.amount} - Заплачено: ${admission.orders.payed}`}*/}
-                        {/*            </option>*/}
-                        {/*        );*/}
-                        {/*    })}*/}
-                        {/*</select>*/}
-
-                        <select
-                            value={selectedOrder}
-                            onChange={(e) => {
-                                setSelectedOrder(e.target.value);
-                                setSelectedAdmissionId(admissions.find(admission => admission.id === e.target.value).id);
-                            }}
-                            className="border border-gray-300 rounded-md px-3 py-2"
-                        >
-                            <option value="">Хизматни танланг</option>
-                            {admissions.map((admission) => {
-                                if (admission.id === selectedOrderId) {
-                                    return (
-                                        <optgroup key={admission.id} label={`Admission ID: ${admission.id}`}>
-                                            {/* Map through children of each admission */}
-                                            {admission.chilrens.map((child) => (
-                                                <option key={child.id} value={child.orders.id}>
-                                                    {`${child.orders.service.name} - Жами: ${child.orders.amount} - Туланган: ${child.orders.payed}`}
-                                                </option>
-                                            ))}
-                                        </optgroup>
-                                    );
-                                }
-                            })}
-                        </select>
-
+                        <p><strong>Хизматлар:</strong> 
+                            {Object.entries(
+                                selectedVisit.chilrens
+                                    .map(child => child.orders?.service?.name)
+                                    .filter(name => name)
+                                    .reduce((acc, serviceName) => {
+                                        acc[serviceName] = (acc[serviceName] || 0) + 1;
+                                        return acc;
+                                    }, {})
+                            )
+                            .map(([serviceName, count]) => `${serviceName} x${count}`)
+                            .join(', ')}
+                        </p>
 
                         <Input
+                            className='mb-5'
                             type="number"
-                            label="Жами"
-                            placeholder="Жами"
-                            className="border border-gray-300 rounded-md px-3 py-2"
                             value={paymentAmount}
                             onChange={(e) => setPaymentAmount(e.target.value)}
+                            placeholder="Тўлов миқдори"
+                            style={{ marginTop: 10 }}
                         />
-                        <div className="flex flex-col">
-                            <label className="inline-flex items-center">
-                                <Radio
-                                    checked={paymentType === "cash"}
-                                    onChange={() => handlePaymentTypeChange("cash")}
-                                />
-                                <span className="ml-2">Наличные</span>
-                            </label>
-                            <label className="inline-flex items-center">
-                                <Radio
-                                    checked={paymentType === "card"}
-                                    onChange={() => handlePaymentTypeChange("card")}
-                                />
-                                <span className="ml-2">Карта</span>
-                            </label>
-                            <label className="inline-flex items-center">
-                                <Radio
-                                    checked={paymentType === "credit"}
-                                    onChange={() => handlePaymentTypeChange("credit")}
-                                />
-                                <span className="ml-2">Кредит</span>
-                            </label>
-                        </div>
-                    </CardBody>
-                    <CardFooter className="pt-0">
-                        <Button onClick={handlePayment}>Оплатить</Button>
-                    </CardFooter>
-                </Card>
-            </Dialog>
-        </>
+                        <Radio.Group onChange={(e) => setPaymentType(e.target.value)} value={paymentType}>
+                            <Radio value="cash">Нақд</Radio>
+                            <Radio value="credit">Қарз</Radio>
+                            <Radio value="card">Кредит карта</Radio>
+                        </Radio.Group>
+                    </div>
+                )}
+            </Modal>
+        </div>
     );
-}
+};
 
-
+export default NewAdmissions;

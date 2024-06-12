@@ -49,20 +49,32 @@ export default function SendAnalysis({visitId, open}) {
         }
     );
 
-
     const handleSubmitRegister = () => {
-        // Отправляем POST-запрос на сервер
-        axiosInstance.post(`visit/service/${visitId}`, {
-            service: selectedServices.map(service => service.id), // Отправляем только id сервисов
-            type: "cash",
-            cash: 0
-        })
+        // Формируем массив service_count
+        const serviceCountArray = selectedServices.map(service => ({
+            id: service.id,
+            count: quantities[service.id]
+        }));
 
+        // Фильтруем сервисы с ненулевым количеством
+        const nonZeroServiceCounts = serviceCountArray.filter(item => item.count > 0);
+
+        // Формируем данные для отправки
+        const dataToSend = {
+            service: nonZeroServiceCounts.map(item => item.id), // Отправляем только ID сервисов
+            service_count: nonZeroServiceCounts.map(item => item.count),
+            type: "cash",
+            cash: 0,
+            amount: 0
+        };
+
+        // Отправляем POST-запрос на сервер
+        axiosInstance.post(`visit/service_mass/${visitId}`, dataToSend)
             .then(response => {
                 console.log(response.data);
                 setQuantities({});
+                setSelectedServices([]);
                 toast.success('Хизмат чеки кассага юборилди!');
-
             })
             .catch(error => {
                 toast.error('Хизмат ни танланг ва Навбатга кушилганини хам текширинг !')
@@ -103,7 +115,16 @@ export default function SendAnalysis({visitId, open}) {
             ...prevQuantities,
             [service.id]: (prevQuantities[service.id] || 0) + 1,
         }));
-        setSelectedServices((prevSelected) => [...prevSelected, { id: service.id, name: service.name, price: service.price}]);
+
+        setSelectedServices((prevSelected) => {
+            const existingService = prevSelected.find(item => item.id === service.id);
+            if (existingService) {
+                return prevSelected.map(item =>
+                    item.id === service.id ? { ...item, count: item.count + 1 } : item
+                );
+            }
+            return [...prevSelected, { ...service, count: 1 }];
+        });
     };
 
     const decrementQuantity = (service) => {
@@ -114,18 +135,17 @@ export default function SendAnalysis({visitId, open}) {
                 [service.id]: newQuantity,
             };
         });
+
         setSelectedServices((prevSelected) => {
-            const index = prevSelected.findIndex((selected) => selected.id === service.id);
-            if (index > -1) {
-                const updatedSelected = [...prevSelected];
-                updatedSelected.splice(index, 1);
-                return updatedSelected;
-            }
-            return prevSelected;
+            return prevSelected
+                .map(item =>
+                    item.id === service.id && item.count > 1
+                        ? { ...item, count: item.count - 1 }
+                        : item
+                )
+                .filter(item => item.count > 0);
         });
     };
-
-
 
     const calculateSum = (price, quantity) => {
         return price * quantity;
