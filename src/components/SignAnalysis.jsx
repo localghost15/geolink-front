@@ -10,17 +10,16 @@ import {
     Card,
     CardHeader,
     Typography,
-    Button,
     CardBody,
     CardFooter,
     IconButton,
     Tooltip,
-    Input,
 } from '@material-tailwind/react';
 import SignAnalysisList from './Lists/SignAnalysisList';
 import axios from 'axios';
 import POSReceipt from "./POSReceipt";
 import toast from "react-hot-toast";
+import {Button, Input} from "antd";
 
 const TABLE_HEAD = ['Хизматлар', 'Нархи', 'Количество', 'Умумий сумма'];
 
@@ -83,9 +82,7 @@ export default function SendAnalysis({visitId, open}) {
     };
 
     useEffect(() => {
-        if (open === 2 && services.length === 0) {
-            fetchServices(currentPage);
-        }
+        fetchServices(currentPage);
     }, [open, currentPage]);
 
     const fetchServices = async (page) => {
@@ -174,26 +171,15 @@ export default function SendAnalysis({visitId, open}) {
         <>
             <Card className="h-full w-full rounded-none pt-5">
                 <div className="flex mx-8 justify-between gap-8">
-                    <label
-                        className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2 focus-within:border-gray-300"
-                        htmlFor="search-bar"
-                    >
-                        <SignAnalysisList />
-
-                        <input
-                            id="search-bar"
-                            placeholder="Қидириш"
-                            className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
-                            value={searchQuery}
-                            onChange={handleSearchChange}
-                        />
-                        <Button size="md">
-                            <MagnifyingGlassIcon className="h-5 w-5" />
-                        </Button>
-                    </label>
+                    <Input.Search
+                        placeholder="Хизмат номини йозинг"
+                        allowClear
+                        enterButton="Излаш"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        style={{marginBottom: 2, width: 300}}
+                    />
                 </div>
-
-                <CardHeader floated={false} shadow={false} className="rounded-none"></CardHeader>
                 <CardBody className="overflow-scroll px-0">
                     <table className="mt-1 w-full min-w-max table-auto text-left">
                         <thead>
@@ -332,7 +318,7 @@ export default function SendAnalysis({visitId, open}) {
                     </Typography>
                     <div className="flex gap-2">
                         <POSReceipt visitId={visitId} selectedServices={selectedServices} />
-                        <Button onClick={handleSubmitRegister} size="sm" className="flex py-3 items-center gap-x-1">
+                        <Button type="primary" onClick={handleSubmitRegister} size="sm" className="flex py-3 items-center gap-x-1">
                             <PaperAirplaneIcon className="w-4 h-4" /> Кассага юбориш
                         </Button>
                     </div>

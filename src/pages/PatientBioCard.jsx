@@ -1,15 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../axios/axiosInstance';
-import { useParams } from 'react-router-dom';
-import {Avatar, Tabs, Modal, Button, Select, Tag, Typography, Divider, Switch, Spin, Collapse, Checkbox} from 'antd';
+import {useNavigate, useParams} from 'react-router-dom';
+import {
+    Avatar,
+    Tabs,
+    Modal,
+    Button,
+    Select,
+    Tag,
+    Typography,
+    Divider,
+    Switch,
+    Spin,
+    Collapse,
+    Checkbox,
+    Alert,
+    Descriptions, Image
+} from 'antd';
 import { endVisit, fetchVisits, startVisit } from '../services/visitService';
 import { PaymentHistoryTable } from '../components/PaymentHistoryTable';
 import AccordionCustomIcon from '../components/AccordionCustomIcon';
 import {PiEyeClosedBold} from "react-icons/pi";
 import {ImEye} from "react-icons/im";
-import {MdHealthAndSafety, MdPlayLesson} from "react-icons/md";
+import {MdHealthAndSafety, MdOutlineAdsClick, MdPlayLesson} from "react-icons/md";
 import {BsFillStopwatchFill} from "react-icons/bs";
 import {ChevronUpDownIcon} from "@heroicons/react/24/outline";
+import {getDispensaryDataPatient} from "../services/dispansery";
 const { Panel } = Collapse;
 
 function PatientBioCard() {
@@ -30,8 +46,12 @@ function PatientBioCard() {
     const [partners, setPartners] = useState([]);
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
-
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const navigate = useNavigate();
+
+    const handleClick = () => {
+        navigate(`/patient/admission/${index}`); // Replace with your desired route
+    };
 
     const toggleEpidemActiveStatus = (id) => {
         setEpidemData(epidemData.map(item =>
@@ -97,8 +117,7 @@ function PatientBioCard() {
     
             setVisitId(response.data.id);
             setMostRecentVisit(response.data);
-            
-            // После создания визита вызываем функцию fetchPatientVisits для обновления данных
+
             fetchPatientVisits();
     
             setIsModalVisible(false);
@@ -140,6 +159,38 @@ function PatientBioCard() {
         setIsModalVisible(false); // Скрыть модальное окно
     };
 
+    const [dispensaryData, setDispensaryData] = useState(null);
+
+    useEffect(() => {
+        const fetchDispensaryData = async () => {
+            if (mostRecentVisit && mostRecentVisit.id) {
+                try {
+                    const data = await getDispensaryDataPatient(mostRecentVisit.id);
+                    setDispensaryData(data);
+                } catch (error) {
+                    console.error('Ошибка при получении данных о диспансере:', error);
+                }
+            }
+        };
+        fetchDispensaryData();
+    }, [mostRecentVisit]);
+
+    const renderDispensaryDates = () => {
+        if (dispensaryData && dispensaryData.data) {
+            const currentVisitDate = dispensaryData.data[0]?.visit?.date;
+            const mouthDays = dispensaryData.data.map(item => item.mouth_days).flat();
+            return (
+                <ul>
+                    {mouthDays.length > 0
+                        ? mouthDays.map(date => <li key={date}>{date}</li>)
+                        : <li>Диспансер рўхатлари йуқ</li>}
+                </ul>
+            );
+        }
+        return <li>Диспансер рўхатлари йуқ</li>;
+    };
+
+
     const statusNames = {
         new: 'Янги',
         queue: 'Навбатда',
@@ -148,7 +199,101 @@ function PatientBioCard() {
         completed: 'Завершён',
         canceled: 'Отменён',
     };
+    const files = mostRecentVisit?.files ?? [];
 
+
+    const vistTable = [
+        {
+            key: '1',
+            label: 'Қабул санаси:',
+            children: (
+                <>
+                    {mostRecentVisit && mostRecentVisit.date_at}
+                </>
+            ),
+        },
+        {
+            key: '2',
+            label: 'Врач хулосаси:',
+            children: (
+                <>
+                    {mostRecentVisit && mostRecentVisit.remark ?  mostRecentVisit.remark : 'Хулоса йоқ'}
+                </>
+            ),
+        }, {
+            key: '3',
+            label: 'МКБ10:',
+            children: (
+                <>
+                    {patientData && Array.isArray(patientData.mkb10) && patientData.mkb10.length > 0 ? (
+                        patientData.mkb10.map(item => (
+                            <div key={item.id}>
+                                <p>{item.name}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p>Данные по MKB10 отсутствуют.</p>
+                    )}
+                </>
+            ),
+        }, {
+            key: '4',
+            label: 'Қайта қабул санаси:',
+            children: (
+                <>
+                    {mostRecentVisit ? mostRecentVisit.date_at : ''}
+                </>
+            ),
+        }, {
+            key: '5',
+            label: 'Диспансер хисобига олинганми:',
+            children: (
+                <>
+                    {renderDispensaryDates()}
+                </>
+            ),
+        }, {
+            key: '6',
+            label: 'Юкланган файллар:',
+            children: (
+                <>
+                    <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                    >
+                        <Image.PreviewGroup
+                            preview={{
+                                onChange: (current, prev) => console.log(`current index: ${current}, prev index: ${prev}`),
+                            }}
+                        >
+                            {Array.isArray(files) && files.length > 0 ? (
+                                files.map(file => (
+                                    <Image
+                                        key={file.id}
+                                        width={50}
+                                        src={file.url}
+                                        alt={file.name}
+                                    />
+                                ))
+                            ) : (
+                                <p>Файлы отсутствуют.</p>
+                            )}
+                        </Image.PreviewGroup>
+
+                    </Typography>
+                </>
+            ),
+        }, {
+            key: '7',
+            label: 'Қўриш:',
+            children: (
+                <>
+                   <Button onClick={handleClick} className="flex items-center" icon={<MdOutlineAdsClick className="text-lg" />} type="link">Барча малумотларини кўриш</Button>
+                </>
+            ),
+        },
+    ];
 
     const sendEpidemData = async () => {
         const activeEpidems = epidemData.filter(item => item.active).map(item => item.id);
@@ -248,7 +393,7 @@ function PatientBioCard() {
         setIsButtonLoading(true);
         try {
             await endVisit(visitId);
-            setMostRecentVisit(prevVisit => ({ ...prevVisit, status: "closed" }));
+            setMostRecentVisit(prevVisit => ({ ...prevVisit, status: "", total_payed: 0 }));
 
         } catch (error) {
             console.error('Error ending visit:', error);
@@ -314,6 +459,19 @@ function PatientBioCard() {
         typeof mostRecentVisit.total_payed === 'number' &&
         mostRecentVisit.total_payed <= 0;
 
+    const statusColors = {
+        queue: 'gold',
+        examined: 'green',
+        new: 'blue',
+        pending: 'orange',
+        payed: 'purple',
+        revisit: 'red'
+    };
+
+    const color = mostRecentVisit && mostRecentVisit.status
+        ? statusColors[mostRecentVisit.status] || statusColors.default
+        : statusColors.default;
+
     const items = [
         {
           key: '1',
@@ -323,7 +481,7 @@ function PatientBioCard() {
       Янги қабул холати
     </Divider>
      <Typography className='text-sm mb-2 font-semibold text-blue-gray-900'>
-    Жорий холат: <Tag bordered={false} color="gold">
+    Жорий холат: <Tag bordered={false} color={color}>
     {mostRecentVisit && statusNames[mostRecentVisit.status] || mostRecentVisit && mostRecentVisit.status}
     </Tag>
 </Typography>
@@ -348,15 +506,43 @@ function PatientBioCard() {
               <Divider orientation="left" orientationMargin="0">
               Бемор харакати
     </Divider>
-              {patientData && shouldRenderAccordionIcon && (
-                  <AccordionCustomIcon
-                      status={mostRecentVisit && mostRecentVisit.status} // Pass the status to control the icon
-                      visits={visits[index]}
-                      patientId={index}
-                      visitId={visitId}
-                      mkb10={patientData.patient.mkb10}
-                  />
+              {patientData && shouldRenderAccordionIcon && mostRecentVisit ? (
+                  <>
+                      <AccordionCustomIcon
+                          status={mostRecentVisit.status} // Pass the status to control the icon
+                          visits={visits[index]}
+                          patientId={index}
+                          visitId={visitId}
+                          mkb10={patientData.patient.mkb10}
+                      />
+                  </>
+              ) : (
+                  <>
+                      {mostRecentVisit && mostRecentVisit.total_payed > 0 ? (
+                          <Alert
+                              message="Бемор қабул бошланишга таййор"
+                              description="Бемор хизмат учун пул тўлади учрашув бошланиши мумкин"
+                              type="success"
+                              showIcon
+                          />
+                      ) : mostRecentVisit && mostRecentVisit.status === "new" ? (
+                          <Alert
+                              message="Янги қабул қушилди"
+                              description="Қабул қушилган, аммо бемор хали пул тўланмаган"
+                              type="warning"
+                              showIcon
+                          />
+                      ) : (
+                          <Alert
+                              message="Бемор қабулга қўшилмаган"
+                              description="Даволашни бошлаш учун илтимос беморни қабулга қўшинг"
+                              type="info"
+                              showIcon
+                          />
+                      )}
+                  </>
               )}
+
 
           </div>,
         },
@@ -368,7 +554,7 @@ function PatientBioCard() {
         {
           key: '3',
           label: 'Қабулларни Кўриш',
-          children: 'Content of Tab Pane 3',
+          children: <Descriptions column={1} title="Охирги қабул" bordered items={vistTable} />,
         },
       ];
 
@@ -414,11 +600,11 @@ function PatientBioCard() {
                       <div>
                         <h3 className="text-base font-semibold leading-7 text-gray-900">{patient.name}</h3>
                         <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
-                        <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Текущий визит ID: {visitId}</p>
+                        <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Хозирги қабул рақами: {visitId}</p>
                       </div>
                     </div>
                     <Button disabled={isButtonDisabled} onClick={showModal}>Беморни қабулга қушиш</Button>
-                                 <Modal title="Создать визит" visible={isModalVisible} onCancel={handleCancel} footer={[
+                <Modal title="Создать визит" visible={isModalVisible} onCancel={handleCancel} footer={[
                 <Button key="back" onClick={handleCancel}>
                     Отмена
                 </Button>,

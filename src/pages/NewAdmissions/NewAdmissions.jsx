@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Typography, Input, Radio, Spin } from 'antd';
 import axiosInstance from "../../axios/axiosInstance";
 import toast from 'react-hot-toast';
@@ -14,8 +14,8 @@ const NewAdmissions = () => {
     const [paymentType, setPaymentType] = useState('cash');
     const [loading, setLoading] = useState(false);
     const [totalDebit, setTotalDebit] = useState(0);
+    const [searchText, setSearchText] = useState('');
 
-    // Функция для получения визитов с фильтром по статусу оплаты "pending"
     const fetchAdmissions = async (page = 1, pageSize = 10, sortField = 'id_visit', sortOrder = 'descend') => {
         setLoading(true);
         try {
@@ -64,9 +64,12 @@ const NewAdmissions = () => {
 
     const handleTableChange = (pagination, filters, sorter) => {
         fetchAdmissions(pagination.current, pagination.pageSize, sorter.field, sorter.order);
-        setFilters(filters);
         setSorter(sorter);
     };
+
+    const filteredData = admissions.filter(admission =>
+        admission.patient_name.toLowerCase().includes(searchText.toLowerCase())
+    );
 
     const getStatusName = (status) => {
         const statusNames = {
@@ -121,7 +124,6 @@ const NewAdmissions = () => {
             }
 
             const amount = paymentAmount;
-
             payForServices(orderId, amount, paymentType)
                 .then(response => {
                     console.log('Оплата выполнена успешно:', response);
@@ -142,6 +144,10 @@ const NewAdmissions = () => {
     const handleModalClose = () => {
         setIsModalVisible(false);
         setSelectedVisit(null);
+    };
+
+    const handleSearch = (value) => {
+        setSearchText(value);
     };
 
     const columns = [
@@ -223,11 +229,21 @@ const NewAdmissions = () => {
 
     return (
         <div>
-            <h1>Қайта навбатлар</h1>
+            <div className="px-10">
+                <h1 className="text-xl font-semibold mb-3">Қайта навбатлар</h1>
+                <Input.Search
+                    placeholder="ФИОни киритинг"
+                    allowClear
+                    enterButton="Излаш"
+                    onSearch={handleSearch} // Обработчик поиска
+                    onChange={(e) => handleSearch(e.target.value)} // Обработчик изменения значения поля поиска
+                    style={{ width: 300, marginBottom: 16 }}
+                />
+            </div>
             <Spin spinning={loading}>
                 <Table
                     columns={columns}
-                    dataSource={admissions}
+                    dataSource={filteredData} // Заменяем исходные данные на отфильтрованные данные
                     pagination={pagination}
                     onChange={handleTableChange}
                     rowKey="key"
@@ -255,7 +271,7 @@ const NewAdmissions = () => {
                         <p><strong>Тўланган:</strong> {selectedVisit.total_payed} сўм</p>
                         <p><strong>Қолган:</strong> {selectedVisit.total_debit} сўм</p>
 
-                        <p><strong>Хизматлар:</strong> 
+                        <p><strong>Хизматлар:</strong>
                             {Object.entries(
                                 selectedVisit.chilrens
                                     .map(child => child.orders?.service?.name)
@@ -265,8 +281,8 @@ const NewAdmissions = () => {
                                         return acc;
                                     }, {})
                             )
-                            .map(([serviceName, count]) => `${serviceName} x${count}`)
-                            .join(', ')}
+                                .map(([serviceName, count]) => `${serviceName} x${count}`)
+                                .join(', ')}
                         </p>
 
                         <Input
@@ -290,3 +306,5 @@ const NewAdmissions = () => {
 };
 
 export default NewAdmissions;
+
+

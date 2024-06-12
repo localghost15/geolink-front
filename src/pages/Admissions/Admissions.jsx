@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Typography, Input, Radio, Spin } from 'antd';
-
 import axiosInstance from "../../axios/axiosInstance";
 import toast from 'react-hot-toast';
 
+const { Search } = Input;
+
 const Admissions = () => {
     const [admissions, setAdmissions] = useState([]);
+    const [filteredAdmissions, setFilteredAdmissions] = useState([]); // Состояние для отфильтрованных данных
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
     const [filters, setFilters] = useState({});
     const [sorter, setSorter] = useState({ field: 'id_visit', order: 'descend' });
@@ -13,11 +15,12 @@ const Admissions = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [paymentAmount, setPaymentAmount] = useState('');
     const [paymentType, setPaymentType] = useState('cash');
-    const [loading, setLoading] = useState(false); // Добавляем состояние загрузки
-    const [totalDebit, setTotalDebit] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [searchText, setSearchText] = useState(''); // Состояние для текста поиска
+    const [paymentReceipt, setPaymentReceipt] = useState(null);
 
     const fetchAdmissions = async (page = 1, pageSize = 10, sortField = 'id_visit', sortOrder = 'descend') => {
-        setLoading(true); // Устанавливаем загрузку в true перед запросом
+        setLoading(true);
         try {
             const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=new`);
             const admissionsData = response.data.data.map((item, index) => ({
@@ -30,7 +33,7 @@ const Admissions = () => {
                 total_debit: item.total_debit,
                 date_at: item.date_at,
                 status: item.status,
-                orders: item.orders 
+                orders: item.orders
             }));
             const total = response.data.meta.total;
 
@@ -46,11 +49,12 @@ const Admissions = () => {
             });
 
             setAdmissions(sortedData);
+            setFilteredAdmissions(sortedData); // Устанавливаем изначально все данные
             setPagination({ ...pagination, current: page, pageSize, total });
         } catch (error) {
             console.error("Error fetching admissions:", error);
         } finally {
-            setLoading(false); // После завершения запроса устанавливаем загрузку в false
+            setLoading(false);
         }
     };
 
@@ -63,8 +67,6 @@ const Admissions = () => {
         setFilters(filters);
         setSorter(sorter);
     };
-
-    
 
     const getStatusName = (status) => {
         const statusNames = {
@@ -103,25 +105,34 @@ const Admissions = () => {
             const orderId = selectedOrder.id;
             const paymentUrl = `/visit/pay/${orderId}`;
             axiosInstance.post(paymentUrl, {
-                amount: paymentAmount, 
-                type: paymentType 
+                amount: paymentAmount,
+                type: paymentType
             })
-            .then(response => {
-                console.log('Оплата выполнена успешно:', response.data);
-                fetchAdmissions();
-                setIsModalVisible(false);
-                setPaymentAmount(''); // Очищаем значение инпута суммы оплаты
-                setPaymentType('cash');
-                toast.success(`Оплачен: ${orderId}`);
-            })
-            .catch(error => {
-                console.error('Ошибка при выполнении оплаты:', error);
-            });
+                .then(response => {
+                    console.log('Оплата выполнена успешно:', response.data);
+
+                    setPaymentReceipt({
+                        service: selectedOrder.service.name,
+                        amount: paymentAmount,
+                        payed: paymentAmount, // Пока используем сумму оплаты как сумму туланганного
+                        type: paymentType,
+                        bill: 'payed' // Пока устанавливаем статус оплачено
+                    });
+
+
+                    fetchAdmissions();
+                    setPaymentAmount('');
+                    setPaymentType('cash');
+                    toast.success(`Оплачен: ${orderId}`);
+                })
+                .catch(error => {
+                    console.error('Ошибка при выполнении оплаты:', error);
+                });
         } else {
             console.error('Выбранный заказ отсутствует для оплаты');
         }
     };
-    
+
 
     const handleModalClose = () => {
         setIsModalVisible(false);
@@ -136,14 +147,6 @@ const Admissions = () => {
             sorter: (a, b) => a.key - b.key,
             sortOrder: sorter.field === 'key' && sorter.order,
         },
-        // {
-        //     title: 'ID визита',
-        //     dataIndex: 'id_visit',
-        //     key: 'id_visit',
-        //     sorter: (a, b) => a.id_visit - b.id_visit,
-        //     sortOrder: sorter.field === 'id_visit' && sorter.order,
-        //     defaultSortOrder: sorter.field === 'id_visit' ? sorter.order : 'descend',
-        // },
         {
             title: 'Беморнинг ФИО',
             dataIndex: 'patient_name',
@@ -164,7 +167,7 @@ const Admissions = () => {
             key: 'total_amount',
             sorter: (a, b) => a.total_amount - b.total_amount,
             sortOrder: sorter.field === 'total_amount' && sorter.order,
-            render: (text) => `${text} сўм` // Добавляем символ доллара к сумме
+            render: (text) => `${text} сўм`
         },
         {
             title: 'Тўланган',
@@ -172,9 +175,8 @@ const Admissions = () => {
             key: 'total_payed',
             sorter: (a, b) => a.total_payed - b.total_payed,
             sortOrder: sorter.field === 'total_payed' && sorter.order,
-            render: (text) => `${text} сўм` // Добавляем символ доллара к сумме
+            render: (text) => `${text} сўм`
         },
-        
         {
             title: 'Статус',
             dataIndex: 'status',
@@ -198,41 +200,81 @@ const Admissions = () => {
         },
     ];
 
+    // Обработчик изменения текста поиска
+    const handleSearch = (value) => {
+        setSearchText(value);
+        if (value) {
+            const filteredData = admissions.filter((admission) =>
+                admission.patient_name.toLowerCase().includes(value.toLowerCase())
+            );
+            setFilteredAdmissions(filteredData);
+        } else {
+            setFilteredAdmissions(admissions);
+        }
+    };
+
+
     return (
         <div>
-            <h1>Навбатда</h1>
+            <div className="px-10">
+                <h1 className="text-xl font-semibold mb-3">Навбатда</h1>
+                <Input.Search
+                    placeholder="Поиск по имени пациента"
+                    value={searchText}
+                    allowClear
+                    enterButton="Излаш"
+                    onChange={(e) => handleSearch(e.target.value)}
+                    style={{marginBottom: 16, width: 300}}
+                />
+            </div>
             <Spin spinning={loading}>
-            <Table
-                columns={columns}
-                dataSource={admissions}
-                pagination={pagination}
-                onChange={handleTableChange}
-                rowKey="key"
-                rowClassName={(record) => (record.status === 'queue' ? 'disabled-row' : '')}
-            />
+                <Table
+                    columns={columns}
+                    dataSource={filteredAdmissions} // Используем отфильтрованные данные
+                    pagination={pagination}
+                    onChange={handleTableChange}
+                    rowKey="key"
+                    rowClassName={(record) => (record.status === 'queue' ? 'disabled-row' : '')}
+                />
             </Spin>
-             <Modal
+            <Modal
                 title="Тўлов малумоти"
                 visible={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
+                onCancel={handleModalClose}
                 footer={[
-                    <Button key="back" onClick={() => setIsModalVisible(false)}>
+                    <Button key="back" onClick={handleModalClose}>
                         Орқага
                     </Button>,
-                    <Button key="submit" type="primary" onClick={handlePayment}>
-                        Тўлаш
-                    </Button>,
+                    paymentReceipt ? ( // Показываем кнопку для печати чека, если чек доступен
+                        <Button key="print" type="primary" onClick={() => window.print()}>
+                            Чекни чоп эт
+                        </Button>
+                    ) : (
+                        <Button key="submit" type="primary" onClick={handlePayment}>
+                            Тўлаш
+                        </Button>
+                    )
                 ]}
             >
-                {selectedOrder ? (
+                {paymentReceipt ? ( // Проверяем, есть ли информация о чеке
+                    <div>
+                        <Typography.Title level={4}>Тўлов квитанцияси</Typography.Title>
+                        <p><strong>Хизмат:</strong> {paymentReceipt.service}</p>
+                        <p><strong>Миқдори:</strong> {paymentReceipt.amount}</p>
+                        <p><strong>Туланган:</strong> {paymentReceipt.payed}</p>
+                        <p><strong>Тўлов усули:</strong> {paymentTypeNames[paymentReceipt.type]}</p>
+                        <p><strong>Тўлов холати:</strong> {paymentBillNames[paymentReceipt.bill]}</p>
+                    </div>
+                ) : selectedOrder ? (
                     <div>
                         <Typography.Title level={4}>Тўлов квитанцияси</Typography.Title>
                         <p><strong>Хизмат:</strong> {selectedOrder.service.name}</p>
                         <p><strong>Миқдори:</strong> {selectedOrder.amount}</p>
+                        <p><strong>Туланган:</strong> {selectedOrder.payed}</p>
                         <p><strong>Тўлов усули:</strong> {paymentTypeNames[selectedOrder.type]}</p>
                         <p><strong>Тўлов холати:</strong> {paymentBillNames[selectedOrder.bill]}</p>
                         <Input
-                        className='mb-5'
+                            className='mb-5'
                             type="number"
                             value={paymentAmount}
                             onChange={(e) => setPaymentAmount(e.target.value)}
@@ -254,4 +296,3 @@ const Admissions = () => {
 };
 
 export default Admissions;
-

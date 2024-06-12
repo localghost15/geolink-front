@@ -82,31 +82,32 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
         setIsVisitStarted(status === "started");
     }, []);
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const data = await fetchTemplates();
+                setTemplates(data);
+
+                const mkbData = await fetchMkb10Data();
+                const initialSelectedMKB10 = mkb10.map(item => item.id);
+                const selectedData = mkbData.filter(item => initialSelectedMKB10.includes(item.id));
+                const remainingData = mkbData.filter(item => !initialSelectedMKB10.includes(item.id));
+                setMkb10Data([...selectedData, ...remainingData]);
+                setSelectedMKB10(initialSelectedMKB10);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+        fetchData();
+    }, []);
+
+
 
     const handleAlwaysOpen = () => setAlwaysOpen(cur => !cur);
-    const handleOpen = value => {
-        setOpen(open === value ? 0 : value);
-        if ((value === 4 && templates.length === 0) || (value === 5 && mkb10Data.length === 0)) {
-            const fetchData = async () => {
-                try {
-                    if (value === 4) {
-                        const data = await fetchTemplates();
-                        setTemplates(data);
-                    } else if (value === 5) {
-                        const data = await fetchMkb10Data();
-                        const initialSelectedMKB10 = mkb10.map(item => item.id);
-                        const selectedData = data.filter(item => initialSelectedMKB10.includes(item.id));
-                        const remainingData = data.filter(item => !initialSelectedMKB10.includes(item.id));
-                        setMkb10Data([...selectedData, ...remainingData]);
-                        setSelectedMKB10(initialSelectedMKB10);
-                    }
-                } catch (error) {
-                    console.error("Error fetching data:", error);
-                }
-            };
-            fetchData();
-        }
+    const handleOpen = () => {
+        setOpen(open);
     };
+
 
 
 
@@ -222,7 +223,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
       <Panel header={<span onClick={() => handleOpen(1)} className='text-sm'>Қайта қабул</span>} key="1">
         <div className="flex gap-4 items-center">
           <DatePicker onChange={(date) => setSelectedDate(date)} />
-          <ButtonAnt className="flex items-center" icon={<ArrowPathIcon className='w-4 h-4' />} onClick={sendDateData}>
+          <ButtonAnt type="primary" className="flex items-center" icon={<ArrowPathIcon className='w-4 h-4' />} onClick={sendDateData}>
             Қайта қабулга қўшиш
           </ButtonAnt>
         </div>
@@ -233,7 +234,7 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
       <Panel header={<span onClick={() => handleOpen(3)} className='text-sm'>Диспансер рўйхати</span>} key="3">
         <div className="flex gap-4 items-center">
           <DatePicker onChange={(date) => setSelectedDate(date)} />
-          <ButtonAnt className='flex items-center gap-x-1' onClick={() => sendDateDespansery(patientId)}>
+          <ButtonAnt type="primary" className='flex items-center gap-x-1' onClick={() => sendDateDespansery(patientId)}>
             <ArrowPathIcon className='w-4 h-4' />
             Диспонсер рўйхатига қўшиш
           </ButtonAnt>

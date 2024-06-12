@@ -1,12 +1,12 @@
 import React, {useState} from 'react';
 import axios from "axios";
-import {
-    Button, Card, CardBody, CardFooter,
+import {Card, CardBody, CardFooter,
     Dialog, Input, Typography,
 } from "@material-tailwind/react";
 import {DocumentArrowDownIcon} from "@heroicons/react/24/outline";
 import {PrinterIcon} from "@heroicons/react/24/solid";
 import toast, {Toaster} from "react-hot-toast";
+import {Button} from "antd";
 const POSReceipt = ({ selectedServices, visitId }) => {
     const [open, setOpen] = useState(false);
     const [amount, setAmount] = useState(0);
@@ -80,7 +80,7 @@ const POSReceipt = ({ selectedServices, visitId }) => {
 
     return (
         <>
-            <Button onClick={handleOpen} size="sm" className="flex py-3 items-center gap-x-1">
+            <Button type="default" onClick={handleOpen} size="sm" className="flex py-3 items-center gap-x-1">
                 <DocumentArrowDownIcon className="w-4 h-4" /> Чекни чикариш
             </Button>
             <Dialog animate={{
