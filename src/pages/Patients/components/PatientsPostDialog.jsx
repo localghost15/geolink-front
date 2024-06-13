@@ -418,8 +418,9 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                 {/*/>*/}
                                                 <TextArea
                                                     showCount
-                                                    onChange={formik.handleChange}
+                                                    name="remark"
                                                     value={formik.values.remark}
+                                                    onChange={formik.handleChange}
                                                     maxLength={100}
                                                     placeholder="Исох:"
                                                     style={{

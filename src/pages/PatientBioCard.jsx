@@ -44,6 +44,7 @@ function PatientBioCard() {
     const [selectedPartner, setSelectedPartner] = useState(null); // Состояние для выбранного партнера
     const [services, setServices] = useState([]); // Состояние для списка сервисов
     const [partners, setPartners] = useState([]);
+    const [doctors, setDoctors] = useState([]);
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,6 +53,21 @@ function PatientBioCard() {
     const handleClick = () => {
         navigate(`/patient/admission/${index}`); // Replace with your desired route
     };
+
+
+    const fetchDoctors = async () => {
+        try {
+            const response = await axiosInstance.get("/admin/users");
+            const doctorUsers = response.data.data.filter(user => user.roles.includes('doctor'));
+            setDoctors(doctorUsers);
+        } catch (error) {
+            console.error("Ошибка при получении списка врачей:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchDoctors();
+    }, []);
 
     const toggleEpidemActiveStatus = (id) => {
         setEpidemData(epidemData.map(item =>
@@ -614,7 +630,7 @@ function PatientBioCard() {
             ]}>
                 <div className='flex items-center flex-row gap-2'>
                 <div className='w-full'>
-                    <label htmlFor="service">Сервис:</label>
+                    <label htmlFor="service">Хизмат:</label>
                     <Select className='w-full' id="service" value={selectedService} onChange={handleServiceSelect} style={{ width: 200 }}>
                         {services.map(service => (
                             <Select.Option key={service.id} value={service.id}>{service.name}</Select.Option>
@@ -622,9 +638,9 @@ function PatientBioCard() {
                     </Select>
                 </div>
                 <div className='w-full'>
-                    <label htmlFor="partner">Партнер:</label>
+                    <label htmlFor="partner">Доктор:</label>
                     <Select className='w-full' id="partner" value={selectedPartner} onChange={handlePartnerSelect} style={{ width: 200 }}>
-                        {partners.map(partner => (
+                        {doctors.map(partner => (
                             <Select.Option key={partner.id} value={partner.id}>{partner.name}</Select.Option>
                         ))}
                     </Select>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Typography, Input, Radio, Spin } from 'antd';
+import {Table, Button, Modal, Typography, Input, Radio, Spin, Divider} from 'antd';
 import axiosInstance from "../../axios/axiosInstance";
 import toast from 'react-hot-toast';
 
@@ -15,7 +15,7 @@ const NewAdmissions = () => {
     const [loading, setLoading] = useState(false);
     const [totalDebit, setTotalDebit] = useState(0);
     const [searchText, setSearchText] = useState('');
-
+    const [paymentReceipt, setPaymentReceipt] = useState(null);
     const fetchAdmissions = async (page = 1, pageSize = 10, sortField = 'id_visit', sortOrder = 'descend') => {
         setLoading(true);
         try {
@@ -128,7 +128,7 @@ const NewAdmissions = () => {
                 .then(response => {
                     console.log('Оплата выполнена успешно:', response);
                     fetchAdmissions();
-                    setIsModalVisible(false);
+                    setPaymentReceipt(response.data);
                     setPaymentAmount('');
                     setPaymentType('cash');
                     toast.success(`Оплачен: ${orderId}`);
@@ -141,9 +141,11 @@ const NewAdmissions = () => {
         }
     };
 
+
     const handleModalClose = () => {
         setIsModalVisible(false);
         setSelectedVisit(null);
+        setPaymentReceipt(null)
     };
 
     const handleSearch = (value) => {
@@ -251,26 +253,90 @@ const NewAdmissions = () => {
                 />
             </Spin>
             <Modal
-                title="Тўлов малумоти"
+                centered
+                title={paymentReceipt ? "Чек чикариш" : "Тўлов малумоти"}
                 visible={isModalVisible}
                 onCancel={handleModalClose}
                 footer={[
                     <Button key="back" onClick={handleModalClose}>
                         Орқага
                     </Button>,
-                    <Button key="submit" type="primary" onClick={handlePayment}>
-                        Тўлаш
-                    </Button>,
+                    paymentReceipt ? (
+                        <Button key="print" type="primary" onClick={() => window.print()}>
+                            Чекни чиқариш
+                        </Button>
+                    ) : (
+                        <Button key="submit" type="primary" onClick={handlePayment}>
+                            Тўлаш
+                        </Button>
+                    )
                 ]}
             >
-                {selectedVisit && (
-                    <div>
-                        <p><strong>Тўлов холати:</strong> {paymentBillNames[selectedVisit.bill]}</p>
-                        <p><strong>Сана:</strong> {selectedVisit.date_at}</p>
-                        <p><strong>Миқдори:</strong> {selectedVisit.total_amount} сўм</p>
-                        <p><strong>Тўланган:</strong> {selectedVisit.total_payed} сўм</p>
-                        <p><strong>Қолган:</strong> {selectedVisit.total_debit} сўм</p>
+                {paymentReceipt ? (
+                    <div className="max-w-sm mx-auto bg-white border border-gray-300 rounded-lg shadow-md p-6">
+                        {/* Header with Shop Logo and Name */}
+                        <div className="text-center mb-4">
+                            <img src="/logo.svg" alt="Shop Logo" className="h-10 mx-auto mb-2"/>
+                            <Typography.Title level={5} style={{fontWeight: 'bold'}} className="uppercase">Geolink
+                                Clinic</Typography.Title>
+                            <Typography.Text className="text-gray-500">ул. Мустақиллик, 123, г. Бухара</Typography.Text>
+                        </div>
 
+                        <Divider dashed className="border-gray-300"/>
+
+                        {/* Services or Products */}
+                        <div className="mb-3 text-gray-700">
+                            {selectedVisit && selectedVisit.orders && selectedVisit.orders.service && (
+                                selectedVisit.orders.service.name
+                            )}
+                        </div>
+
+                        <hr/>
+
+                        {/* Summary */}
+                        <div className="mb-2 text-gray-700">
+                            <div className="flex justify-between">
+                                <Typography.Text strong>Миқдори:</Typography.Text>
+                                <Typography.Text>{paymentReceipt.amount} сўм</Typography.Text>
+                            </div>
+                            <div className="flex justify-between">
+                                <Typography.Text strong>Тўланган:</Typography.Text>
+                                <Typography.Text>{selectedVisit?.total_payed || null} сўм</Typography.Text>
+                            </div>
+                        </div>
+
+                        <Divider dashed className="border-gray-300"/>
+
+                        {/* Payment Information */}
+                        <div className="mb-4 text-gray-700">
+                            <div className="flex justify-between">
+                                <Typography.Text>Тўлов усули:</Typography.Text>
+                                <Typography.Text>{paymentTypeNames[paymentReceipt.type]}</Typography.Text>
+                            </div>
+                            <div className="flex justify-between">
+                                <Typography.Text>Тўлов холати:</Typography.Text>
+                                <Typography.Text>{paymentBillNames[paymentReceipt.bill]}</Typography.Text>
+                            </div>
+                        </div>
+
+                        <Divider dashed className="border-gray-300"/>
+                        <img src="/qr.svg" className="mx-auto mt-2" width="140" height="140"/>
+
+                        {/* Footer */}
+                        <div className="text-center">
+                            <Typography.Text className="text-gray-500">Харидингиз учун рахмат!</Typography.Text>
+                            <br/>
+                            <Typography.Text className="text-gray-500">Тел: +998 33 135 21 01</Typography.Text>
+                            <br/>
+                            <Typography.Text className="text-gray-500">front.geolink.uz</Typography.Text>
+                        </div>
+                    </div>
+                ) : selectedVisit ? (
+                    <div>
+                        <Typography.Title level={4}>Тўлов квитанцияси</Typography.Title>
+                        <p><strong>Хизмат:</strong> {selectedVisit.orders.service.name}</p>
+                        <p><strong>Миқдори:</strong> {selectedVisit.total_amount}</p>
+                        <p><strong>Тўланган:</strong> {selectedVisit.total_payed}</p>
                         <p><strong>Хизматлар:</strong>
                             {Object.entries(
                                 selectedVisit.chilrens
@@ -284,21 +350,22 @@ const NewAdmissions = () => {
                                 .map(([serviceName, count]) => `${serviceName} x${count}`)
                                 .join(', ')}
                         </p>
-
                         <Input
                             className='mb-5'
                             type="number"
                             value={paymentAmount}
                             onChange={(e) => setPaymentAmount(e.target.value)}
-                            placeholder="Тўлов миқдори"
-                            style={{ marginTop: 10 }}
+                            placeholder="Сумма оплаты"
+                            style={{marginTop: 10}}
                         />
                         <Radio.Group onChange={(e) => setPaymentType(e.target.value)} value={paymentType}>
                             <Radio value="cash">Нақд</Radio>
-                            <Radio value="credit">Қарз</Radio>
+                            {/*<Radio value="credit">Қарз</Radio>*/}
                             <Radio value="card">Кредит карта</Radio>
                         </Radio.Group>
                     </div>
+                ) : (
+                    <p>Нет данных о заказе.</p>
                 )}
             </Modal>
         </div>

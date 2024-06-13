@@ -192,9 +192,36 @@ export default function Calendar() {
       console.error("Ошибка при обновлении события:", error);
     }
   };
-  
-  
-  
+
+  const handleEventDrop = async (info) => {
+    const { event } = info;
+
+    // Создаем новый объект Date с текущей датой и временем события
+    const updatedDate = new Date(event.start);
+
+    // Создаем новый объект Date с текущей датой и временем события, сохраняя только дату
+    const updatedStartDate = new Date(selectedEvent.start);
+    updatedStartDate.setHours(updatedDate.getHours(), updatedDate.getMinutes());
+
+    const updatedEvent = {
+      title: event.title,
+      phone: event.extendedProps.phone,
+      start_at: updatedStartDate.toISOString() // Используем только дату, без изменения времени
+    };
+
+    try {
+      const response = await axiosInstance.put(`/calendar/${event.id}`, updatedEvent);
+      if (response.status === 200) {
+        fetchEvents(); // Обновление событий после успешного обновления
+      } else {
+        console.error("Ошибка при обновлении события:", response);
+      }
+    } catch (error) {
+      console.error("Ошибка при обновлении события:", error);
+    }
+  };
+
+
 
   const handleConfirmEvent = async () => {
     if (validateFields()) {
@@ -234,25 +261,7 @@ export default function Calendar() {
     );
   };
 
-  const handleEventDrop = async (info) => {
-    const { event } = info;
-    const updatedEvent = {
-      title: event.title,
-      phone: event.extendedProps.phone,
-      start_at: event.start.toISOString()
-    };
-  
-    try {
-      const response = await axiosInstance.put(`/calendar/${event.id}`, updatedEvent);
-      if (response.status === 200) {
-        fetchEvents(); // Обновите события после успешного обновления
-      } else {
-        console.error("Ошибка при обновлении события:", response);
-      }
-    } catch (error) {
-      console.error("Ошибка при обновлении события:", error);
-    }
-  };
+
   
 
   const handleTypeChange = (event) => {

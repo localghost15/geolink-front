@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Typography, Input, Radio, Spin } from 'antd';
+import {Table, Button, Modal, Typography, Input, Radio, Spin, Divider} from 'antd';
 import axiosInstance from "../../axios/axiosInstance";
 import toast from 'react-hot-toast';
+import {Card} from "@material-tailwind/react";
 
 const { Search } = Input;
 
@@ -87,8 +88,8 @@ const Admissions = () => {
     };
 
     const paymentBillNames = {
-        pending: 'В Ожидании оплаты',
-        payed: 'Оплачено',
+        pending: 'Тўлов кутилмоқда...',
+        payed: 'Тўланган',
     };
 
     const handlePaymentClick = (record) => {
@@ -213,7 +214,7 @@ const Admissions = () => {
         }
     };
 
-
+    const { Title, Text } = Typography;
     return (
         <div>
             <div className="px-10">
@@ -230,24 +231,24 @@ const Admissions = () => {
             <Spin spinning={loading}>
                 <Table
                     columns={columns}
-                    dataSource={filteredAdmissions} // Используем отфильтрованные данные
+                    dataSource={filteredAdmissions}
                     pagination={pagination}
                     onChange={handleTableChange}
                     rowKey="key"
                     rowClassName={(record) => (record.status === 'queue' ? 'disabled-row' : '')}
                 />
             </Spin>
-            <Modal
-                title="Тўлов малумоти"
+            <Modal centered
+                title="Тўлов малумоти -> Чек чикариш"
                 visible={isModalVisible}
                 onCancel={handleModalClose}
                 footer={[
                     <Button key="back" onClick={handleModalClose}>
                         Орқага
                     </Button>,
-                    paymentReceipt ? ( // Показываем кнопку для печати чека, если чек доступен
+                    paymentReceipt ? (
                         <Button key="print" type="primary" onClick={() => window.print()}>
-                            Чекни чоп эт
+                            Чекни чиқариш
                         </Button>
                     ) : (
                         <Button key="submit" type="primary" onClick={handlePayment}>
@@ -258,12 +259,62 @@ const Admissions = () => {
             >
                 {paymentReceipt ? ( // Проверяем, есть ли информация о чеке
                     <div>
-                        <Typography.Title level={4}>Тўлов квитанцияси</Typography.Title>
-                        <p><strong>Хизмат:</strong> {paymentReceipt.service}</p>
-                        <p><strong>Миқдори:</strong> {paymentReceipt.amount}</p>
-                        <p><strong>Туланган:</strong> {paymentReceipt.payed}</p>
-                        <p><strong>Тўлов усули:</strong> {paymentTypeNames[paymentReceipt.type]}</p>
-                        <p><strong>Тўлов холати:</strong> {paymentBillNames[paymentReceipt.bill]}</p>
+                        <div className="max-w-sm mx-auto bg-white border border-gray-300 rounded-lg shadow-md p-6">
+                            {/* Header with Shop Logo and Name */}
+                            <div className="text-center mb-4">
+                                <img src="/logo.svg" alt="Shop Logo" className="h-10 mx-auto mb-2"/>
+                                <Title level={5} style={{fontWeight: 'bold'}} className="uppercase">Geolink Clinic</Title>
+                                <Text className="text-gray-500">ул. Мустақиллик, 123, г. Бухара</Text>
+                                <br/>
+                            </div>
+
+
+                            <Divider dashed className="border-gray-300"/>
+
+                            {/* Services or Products */}
+                            <div className="mb-3 text-gray-700">
+                                {selectedOrder && selectedOrder.service.name}
+                            </div>
+                            <hr/>
+                            {/* Summary */}
+                            <div className="mb-2 text-gray-700">
+                                <div className="flex justify-between">
+                                    <Text strong>Миқдори:</Text>
+                                    <Text>{paymentReceipt.amount} сўм</Text>
+                                </div>
+                                <div className="flex justify-between">
+                                    <Text strong>Тўланган:</Text>
+                                    <Text>{selectedOrder?.payed || 0} сўм</Text>
+                                </div>
+                            </div>
+
+                            <Divider dashed className="border-gray-300"/>
+
+                            {/* Payment Information */}
+                            <div className="mb-4 text-gray-700">
+                                <div className="flex justify-between">
+                                    <Text>Тўлов усули:</Text>
+                                    <Text>{paymentTypeNames[paymentReceipt.type]}</Text>
+                                </div>
+                                <div className="flex justify-between">
+                                    <Text>Тўлов холати:</Text>
+                                    <Text>{paymentBillNames[paymentReceipt.bill]}</Text>
+                                </div>
+                            </div>
+
+                            <Divider dashed className="border-gray-300"/>
+                            <img src="/qr.svg" className="mx-auto mt-2" width="140" height="140"/>
+                            {/* Footer */}
+                            <div className="text-center">
+                                <Text className="text-gray-500">Харидингиз учун рахмат!</Text>
+                                <br/>
+                                <Text className="text-gray-500">Тел: +998 33 135 21 01</Text>
+                                <br/>
+                                <Text className="text-gray-500">front.geolink.uz</Text>
+                            </div>
+                        </div>
+
+
                     </div>
                 ) : selectedOrder ? (
                     <div>
@@ -279,11 +330,11 @@ const Admissions = () => {
                             value={paymentAmount}
                             onChange={(e) => setPaymentAmount(e.target.value)}
                             placeholder="Сумма оплаты"
-                            style={{ marginTop: 10 }}
+                            style={{marginTop: 10}}
                         />
                         <Radio.Group onChange={(e) => setPaymentType(e.target.value)} value={paymentType}>
                             <Radio value="cash">Нақд</Radio>
-                            <Radio value="credit">Қарз</Radio>
+                            {/*<Radio value="credit">Қарз</Radio>*/}
                             <Radio value="card">Кредит карта</Radio>
                         </Radio.Group>
                     </div>
