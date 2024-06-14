@@ -20,6 +20,7 @@ import {BiInfoCircle} from "react-icons/bi";
 
 import dayjs from 'dayjs';
 import moment from 'moment';
+import 'moment/locale/ru';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import TextArea from "antd/es/input/TextArea";
 dayjs.extend(customParseFormat);
@@ -39,7 +40,16 @@ const validationSchema = yup.object({
     work_address: yup.string().optional(),
     remark: yup.string().optional(),
     phone: yup.string()
-        .matches(/^\d{12}$/, 'Телефон рақами 12 та рақамдан иборат бўлиши керак')
+        .test('phone', 'Телефон рақами 12 та рақамдан иборат бўлиши керак', value => {
+            if (!value) return false; // Ensure a value is present
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            try {
+                const phoneNumber = phoneUtil.parseAndKeepRawInput(value, 'UZ');
+                return phoneUtil.isValidNumber(phoneNumber);
+            } catch (error) {
+                return false;
+            }
+        })
         .required('Телефон обязателен'),
     profession: yup.string().optional(),
     district_id: yup.string().required('Район обязателен'),
@@ -227,17 +237,10 @@ export default function PatientsPostDialog({ onAddPatient }) {
 
                                                         <DatePicker
                                                             className="h-11 rounded-md w-full"
-                                                            // Преобразуем значение из formik в объект moment, если оно существует
-                                                            value={formik.values.birth_at ? moment(formik.values.birth_at, 'YYYY-MM-DD') : null}
-                                                            onChange={(date) => {
-                                                                if (date) {
-                                                                    // Преобразуем выбранную дату в формат YYYY-MM-DD
-                                                                    const formattedDate = date.format('YYYY-MM-DD');
-                                                                    formik.setFieldValue('birth_at', formattedDate);
-                                                                } else {
-                                                                    // Если дата не выбрана, устанавливаем значение в null
-                                                                    formik.setFieldValue('birth_at', null);
-                                                                }
+                                                            format="DD-MM-YYYY"
+                                                            value={formik.values.birth_at ? moment(formik.values.birth_at, 'DD-MM-YYYY') : null}
+                                                            onChange={(date, dateString) => {
+                                                                formik.setFieldValue('birth_at', dateString);
                                                             }}
                                                         />
                                                     </Form.Item>
@@ -309,13 +312,27 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                     }}
                                                     rules={[
                                                         {
-                                                            required: true,
-                                                            message: 'Please input your username!',
+                                                            validator: async (_, value) => {
+                                                                if (!value) {
+                                                                    return Promise.resolve(); // Пустое значение игнорируется
+                                                                }
+                                                                if (value === '998' || (value.startsWith('998') && value.length === 12)) {
+                                                                    return Promise.resolve();
+                                                                }
+                                                                if (value.startsWith('998')) {
+                                                                    return Promise.reject(new Error('Умумий сони 12 та бўлиши керак'));
+                                                                }
+                                                                return Promise.reject(new Error('Рақам 998 билан бошланиши керак'));
+                                                            },
                                                         },
                                                     ]}
+
+
                                                 >
                                                     <PhoneInput
+                                                        disableCountryGuess={true}
                                                         hideDropdown={true}
+                                                        countryCallingCodeEditable={false}
                                                         international={false}
                                                         defaultCountry="uz"
                                                         prefix=""
@@ -323,11 +340,6 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                         onChange={(phone) => formik.setFieldValue('phone', phone)}
                                                         inputClass="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                                     />
-                                                    {formik.touched.phone && formik.errors.phone && (
-                                                        <Typography className="text-xs" color="red" size="xs">
-                                                            {formik.errors.phone}
-                                                        </Typography>
-                                                    )}
                                                 </Form.Item>
                                                 <Form.Item
                                                     layout="vertical"

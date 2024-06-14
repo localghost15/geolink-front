@@ -1,40 +1,88 @@
 import React, { useEffect, useState } from 'react';
 import {
-    MagnifyingGlassIcon,
     ChevronUpDownIcon,
     InformationCircleIcon,
-    DocumentArrowDownIcon,
     PaperAirplaneIcon,
 } from '@heroicons/react/24/outline';
 import {
     Card,
-    CardHeader,
-    Typography,
     CardBody,
     CardFooter,
     IconButton,
-    Tooltip,
 } from '@material-tailwind/react';
-import SignAnalysisList from './Lists/SignAnalysisList';
 import axios from 'axios';
+import toast from 'react-hot-toast';
+import {List, Button, Input, Modal, Divider, Typography} from 'antd';
 import POSReceipt from "./POSReceipt";
-import toast from "react-hot-toast";
-import {Button, Input} from "antd";
+import {FaReceipt} from "react-icons/fa6";
 
 const TABLE_HEAD = ['Хизматлар', 'Нархи', 'Количество', 'Умумий сумма'];
 
-export default function SendAnalysis({visitId, open}) {
+export default function SendAnalysis({ visitId, open }) {
     const [quantities, setQuantities] = useState({});
     const [services, setServices] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [modalAmount, setModalAmount] = useState(0);
+
+    const [showReceipt, setShowReceipt] = useState(false);
+    const [receiptData, setReceiptData] = useState(null);
 
     const axiosInstance = axios.create({
         baseURL: 'https://back.geolink.uz/api/v1',
     });
 
+
+    const showModal = () => {
+        setIsModalVisible(true);
+    };
+
+    const hideModal = () => {
+        setIsModalVisible(false);
+        setModalAmount(0);
+    }
+
+    const handleModalOk = () => {
+        const dataToSend = {
+            service: selectedServices.map((item) => item.id),
+            service_count: selectedServices.map((item) => item.count),
+            type: "cash",
+            cash: 1,
+            amount: modalAmount,
+        };
+
+        axiosInstance
+            .post(`visit/service_mass/${visitId}`, dataToSend)
+            .then((response) => {
+                console.log(response.data);
+                setReceiptData({
+                    services: selectedServices,
+                    amountPaid: modalAmount,
+                    totalCost: calculateTotalServicesAmount(),
+                    paymentMethod: "Нақд", // or retrieve it dynamically if needed
+                });
+                setShowReceipt(true);
+                toast.success('Хизмат чеки кассага юборилди!');
+            })
+            .catch((error) => {
+                toast.error('Хизмат ни танланг ва Навбатга кушилганини хам текширинг !');
+                console.error('There was an error!', error);
+            });
+    };
+
+    const handleModalCancel = () => {
+        setIsModalVisible(false);
+        setShowReceipt(false); // Reset the receipt state when the modal is closed
+        setSelectedServices([]); // Clear the selected services when closing the modal
+        setModalAmount(0); // Reset the modal amount when closing
+        setReceiptData(null); // Clear the receipt data when closing the modal
+    };
+
+
+    // Initialize axios interceptor for authorization
     axiosInstance.interceptors.request.use(
         (config) => {
             const token = localStorage.getItem('token');
@@ -47,39 +95,6 @@ export default function SendAnalysis({visitId, open}) {
             return Promise.reject(error);
         }
     );
-
-    const handleSubmitRegister = () => {
-        // Формируем массив service_count
-        const serviceCountArray = selectedServices.map(service => ({
-            id: service.id,
-            count: quantities[service.id]
-        }));
-
-        // Фильтруем сервисы с ненулевым количеством
-        const nonZeroServiceCounts = serviceCountArray.filter(item => item.count > 0);
-
-        // Формируем данные для отправки
-        const dataToSend = {
-            service: nonZeroServiceCounts.map(item => item.id), // Отправляем только ID сервисов
-            service_count: nonZeroServiceCounts.map(item => item.count),
-            type: "cash",
-            cash: 0,
-            amount: 0
-        };
-
-        // Отправляем POST-запрос на сервер
-        axiosInstance.post(`visit/service_mass/${visitId}`, dataToSend)
-            .then(response => {
-                console.log(response.data);
-                setQuantities({});
-                setSelectedServices([]);
-                toast.success('Хизмат чеки кассага юборилди!');
-            })
-            .catch(error => {
-                toast.error('Хизмат ни танланг ва Навбатга кушилганини хам текширинг !')
-                console.error('There was an error!', error); // Обрабатываем ошибку
-            });
-    };
 
     useEffect(() => {
         fetchServices(currentPage);
@@ -107,21 +122,17 @@ export default function SendAnalysis({visitId, open}) {
         }
     };
 
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
     const incrementQuantity = (service) => {
         setQuantities((prevQuantities) => ({
             ...prevQuantities,
             [service.id]: (prevQuantities[service.id] || 0) + 1,
         }));
 
-        setSelectedServices((prevSelected) => {
-            const existingService = prevSelected.find(item => item.id === service.id);
-            if (existingService) {
-                return prevSelected.map(item =>
-                    item.id === service.id ? { ...item, count: item.count + 1 } : item
-                );
-            }
-            return [...prevSelected, { ...service, count: 1 }];
-        });
+        updateSelectedServices(service.id, 1);
     };
 
     const decrementQuantity = (service) => {
@@ -133,14 +144,23 @@ export default function SendAnalysis({visitId, open}) {
             };
         });
 
+        updateSelectedServices(service.id, -1);
+    };
+
+    const updateSelectedServices = (serviceId, countChange) => {
         setSelectedServices((prevSelected) => {
-            return prevSelected
-                .map(item =>
-                    item.id === service.id && item.count > 1
-                        ? { ...item, count: item.count - 1 }
-                        : item
-                )
-                .filter(item => item.count > 0);
+            const existingServiceIndex = prevSelected.findIndex(item => item.id === serviceId);
+            if (existingServiceIndex !== -1) {
+                const updatedSelected = [...prevSelected];
+                updatedSelected[existingServiceIndex].count += countChange;
+                if (updatedSelected[existingServiceIndex].count <= 0) {
+                    updatedSelected.splice(existingServiceIndex, 1);
+                }
+                return updatedSelected;
+            } else {
+                const serviceToAdd = services.find(service => service.id === serviceId);
+                return [...prevSelected, { ...serviceToAdd, count: 1 }];
+            }
         });
     };
 
@@ -149,23 +169,68 @@ export default function SendAnalysis({visitId, open}) {
     };
 
     const calculateTotalSum = () => {
-        return services.reduce((total, service) => {
-            const quantity = quantities[service.id] || 0;
-            return total + calculateSum(service.price, quantity);
+        return selectedServices.reduce((total, service) => {
+            return total + calculateSum(service.price, service.count);
         }, 0);
     };
 
-    const handleSearchChange = (e) => {
-        setSearchQuery(e.target.value);
-    };
+    const handleSubmitRegister = () => {
+        // Filter services with non-zero counts
+        const serviceCountArray = selectedServices
+            .filter(service => service.count > 0)
+            .map(service => ({
+                id: service.id,
+                count: service.count
+            }));
 
-    const filteredServices = services.filter((service) =>
-        service.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+        const dataToSend = {
+            service: serviceCountArray.map(item => item.id),
+            service_count: serviceCountArray.map(item => item.count),
+            type: "cash",
+            cash: 0,
+            amount: 0
+        };
+
+        axiosInstance.post(`visit/service_mass/${visitId}`, dataToSend)
+            .then(response => {
+                console.log(response.data);
+                setQuantities({});
+                setSelectedServices([]);
+                toast.success('Хизмат чеки кассага юборилди!');
+            })
+            .catch(error => {
+                toast.error('Хизмат ни танланг ва Навбатга кушилганини хам текширинг !');
+                console.error('There was an error!', error);
+            });
+    };
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
     };
+
+    const filteredServices = services.filter(service =>
+        service.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const calculateTotalServicesAmount = () => {
+        return selectedServices.reduce((total, service) => {
+            return total + (service.price * service.count);
+        }, 0);
+    };
+
+    const totalServicesAmount = calculateTotalServicesAmount();
+    const remainingAmount = modalAmount - totalServicesAmount;
+
+    const handleAmountChange = (e) => {
+        const value = Number(e.target.value) || 0; // Handle invalid input gracefully
+        setModalAmount(value);
+    };
+
+    const printReceipt = () => {
+        window.print();
+        handleModalCancel();
+    };
+
 
     return (
         <>
@@ -177,7 +242,7 @@ export default function SendAnalysis({visitId, open}) {
                         enterButton="Излаш"
                         value={searchQuery}
                         onChange={handleSearchChange}
-                        style={{marginBottom: 2, width: 300}}
+                        style={{ marginBottom: 2, width: 300 }}
                     />
                 </div>
                 <CardBody className="overflow-scroll px-0">
@@ -204,103 +269,45 @@ export default function SendAnalysis({visitId, open}) {
                         </tr>
                         </thead>
                         <tbody>
-                        {filteredServices.map(({ id, name, price }, index) => {
-                            const isLast = index === filteredServices.length - 1;
-                            const classes = isLast ? 'p-4' : 'p-4 border-b border-blue-gray-50';
+                        {filteredServices.map(({ id, name, price }) => {
                             const quantity = quantities[id] || 0;
-
                             return (
                                 <tr key={id}>
-                                    <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <Typography variant="small" color="blue-gray" className="font-normal">
-                                                    {name}
-                                                </Typography>
-                                            </div>
-                                        </div>
+                                    <td className="p-4 border-b border-blue-gray-50">
+                                        <Typography variant="small" color="blue-gray" className="font-normal">
+                                            {name}
+                                        </Typography>
                                     </td>
-                                    <td className={classes}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <Typography variant="small" color="blue-gray" className="font-normal">
-                                                    {price} сум
-                                                </Typography>
-                                            </div>
-                                        </div>
+                                    <td className="p-4 border-b border-blue-gray-50">
+                                        <Typography variant="small" color="blue-gray" className="font-normal">
+                                            {price} сум
+                                        </Typography>
                                     </td>
-                                    <td className={classes}>
+                                    <td className="p-4 border-b border-blue-gray-50">
                                         <div className="flex items-center gap-3">
-                                            <div className="flex flex-col">
-                                                <form className="max-w-xs mx-auto">
-                                                    <div className="relative flex items-center max-w-[11rem]">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => decrementQuantity({ id, name, price })}
-                                                            className="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                                                        >
-                                                            <svg
-                                                                className="w-3 h-3 text-gray-900 dark:text-white"
-                                                                aria-hidden="true"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 18 2"
-                                                            >
-                                                                <path
-                                                                    stroke="currentColor"
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth="2"
-                                                                    d="M1 1h16"
-                                                                />
-                                                            </svg>
-                                                        </button>
-                                                        <input
-                                                            type="text"
-                                                            id="bedrooms-input"
-                                                            value={quantity}
-                                                            aria-describedby="helper-text-explanation"
-                                                            className="bg-gray-50 border-x-0 border-gray-300 h-11 font-medium text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full pb-6 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                            placeholder=""
-                                                            required
-                                                            readOnly
-                                                        />
-                                                        <div className="absolute bottom-1 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 flex items-center text-xs text-gray-400 space-x-1 rtl:space-x-reverse">
-                                                            <InformationCircleIcon className="h-4 w-4" />
-                                                            <span>Хизмат</span>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => incrementQuantity({ id, name, price })}
-                                                            className="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                                                        >
-                                                            <svg
-                                                                className="w-3 h-3 text-gray-900 dark:text-white"
-                                                                aria-hidden="true"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 18 18"
-                                                            >
-                                                                <path
-                                                                    stroke="currentColor"
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth="2"
-                                                                    d="M9 1v16M1 9h16"
-                                                                />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className={classes}>
-                                        <div className="flex flex-col">
+                                            <button
+                                                type="button"
+                                                onClick={() => decrementQuantity({ id, name, price })}
+                                                className="bg-gray-100 border border-gray-300 p-2 focus:outline-none"
+                                            >
+                                                -
+                                            </button>
                                             <Typography variant="small" color="blue-gray" className="font-normal">
-                                                {calculateSum(price, quantity)} сум
+                                                {quantity}
                                             </Typography>
+                                            <button
+                                                type="button"
+                                                onClick={() => incrementQuantity({ id, name, price })}
+                                                className="bg-gray-100 border border-gray-300 rounded-full p-2 focus:outline-none"
+                                            >
+                                                +
+                                            </button>
                                         </div>
+                                    </td>
+                                    <td className="p-4 border-b border-blue-gray-50">
+                                        <Typography variant="small" color="blue-gray" className="font-normal">
+                                            {calculateSum(price, quantity)} сум
+                                        </Typography>
                                     </td>
                                 </tr>
                             );
@@ -312,23 +319,131 @@ export default function SendAnalysis({visitId, open}) {
                     <div> Уммумий киймат:</div>
                     <div>{calculateTotalSum()} сум</div>
                 </div>
-                <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
+                <CardFooter className="flex items-center justify-between border-t
+                 border-blue-gray-50 p-4">
                     <Typography variant="small" color="blue-gray" className="font-normal">
                         Сахифа {currentPage}/{totalPages}
                     </Typography>
                     <div className="flex gap-2">
-                        <POSReceipt visitId={visitId} selectedServices={selectedServices} />
-                        <Button type="primary" onClick={handleSubmitRegister} size="sm" className="flex py-3 items-center gap-x-1">
-                            <PaperAirplaneIcon className="w-4 h-4" /> Кассага юбориш
+                        <Button size="middle" className="flex items-center" icon={<FaReceipt className="text-lg" />} type="dashed" onClick={showModal}>
+                           Тўлаш ва чекни чиқариш
+                        </Button>
+                        <Modal
+                            title="Тўлов -> чекни қикариш"
+                            centered
+                            visible={isModalVisible}
+                            onOk={showReceipt ? printReceipt : handleModalOk}
+                            onCancel={handleModalCancel}
+                            cancelText="Орқага"
+                            okText={showReceipt ? "Чекни чиқариш" : "Тўлаш"}
+                        >
+                            {showReceipt ? (
+                                <div
+                                    className="max-w-sm mx-auto bg-white border border-gray-300 rounded-lg shadow-md p-6">
+                                    {/* Header with Shop Logo and Name */}
+                                    <div className="text-center mb-4">
+                                        <img src="/logo.svg" alt="Shop Logo" className="h-10 mx-auto mb-2"/>
+                                        <Typography.Title level={5} style={{fontWeight: 'bold'}} className="uppercase">Geolink
+                                            Clinic</Typography.Title>
+                                        <Typography.Text className="text-gray-500">ул. Мустақиллик, 123, г.
+                                            Бухара</Typography.Text>
+                                    </div>
+
+                                    <Divider dashed className="border-gray-300"/>
+
+                                    {/* Services or Products */}
+                                    <div className="mb-3 text-gray-700">
+                                        {receiptData.services.map(service => (
+                                            <div key={service.id} className="flex justify-between">
+                                                <span>{service.name} x {service.count}</span>
+                                                <span>{service.price * service.count} сум</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <Divider dashed className="border-gray-300"/>
+
+                                    {/* Summary */}
+                                    <div className="mb-2 text-gray-700">
+                                        <div className="flex justify-between">
+                                            <Typography.Text strong>Жами қиймат:</Typography.Text>
+                                            <Typography.Text>{receiptData.totalCost} сўм</Typography.Text>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <Typography.Text strong>Тўланган:</Typography.Text>
+                                            <Typography.Text>{receiptData.amountPaid} сўм</Typography.Text>
+                                        </div>
+                                    </div>
+
+                                    <Divider dashed className="border-gray-300"/>
+
+                                    {/* Payment Information */}
+                                    <div className="mb-4 text-gray-700">
+                                        <div className="flex justify-between">
+                                            <Typography.Text>Тўлов усули:</Typography.Text>
+                                            <Typography.Text>{receiptData.paymentMethod}</Typography.Text>
+                                        </div>
+                                    </div>
+
+                                    <Divider dashed className="border-gray-300"/>
+                                    <img src="/qr.svg" className="mx-auto mt-2" width="140" height="140" alt="QR Code"/>
+
+                                    {/* Footer */}
+                                    <div className="text-center">
+                                        <Typography.Text className="text-gray-500">Харидингиз учун
+                                            рахмат!</Typography.Text>
+                                        <br/>
+                                        <Typography.Text className="text-gray-500">Тел: +998 33 135 21
+                                            01</Typography.Text>
+                                        <br/>
+                                        <Typography.Text className="text-gray-500">front.geolink.uz</Typography.Text>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="mb-4">
+                                        <List
+                                            size="small"
+                                            locale={{emptyText: 'Хизматларни танланг'}}
+                                            bordered
+                                            dataSource={selectedServices}
+                                            renderItem={(service) => (
+                                                <List.Item>
+                                                    <div>
+                                                        <strong>{service.name} x{service.count}</strong> - {service.price} сум
+                                                    </div>
+                                                </List.Item>
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            size="large"
+                                            type="number"
+                                            placeholder="Жами"
+                                            value={modalAmount}
+                                            onChange={handleAmountChange}
+                                        />
+                                        <span>сўм</span>
+                                    </div>
+                                    <div style={{marginTop: 16}}>
+                                        <strong>Хизматларнинг умумий қиймати: </strong>{totalServicesAmount} сум
+                                    </div>
+                                    <div style={{marginTop: 8}}>
+                                        <strong>Қолган миқдори: </strong>{remainingAmount} сум
+                                    </div>
+                                </div>
+                            )}
+                        </Modal>
+                        <Button type="primary" onClick={handleSubmitRegister} size="sm"
+                                className="flex py-3 items-center gap-x-1">
+                            <PaperAirplaneIcon className="w-4 h-4"/> Кассага юбориш
                         </Button>
                     </div>
                 </CardFooter>
                 <CardFooter className="flex items-center justify-center border-t border-blue-gray-50 p-4">
                     <div className="flex items-center gap-2">
-                        <IconButton variant="outlined" size="sm" onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
-                            1
-                        </IconButton>
-                        {Array.from({ length: totalPages - 2 }, (_, i) => i + 2).map((page) => (
+                        {Array.from({length: totalPages}, (_, i) => i + 1).map((page) => (
                             <IconButton
                                 key={page}
                                 variant="text"
@@ -339,9 +454,6 @@ export default function SendAnalysis({visitId, open}) {
                                 {page}
                             </IconButton>
                         ))}
-                        <IconButton variant="text" size="sm" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>
-                            {totalPages}
-                        </IconButton>
                     </div>
                 </CardFooter>
             </Card>
