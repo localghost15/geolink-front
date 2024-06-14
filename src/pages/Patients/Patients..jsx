@@ -111,7 +111,7 @@ export default function Patients() {
     new: 'Янги кабул',
     pending: 'Ожидает оплаты',
     payed: 'Оплачено',
-    revisit: 'Қайта қабул'
+    revisit: 'Навбатда...'
   };
 
   const statusColors = {
@@ -120,7 +120,7 @@ export default function Patients() {
     new: 'blue',
     pending: 'orange',
     payed: 'purple',
-    revisit: 'red'
+    revisit: 'gold'
   };
 
   return (

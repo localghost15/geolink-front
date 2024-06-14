@@ -326,8 +326,6 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                             },
                                                         },
                                                     ]}
-
-
                                                 >
                                                     <PhoneInput
                                                         disableCountryGuess={true}
