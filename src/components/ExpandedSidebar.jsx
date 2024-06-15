@@ -13,6 +13,7 @@ import {
     RectangleStackIcon,
     UserGroupIcon
 } from "@heroicons/react/24/solid";
+import {CgMenuGridO } from "react-icons/cg";
 
 const ExpandedSidebar = ({
                              collapsed,
@@ -71,7 +72,7 @@ const ExpandedSidebar = ({
                     <MenuItem icon={<IdentificationIcon className="h-6 w-6"/>}> Роллар</MenuItem>
                     </CustomLink>
                     <SubMenu icon={<UserGroupIcon className="h-6 w-6"/>} label="Беморлар">
-                        <CustomLink to="/patients">  <MenuItem icon={<MinusIcon className="h-6 w-6"/>}> Барча Беморлар </MenuItem>
+                        <CustomLink to="/patients">  <MenuItem icon={<CgMenuGridO  className="h-6 w-6"/>}> Барча Беморлар </MenuItem>
                         </CustomLink>
                     </SubMenu>
                     {/*<SubMenu icon={<UserGroupIcon className="h-6 w-6"/>} label="Беморлар" style={{ paddingLeft: '20px', borderLeft: '2px solid #000' }}>*/}
@@ -80,27 +81,27 @@ const ExpandedSidebar = ({
                     {/*    </CustomLink>*/}
                     {/*</SubMenu>*/}
                     <SubMenu icon={<RectangleStackIcon className="h-6 w-6"/>} label="Каталог">
-                        <CustomLink to="/doctors"><MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>Докторлар</MenuItem> </CustomLink>
-                        <CustomLink to="/services"><MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>Хизматлар</MenuItem></CustomLink>
-                        <CustomLink to="/partners"><MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>Хамкорлар</MenuItem></CustomLink>
-                        <CustomLink to="/epidemiological_history"><MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>Эпиданамнез</MenuItem></CustomLink>
-                        <CustomLink to="/international-classification-of-diseases"><MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>МКБ-10</MenuItem></CustomLink>
+                        <CustomLink to="/doctors"><MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}>Докторлар</MenuItem> </CustomLink>
+                        <CustomLink to="/services"><MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}>Хизматлар</MenuItem></CustomLink>
+                        <CustomLink to="/partners"><MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}>Хамкорлар</MenuItem></CustomLink>
+                        <CustomLink to="/epidemiological_history"><MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}>Эпиданамнез</MenuItem></CustomLink>
+                        <CustomLink to="/international-classification-of-diseases"><MenuItem icon={<CgMenuGridO  className="h-6 w-6"/>}>МКБ-10</MenuItem></CustomLink>
                     </SubMenu>
                     <SubMenu icon={<BanknotesIcon className="h-6 w-6"/>} label="Туловлар">
-                        <CustomLink to="/payments"> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Туловлар тарихи</MenuItem></CustomLink>
-                        <CustomLink to="/depts_lists"> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Қарздорлар рўйхати</MenuItem></CustomLink>
+                        <CustomLink to="/payments"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Туловлар тарихи</MenuItem></CustomLink>
+                        <CustomLink to="/depts_lists"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қарздорлар рўйхати</MenuItem></CustomLink>
                     </SubMenu>
                     <SubMenu icon={ <ClipboardDocumentCheckIcon className="h-6 w-6" />} label="Кабуллар">
-                        <CustomLink to="/admissions"> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>Навбатда</MenuItem></CustomLink>
-                        <CustomLink to="/new_admissions"> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Қайта навбатлар</MenuItem></CustomLink>
-                        <CustomLink to="/re_admissions"> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Қайта қабуллар</MenuItem></CustomLink>
-                        <CustomLink to="/list_of_disponser"> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Диспонсер ҳисоби</MenuItem></CustomLink>
+                        <CustomLink to="/admissions"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}>Навбатда</MenuItem></CustomLink>
+                        <CustomLink to="/new_admissions"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қайта навбатлар</MenuItem></CustomLink>
+                        <CustomLink to="/re_admissions"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қайта қабуллар</MenuItem></CustomLink>
+                        <CustomLink to="/list_of_disponser"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Диспонсер ҳисоби</MenuItem></CustomLink>
                     </SubMenu>
                     <SubMenu icon={ <ChartPieIcon className="h-6 w-6" />} label="Ҳисоботлар">
-                        {/*<CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}>Навбатда</MenuItem></CustomLink>*/}
-                        {/*<CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Қайта навбатлар</MenuItem></CustomLink>*/}
-                        {/*<CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Қайта қабуллар</MenuItem></CustomLink>*/}
-                        {/*<CustomLink to=""> <MenuItem icon={<MinusIcon strokeWidth={3} className="h-3 w-5"/>}> Диспонсер ҳисоби</MenuItem></CustomLink>*/}
+                        {/*<CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}>Навбатда</MenuItem></CustomLink>*/}
+                        {/*<CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қайта навбатлар</MenuItem></CustomLink>*/}
+                        {/*<CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қайта қабуллар</MenuItem></CustomLink>*/}
+                        {/*<CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Диспонсер ҳисоби</MenuItem></CustomLink>*/}
                     </SubMenu>
                 </Menu>
             </Sidebar>
