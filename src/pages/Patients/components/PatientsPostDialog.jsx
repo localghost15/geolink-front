@@ -20,7 +20,6 @@ import {BiInfoCircle} from "react-icons/bi";
 
 import dayjs from 'dayjs';
 import moment from 'moment';
-import 'moment/locale/ru';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import TextArea from "antd/es/input/TextArea";
 dayjs.extend(customParseFormat);
@@ -237,8 +236,8 @@ export default function PatientsPostDialog({ onAddPatient }) {
 
                                                         <DatePicker
                                                             className="h-11 rounded-md w-full"
-                                                            format="DD-MM-YYYY"
-                                                            value={formik.values.birth_at ? moment(formik.values.birth_at, 'DD-MM-YYYY') : null}
+                                                            format="YYYY-MM-DD"
+                                                            value={formik.values.birth_at ? moment(formik.values.birth_at, 'YYYY-MM-DD') : null}
                                                             onChange={(date, dateString) => {
                                                                 formik.setFieldValue('birth_at', dateString);
                                                             }}
