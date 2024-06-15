@@ -129,7 +129,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
     return (
         <>
             <div className="inset-0 flex items-center justify-center">
-                <Button icon={<UserPlusIcon  className="h-5 w-5 " />} onClick={openModal} className="flex h-10 items-center gap-3 normal-case font-normal" size="sm">
+                <Button type="primary" icon={<UserPlusIcon  className="h-5 w-5 " />} onClick={openModal} className="flex h-10 items-center gap-3 normal-case font-normal" size="sm">
                     Янги бемор кушиш
                 </Button>
 

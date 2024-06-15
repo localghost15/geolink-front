@@ -125,7 +125,7 @@ export default function Patients() {
 
   return (
       <Card className="h-full w-full rounded-none pt-5">
-        <Typography className="mx-8 mb-4" variant="h4" color="black">
+        <Typography className="mx-8 mb-4" variant="h5" color="black">
           Барча беморлар
         </Typography>
 
@@ -141,7 +141,7 @@ export default function Patients() {
                 className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
                 onChange={handleSearchChange}
             />
-            <Button className="bg-black text-white" size="md">
+            <Button type="primary" size="md">
               <MagnifyingGlassIcon className="h-5 w-5" />
             </Button>
           </label>

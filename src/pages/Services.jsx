@@ -4,15 +4,14 @@ import { Dialog, Transition } from '@headlessui/react';
 import {
   Card,
   Typography,
-  Button,
   CardBody,
   CardFooter,
-  IconButton,
   Tooltip,
   Input,
   Switch
 } from "@material-tailwind/react";
 import axios from 'axios';
+import {Button} from "antd";
 
 const TABLE_HEAD = ["ID", "Номланиши", "Нархи", "Хизмат тури","Харакат"];
 
@@ -109,9 +108,9 @@ export default function Services() {
   return (
     <Card className="h-full w-full rounded-none pt-5">
       <div className="flex items-center mx-8 justify-between gap-8">
-        <Typography className="mx-2 mb-2" variant="h3" color="black">Асосий хизматлар</Typography>
+        <Typography className="mx-2 mb-2" variant="h5" color="black">Асосий хизматлар</Typography>
         <div className="flex items-center shrink-0 flex-col gap-2 sm:flex-row">
-          <Button onClick={openModal} className="flex h-12 items-center gap-3 normal-case font-normal" size="sm">
+          <Button type="primary" onClick={openModal} className="flex h-10 items-center gap-3 normal-case font-normal" size="sm">
             <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Янги  қўшиш
           </Button>
           <Transition appear show={isOpen} as={React.Fragment}>
@@ -196,15 +195,15 @@ export default function Services() {
                 <td className="p-2 text-sm">{service.primary ? 'Основной' : 'Дополнительный'}</td>
                 <td className="p-2 text-sm">
                   <div className="flex items-center gap-4">
-                    <Tooltip content="Ўзгартириш">
-                      <IconButton onClick={() => handleEdit(service)} variant="text">
+                    <Tooltip className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўзгартириш">
+                      <Button type="dashed" onClick={() => handleEdit(service)} variant="text">
                         <PencilIcon className="h-4 w-4"/>
-                      </IconButton>
+                      </Button>
                     </Tooltip>
-                    <Tooltip content="Ўчириш">
-                      <IconButton onClick={() => handleDelete(service.id)} variant="text">
+                    <Tooltip className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўчириш">
+                      <Button type="dashed" onClick={() => handleDelete(service.id)} variant="text">
                         <TrashIcon className="h-4 w-4"/>
-                      </IconButton>
+                      </Button>
                     </Tooltip>
                   </div>
                 </td>

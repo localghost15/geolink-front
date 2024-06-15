@@ -9,8 +9,6 @@ import {
   Typography,
   CardBody,
   CardFooter,
-  Avatar,
-
   Tooltip,
   Input,
   Menu,
@@ -199,7 +197,7 @@ export default function Doctors() {
 
   return (
       <Card className="h-full w-full rounded-none pt-5">
-        <Typography className="mx-8 mb-2" variant="h3" color="black">Докторлар</Typography>
+        <Typography className="mx-8 mb-2" variant="h5" color="black">Докторлар</Typography>
         <div className="flex mx-8 justify-between gap-8">
           <label
               className="relative  bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
@@ -211,10 +209,10 @@ export default function Doctors() {
                 placeholder="Қидириш"
                 className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
             />
-            <Button size="md"><MagnifyingGlassIcon className="h-5 w-5" /></Button>
+            <Button type="primary" size="md"><MagnifyingGlassIcon className="h-5 w-5" /></Button>
           </label>
           <div className="flex items-center shrink-0 flex-col gap-2 sm:flex-row">
-            <Button onClick={openModal} className="flex h-12 items-center gap-3 normal-case font-normal" size="sm">
+            <Button type="primary" onClick={openModal} className="flex items-center h-10 gap-3 normal-case font-normal" >
               <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Янги  қўшиш
             </Button>
             <Transition appear show={isOpen} as={Fragment}>
