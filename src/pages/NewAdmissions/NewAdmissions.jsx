@@ -28,6 +28,9 @@ const NewAdmissions = () => {
                     patient_name: item.patient_id.name,
                     doctor_name: item.doctor.name,
                     total_amount: item.total_amount,
+                    children_debit: item.children_debit,
+                    children_amount: item.children_amount,
+                    children_payed: item.children_payed,
                     total_payed: item.total_payed,
                     total_debit: item.total_debit,
                     date_at: item.date_at,
@@ -68,7 +71,7 @@ const NewAdmissions = () => {
     };
 
     const filteredData = admissions.filter(admission =>
-        admission.patient_name.toLowerCase().includes(searchText.toLowerCase())
+        admission.patient_name && admission.patient_name.toLowerCase().includes(searchText.toLowerCase())
     );
 
     const getStatusName = (status) => {
@@ -184,26 +187,26 @@ const NewAdmissions = () => {
         },
         {
             title: 'Миқдори',
-            dataIndex: 'total_amount',
-            key: 'total_amount',
-            sorter: (a, b) => a.total_amount - b.total_amount,
-            sortOrder: sorter.field === 'total_amount' && sorter.order,
+            dataIndex: 'children_amount',
+            key: 'children_amount',
+            sorter: (a, b) => a.children_amount - b.children_amount,
+            sortOrder: sorter.field === 'children_amount' && sorter.order,
             render: (text) => `${text} сўм`
         },
         {
             title: 'Тўланган',
-            dataIndex: 'total_payed',
-            key: 'total_payed',
-            sorter: (a, b) => a.total_payed - b.total_payed,
-            sortOrder: sorter.field === 'total_payed' && sorter.order,
+            dataIndex: 'children_payed',
+            key: 'children_payed',
+            sorter: (a, b) => a.children_payed - b.children_payed,
+            sortOrder: sorter.field === 'children_payed' && sorter.order,
             render: (text) => `${text} сўм`
         },
         {
             title: 'Қолган сумма',
-            dataIndex: 'total_debit',
-            key: 'total_debit',
-            sorter: (a, b) => a.total_debit - b.total_debit,
-            sortOrder: sorter.field === 'total_debit' && sorter.order,
+            dataIndex: 'children_debit',
+            key: 'children_debit',
+            sorter: (a, b) => a.children_debit - b.children_debit,
+            sortOrder: sorter.field === 'children_debit' && sorter.order,
             render: (text) => `${text} сўм`
         },
         {
@@ -221,7 +224,7 @@ const NewAdmissions = () => {
                 <Button
                     type="primary"
                     onClick={() => handlePaymentClick(record)}
-                    disabled={typeof record.total_debit === 'number' && record.total_debit === 0 ? 'disabled-row' : ''}
+                    disabled={typeof record.children_debit === 'number' && record.children_debit === 0 ? 'disabled-row' : ''}
                 >
                     Оплатить
                 </Button>
@@ -237,19 +240,19 @@ const NewAdmissions = () => {
                     placeholder="ФИОни киритинг"
                     allowClear
                     enterButton="Излаш"
-                    onSearch={handleSearch} // Обработчик поиска
-                    onChange={(e) => handleSearch(e.target.value)} // Обработчик изменения значения поля поиска
+                    onSearch={handleSearch}
+                    onChange={(e) => handleSearch(e.target.value)}
                     style={{ width: 300, marginBottom: 16 }}
                 />
             </div>
             <Spin spinning={loading}>
                 <Table
                     columns={columns}
-                    dataSource={filteredData} // Заменяем исходные данные на отфильтрованные данные
+                    dataSource={filteredData}
                     pagination={pagination}
                     onChange={handleTableChange}
                     rowKey="key"
-                    rowClassName={(record) => (typeof record.total_debit === 'number' && record.total_debit === 0 ? 'disabled-row' : '')}
+                    rowClassName={(record) => (typeof record.children_debit === 'number' && record.children_debit === 0 ? 'disabled-row' : '')}
                 />
             </Spin>
             <Modal
@@ -297,11 +300,15 @@ const NewAdmissions = () => {
                         <div className="mb-2 text-gray-700">
                             <div className="flex justify-between">
                                 <Typography.Text strong>Миқдори:</Typography.Text>
-                                <Typography.Text>{paymentReceipt.amount} сўм</Typography.Text>
+                                <Typography.Text>{paymentReceipt.children_amount} сўм</Typography.Text>
                             </div>
                             <div className="flex justify-between">
                                 <Typography.Text strong>Тўланган:</Typography.Text>
-                                <Typography.Text>{selectedVisit?.total_payed || null} сўм</Typography.Text>
+                                <Typography.Text>{selectedVisit.children_payed} сўм</Typography.Text>
+                            </div>
+                            <div className="flex justify-between">
+                                <Typography.Text strong>Қолган сумма:</Typography.Text>
+                                <Typography.Text>КОЛГАН сўм</Typography.Text>
                             </div>
                         </div>
 
@@ -334,9 +341,7 @@ const NewAdmissions = () => {
                 ) : selectedVisit ? (
                     <div>
                         <Typography.Title level={4}>Тўлов квитанцияси</Typography.Title>
-                        <p><strong>Хизмат:</strong> {selectedVisit.orders.service.name}</p>
-                        <p><strong>Миқдори:</strong> {selectedVisit.total_amount}</p>
-                        <p><strong>Тўланган:</strong> {selectedVisit.total_payed}</p>
+                        <p><strong>Асосий Хизмат:</strong> {selectedVisit.orders.service.name}</p>
                         <p><strong>Хизматлар:</strong>
                             {Object.entries(
                                 selectedVisit.chilrens
@@ -350,6 +355,11 @@ const NewAdmissions = () => {
                                 .map(([serviceName, count]) => `${serviceName} x${count}`)
                                 .join(', ')}
                         </p>
+                        <p><strong>Миқдори:</strong> {selectedVisit.children_amount} сўм</p>
+                        <p><strong>Тўланган:</strong> {selectedVisit.children_payed} сўм</p>
+                        <Divider/>
+                        <p><strong>Тўлов суммаси:</strong> {selectedVisit.children_debit} сўм</p>
+
                         <Input
                             className='mb-5'
                             type="number"

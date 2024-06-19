@@ -26,7 +26,7 @@ import { fetchTemplates} from "../services/templateService";
 import {Icon} from "./PatientDetailTabs";
 import customPluginSubmenu from "../config/customPluginSubmenu";
 import {postDispensaryData} from "../services/dispansery";
-import {Upload, Button as ButtonAnt, Badge, Tag, Collapse} from "antd";
+import {Upload, Button as ButtonAnt, Badge, Tag, Collapse, Table, message, Pagination} from "antd";
 import {DownloadOutlined} from "@ant-design/icons";
 import {MdOutlineSync} from "react-icons/md";
 import {BsFillStopCircleFill} from "react-icons/bs";
@@ -49,6 +49,16 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
     const [isVisitStarted, setIsVisitStarted] = useState(false);
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const [templates, setTemplates] = useState([]);
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [filteredData, setFilteredData] = useState([]);
+    const [tableParams, setTableParams] = useState({
+        pagination: {
+            current: 1,
+            pageSize: 30,
+            total: 0,
+        },
+    });
 
     const [selectedFiles, setSelectedFiles] = useState([]);
 
@@ -83,23 +93,42 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
     }, []);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const data = await fetchTemplates();
-                setTemplates(data);
-
-                const mkbData = await fetchMkb10Data();
-                const initialSelectedMKB10 = mkb10.map(item => item.id);
-                const selectedData = mkbData.filter(item => initialSelectedMKB10.includes(item.id));
-                const remainingData = mkbData.filter(item => !initialSelectedMKB10.includes(item.id));
-                setMkb10Data([...selectedData, ...remainingData]);
-                setSelectedMKB10(initialSelectedMKB10);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        };
         fetchData();
-    }, []);
+    }, [tableParams.pagination.current]);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const { formattedData, meta } = await fetchMkb10Data(tableParams.pagination.current);
+
+            const initialSelectedMKB10 = mkb10.map(item => item.id);
+            const selectedData = formattedData.filter(item => initialSelectedMKB10.includes(item.id));
+            const remainingData = formattedData.filter(item => !initialSelectedMKB10.includes(item.id));
+
+            const combinedData = [...selectedData, ...remainingData];
+            setData(combinedData);
+            setFilteredData(combinedData);
+            setSelectedMKB10(initialSelectedMKB10);
+
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    ...tableParams.pagination,
+                    total: meta.total,
+                },
+            });
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            message.error('Failed to load data');
+        }
+        setLoading(false);
+    };
+
+    const handleTableChange = (pagination) => {
+        setTableParams({
+            pagination,
+        });
+    };
 
 
 
@@ -110,6 +139,12 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
 
 
 
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
 
     const handleSwitchChange = (id, checked) => {
         setSelectedMKB10(prevState => {
@@ -169,19 +204,30 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
     };
 
     const handleSearch = async () => {
-        setIsLoading(true);
+        setLoading(true);
         try {
             const responseData = await searchMkb10Data(searchQuery);
-            setMkb10Data(responseData);
+            setData(responseData);
         } catch (error) {
-            console.error("Error fetching MKB-10 data:", error);
-        } finally {
-            setIsLoading(false);
+            console.error('Error fetching MKB-10 data:', error);
+            message.error('Failed to search data');
         }
+        setLoading(false);
     };
 
-    const handleSearchChange = e => {
-        setSearchQuery(e.target.value);
+    const handleSearchChange = (e) => {
+        const query = e.target.value;
+        setSearchQuery(query);
+        if (query) {
+            const lowerCaseQuery = query.toLowerCase();
+            const filtered = data.filter(item =>
+                item.code.toLowerCase().includes(lowerCaseQuery) ||
+                item.name.toLowerCase().includes(lowerCaseQuery)
+            );
+            setFilteredData(filtered);
+        } else {
+            setFilteredData(data);
+        }
     };
 
 
@@ -210,6 +256,30 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
         templates: templates,
     };
 
+
+    const columns = [
+        {
+            title: 'Код',
+            dataIndex: 'code',
+            sorter: true,
+            width: '20%',
+        },
+        {
+            title: 'Номланиши',
+            dataIndex: 'name',
+            width: '50%',
+        },
+        {
+            title: 'Харакат',
+            dataIndex: 'id',
+            render: (id) => (
+                <Switch
+                    checked={selectedMKB10.includes(id)}
+                    onChange={(checked) => handleSwitchChange(id, checked)}
+                />
+            ),
+        },
+    ];
 
 
     return (
@@ -274,74 +344,25 @@ export default function AccordionCustomIcon({ patientId, mkb10, visitId, visits,
             <ButtonAnt className='rounded-md' onClick={handleSaveMKB10}>Саклаш</ButtonAnt>
           </label>
           <Card className="h-[40vh] w-full rounded-none mt-5 overflow-scroll">
-            <table className="w-full min-w-max table-auto text-left">
-              <thead>
-                <tr>
-                  {TABLE_HEAD.map((head) => (
-                    <th key={head} className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal leading-none opacity-70"
-                      >
-                        {head}
-                      </Typography>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {mkb10Data.map(({ id, code, name }) => (
-                  <tr key={id} className="even:bg-blue-gray-50/50">
-                    <td className="p-4">
-                      <Typography variant="small" color="blue-gray" className="font-normal">
-                        {code}
-                      </Typography>
-                    </td>
-                    <td className="p-4">
-                      <Typography variant="small" color="blue-gray" className="font-normal">
-                        {name}
-                      </Typography>
-                    </td>
-                    <td className="p-4">
-                      <Switch id={id} checked={selectedMKB10.includes(id)} onChange={(e) => handleSwitchChange(id, e.target.checked)} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              <Table
+                  columns={columns}
+                  rowKey={(record) => record.id}
+                  dataSource={filteredData}
+                  loading={loading}
+                  onChange={handleTableChange}
+              />
           </Card>
-          <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-            <ButtonAnt variant="outlined" size="sm">
-              Previous
-            </ButtonAnt>
-            <div className="flex items-center gap-2">
-              <IconButton variant="outlined" size="sm">
-                1
-              </IconButton>
-              <IconButton variant="text" size="sm">
-                2
-              </IconButton>
-              <IconButton variant="text" size="sm">
-                3
-              </IconButton>
-              <IconButton variant="text" size="sm">
-                ...
-              </IconButton>
-              <IconButton variant="text" size="sm">
-                8
-              </IconButton>
-              <IconButton variant="text" size="sm">
-                9
-              </IconButton>
-              <IconButton variant="text" size="sm">
-                10
-              </IconButton>
-            </div>
-            <ButtonAnt variant="outlined" size="sm">
-              Next
-            </ButtonAnt>
-          </CardFooter>
+
+           <CardFooter>
+               <Pagination
+                   {...tableParams.pagination}
+                   onChange={(page, pageSize) => {
+                       setTableParams({
+                           pagination: { current: page, pageSize, total: tableParams.pagination.total },
+                       });
+                   }}
+               />
+           </CardFooter>
         </div>
       </Panel>
     </Collapse>

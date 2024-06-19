@@ -188,6 +188,14 @@ const ReAdmission = () => {
             render: (text) => getStatusName(text),
         },
         {
+            title: 'Сана',
+            dataIndex: 'date_at',
+            key: 'date_at',
+            sorter: (a, b) => a.date_at.localeCompare(b.date_at),
+            sortOrder: sorter.field === 'date_at' && sorter.order,
+            render: (text) => getStatusName(text),
+        },
+        {
             title: 'Оплата',
             key: 'payment',
             render: (_, record) => (

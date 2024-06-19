@@ -14,6 +14,7 @@ import {
     UserGroupIcon
 } from "@heroicons/react/24/solid";
 import {CgMenuGridO } from "react-icons/cg";
+import {BsCalendar2RangeFill, BsCalendarWeekFill, BsFillCalendar2CheckFill} from "react-icons/bs";
 
 const ExpandedSidebar = ({
                              collapsed,
@@ -45,7 +46,7 @@ const ExpandedSidebar = ({
 
     return (
         <div className="sticky top-0 z-[7]" style={{display: "flex", height: "100vh"}}>
-            <Sidebar breakPoint="md"   collapsed={collapsed}
+            <Sidebar breakPoint="md" collapsed={collapsed}
                        toggled={toggled}
                        onToggle={handleToggleSidebar} width="300px" className="app ">
 
@@ -66,7 +67,7 @@ const ExpandedSidebar = ({
                        </MenuItem>
                    </div>
                     <CustomLink to="/">
-                        <MenuItem className="mt-10" icon={<CalendarDaysIcon className="h-6 w-6"/>}>
+                        <MenuItem className="mt-10" icon={<BsFillCalendar2CheckFill className="h-5 w-5"/>}>
                         Календарь
                     </MenuItem>
                     </CustomLink>

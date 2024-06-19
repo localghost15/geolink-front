@@ -50,10 +50,59 @@ function PatientBioCard() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
+    const fetchPatientData = async () => {
+        try {
+            const patientResponse = await axiosInstance.get(`https://back.geolink.uz/api/v1/patients/${index}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+
+            const { data } = patientResponse.data;
+
+            const partnerId = data.partner_id;
+            const districtId = data.district_id;
+
+            let partnerResponse, districtResponse;
+
+            if (partnerId) {
+                partnerResponse = await axiosInstance.get(`https://back.geolink.uz/api/v1/partners/${partnerId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                });
+            }
+
+            if (districtId) {
+                districtResponse = await axiosInstance.get(`https://back.geolink.uz/api/v1/global/district/${districtId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                });
+            }
+
+            const patientData = {
+                patient: data,
+                partnerName: partnerResponse ? partnerResponse.data.data.name : null,
+                provinceName: districtResponse ? districtResponse.data.data.province.name : null,
+                districtName: districtResponse ? districtResponse.data.data.name : null,
+            };
+
+            setPatientData(patientData);
+            setLoading(false);
+        } catch (error) {
+            console.error("Ошибка при получении информации о пациенте:", error);
+        }
+    };
+    useEffect(() => {
+
+
+        fetchPatientData();
+    }, [index, token]);
+
     const handleClick = () => {
         navigate(`/patient/admission/${index}`); // Replace with your desired route
     };
-
 
     const fetchDoctors = async () => {
         try {
@@ -207,6 +256,7 @@ function PatientBioCard() {
     };
 
 
+
     const statusNames = {
         new: 'Янги',
         queue: 'Навбатда',
@@ -241,8 +291,8 @@ function PatientBioCard() {
             label: 'МКБ10:',
             children: (
                 <>
-                    {patientData && Array.isArray(patientData.mkb10) && patientData.mkb10.length > 0 ? (
-                        patientData.mkb10.map(item => (
+                    {patientData && Array.isArray(patientData.patient.mkb10) && patientData.patient.mkb10.length > 0 ? (
+                        patientData.patient.mkb10.map(item => (
                             <div key={item.id}>
                                 <p>{item.name}</p>
                             </div>
@@ -420,55 +470,7 @@ function PatientBioCard() {
     };
 
 
-  const fetchPatientData = async () => {
-    try {
-        const patientResponse = await axiosInstance.get(`https://back.geolink.uz/api/v1/patients/${index}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            }
-        });
-        
-        const { data } = patientResponse.data;
 
-        const partnerId = data.partner_id;
-        const districtId = data.district_id;
-
-        let partnerResponse, districtResponse;
-
-        if (partnerId) {
-            partnerResponse = await axiosInstance.get(`https://back.geolink.uz/api/v1/partners/${partnerId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                }
-            });
-        }
-
-        if (districtId) {
-            districtResponse = await axiosInstance.get(`https://back.geolink.uz/api/v1/global/district/${districtId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                }
-            });
-        }
-
-        const patientData = {
-            patient: data,
-            partnerName: partnerResponse ? partnerResponse.data.data.name : null,
-            provinceName: districtResponse ? districtResponse.data.data.province.name : null,
-            districtName: districtResponse ? districtResponse.data.data.name : null,
-        };
-
-        setPatientData(patientData);
-        setLoading(false);
-    } catch (error) {
-        console.error("Ошибка при получении информации о пациенте:", error);
-    }
-};
-    useEffect(() => {
-      
-
-        fetchPatientData();
-    }, [index, token]);
 
     const shouldRenderAccordionIcon = mostRecentVisit && mostRecentVisit.status === "examined";
     const isBillPending = mostRecentVisit &&
@@ -620,7 +622,7 @@ function PatientBioCard() {
                       </div>
                     </div>
                     <Button disabled={isButtonDisabled} onClick={showModal}>Беморни қабулга қушиш</Button>
-                <Modal title="Создать визит" visible={isModalVisible} onCancel={handleCancel} footer={[
+                <Modal centered title="Создать визит" visible={isModalVisible} onCancel={handleCancel} footer={[
                 <Button key="back" onClick={handleCancel}>
                     Отмена
                 </Button>,

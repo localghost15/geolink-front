@@ -11,13 +11,13 @@ import {
     Card,
     CardHeader,
     Typography,
-    Button,
     CardBody,
     CardFooter,
     IconButton,
     Tooltip,
     Input
 } from "@material-tailwind/react";
+import {Button} from "antd";
 import EpidemiologicalList from './components/EpidemiologicalList';
 
 const TABLE_HEAD = ["ID","Номланиши", "Харакат"];
@@ -118,7 +118,7 @@ export default function EpidemiologicalHistory() {
 
     return (
         <Card className="h-full w-full rounded-none pt-5">
-            <Typography className="mx-8 mb-2" variant="h3" color="black">Эпидемиологик тарих</Typography>
+            <Typography className="mx-8 mb-2" variant="h5" color="black">Эпидемиологик тарих</Typography>
             <div className="flex mx-8 justify-between gap-8">
                 <label
                     className="relative  bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
@@ -130,10 +130,10 @@ export default function EpidemiologicalHistory() {
                         placeholder="Қидириш"
                         className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
                     />
-                    <Button size="md" ><MagnifyingGlassIcon className="h-5 w-5" /></Button>
+                    <Button type="primary" size="md" ><MagnifyingGlassIcon className="h-5 w-5" /></Button>
                 </label>
                 <div className="flex items-center shrink-0 flex-col gap-2 sm:flex-row">
-                    <Button onClick={openModal} className="flex h-12 items-center gap-3 normal-case font-normal" size="sm">
+                    <Button type="primary" onClick={openModal} className="flex h-10 items-center gap-3 normal-case font-normal" size="sm">
                         <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Янги  қўшиш
                     </Button>
                     <Transition appear show={isOpen} as={Fragment}>
@@ -214,16 +214,16 @@ export default function EpidemiologicalHistory() {
                             <tr key={record.id}>
                                 <td className="p-2">{index + 1}</td>
                                 <td className="p-2">{record.name}</td>
-                                <td className="p-2">
-                                    <Tooltip content="Ўзгартириш">
-                                        <IconButton onClick={() => openModal(record)} variant="text">
+                                <td className="p-2 space-x-3">
+                                    <Tooltip className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўзгартириш">
+                                        <Button type="dashed" onClick={() => openModal(record)} variant="text">
                                             <PencilIcon className="h-4 w-4" />
-                                        </IconButton>
+                                        </Button>
                                     </Tooltip>
-                                    <Tooltip content="Ўчириш">
-                                        <IconButton onClick={() => deleteEpidemiologicalRecord(record.id)} variant="text">
+                                    <Tooltip className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўчириш">
+                                        <Button type="dashed" onClick={() => deleteEpidemiologicalRecord(record.id)} variant="text">
                                             <TrashIcon className="h-4 w-4" />
-                                        </IconButton>
+                                        </Button>
                                     </Tooltip>
                                 </td>
                             </tr>

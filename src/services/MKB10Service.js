@@ -1,18 +1,23 @@
 import axiosInstance from "../axios/axiosInstance";
 
-export const fetchMkb10Data = async () => {
+// Обновлённая функция fetchMkb10Data для поддержки пагинации
+export const fetchMkb10Data = async (page) => {
     try {
-        const response = await axiosInstance.get('/mkb10');
-        return response.data.data.map(item => ({
-            value: item.code,
+        const response = await axiosInstance.get(`/mkb10?page=${page}`);
+        const { data, meta } = response.data;
+        const formattedData = data.map(item => ({
+            value:  item.code,
             label: `${item.code} - ${item.name}`,
             ...item
         }));
+        return { formattedData, meta };
     } catch (error) {
         console.error("Error fetching MKB-10 data:", error);
-        return [];
+        return { formattedData: [], meta: {} };
     }
 };
+
+
 
 export const searchMkb10Data = async (searchQuery) => {
     if (searchQuery !== '') {

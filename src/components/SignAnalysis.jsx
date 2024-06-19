@@ -58,11 +58,14 @@ export default function SendAnalysis({ visitId, open }) {
             .post(`visit/service_mass/${visitId}`, dataToSend)
             .then((response) => {
                 console.log(response.data);
+                const totalCost = calculateTotalServicesAmount();
+                const remaining = modalAmount - totalCost;
                 setReceiptData({
                     services: selectedServices,
                     amountPaid: modalAmount,
                     totalCost: calculateTotalServicesAmount(),
-                    paymentMethod: "Нақд", // or retrieve it dynamically if needed
+                    remainingAmount: remaining < 0 ? Math.abs(remaining) : 0, // Correctly calculate the remaining amount
+                    paymentMethod: "Нақд", // Static value, change if dynamic is needed
                 });
                 setShowReceipt(true);
                 toast.success('Хизмат чеки кассага юборилди!');
@@ -222,7 +225,7 @@ export default function SendAnalysis({ visitId, open }) {
     const remainingAmount = modalAmount - totalServicesAmount;
 
     const handleAmountChange = (e) => {
-        const value = Number(e.target.value) || 0; // Handle invalid input gracefully
+        const value = parseFloat(e.target.value) || 0; // Handle invalid input gracefully
         setModalAmount(value);
     };
 
@@ -373,6 +376,10 @@ export default function SendAnalysis({ visitId, open }) {
                                             <Typography.Text strong>Тўланган:</Typography.Text>
                                             <Typography.Text>{receiptData.amountPaid} сўм</Typography.Text>
                                         </div>
+                                        <div className="flex justify-between">
+                                            <Typography.Text strong>Қолган сумма:</Typography.Text>
+                                            <Typography.Text>{receiptData.remainingAmount} сўм</Typography.Text>
+                                        </div>
                                     </div>
 
                                     <Divider dashed className="border-gray-300"/>
@@ -394,7 +401,8 @@ export default function SendAnalysis({ visitId, open }) {
                                             рахмат!</Typography.Text>
                                         <br/>
                                         <Typography.Text className="text-gray-500">Тел: +998 33 135 21
-                                            01</Typography.Text>
+                                            01
+                                        </Typography.Text>
                                         <br/>
                                         <Typography.Text className="text-gray-500">front.geolink.uz</Typography.Text>
                                     </div>
@@ -430,7 +438,8 @@ export default function SendAnalysis({ visitId, open }) {
                                         <strong>Хизматларнинг умумий қиймати: </strong>{totalServicesAmount} сум
                                     </div>
                                     <div style={{marginTop: 8}}>
-                                        <strong>Қолган миқдори: </strong>{remainingAmount} сум
+                                        <strong>Қолган
+                                            миқдори: </strong>{remainingAmount > 0 ? 0 : Math.abs(remainingAmount)} сум
                                     </div>
                                 </div>
                             )}

@@ -11,13 +11,13 @@ import {
     Card,
     CardHeader,
     Typography,
-    Button,
     CardBody,
     CardFooter,
     IconButton,
     Tooltip,
     Input
 } from "@material-tailwind/react";
+import {Button} from "antd";
 import Mkb10List from './components/Mkb10List';
 
 const TABLE_HEAD = ["Код", "Номланиши", "Кушимча малумот"];
@@ -92,7 +92,7 @@ const handleNextPage = () => {
 
     return (
         <Card className="h-full w-full rounded-none pt-5">
-            <Typography className="mx-8 mb-2" variant="h3" color="black">МКБ10</Typography>
+            <Typography className="mx-8 mb-2" variant="h5" color="black">МКБ10</Typography>
             <div className="flex mx-8 justify-between gap-8">
                 <label
                     className="relative  bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
@@ -106,7 +106,7 @@ const handleNextPage = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <Button onClick={handleSearch} size="md"><MagnifyingGlassIcon className="h-5 w-5"/></Button>
+                    <Button type="primary" onClick={handleSearch} size="md"><MagnifyingGlassIcon className="h-5 w-5"/></Button>
                 </label>
 
             </div>

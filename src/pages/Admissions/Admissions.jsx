@@ -111,13 +111,14 @@ const Admissions = () => {
             })
                 .then(response => {
                     console.log('Оплата выполнена успешно:', response.data);
-
+                    const remainingAmount = selectedOrder.totalAmount - paymentAmount;
                     setPaymentReceipt({
                         service: selectedOrder.service.name,
                         amount: paymentAmount,
+                        remaining: remainingAmount,
                         payed: paymentAmount, // Пока используем сумму оплаты как сумму туланганного
                         type: paymentType,
-                        bill: 'payed' // Пока устанавливаем статус оплачено
+                        bill: 'payed'
                     });
 
 
@@ -138,6 +139,12 @@ const Admissions = () => {
     const handleModalClose = () => {
         setIsModalVisible(false);
         setSelectedOrder(null);
+        setPaymentReceipt(null)
+    };
+
+    const isPaymentButtonDisabled = (record) => {
+        // Проверяем, что selectedOrder определен и его свойство payed больше нуля
+        return record?.orders?.payed > 0;
     };
 
     const columns = [
@@ -193,13 +200,21 @@ const Admissions = () => {
                 <Button
                     type="primary"
                     onClick={() => handlePaymentClick(record)}
-                    disabled={record.status === 'queue'}
+                    disabled={isPaymentButtonDisabled(record)}
                 >
                     Оплатить
                 </Button>
             ),
         },
     ];
+
+    const getRowClassName = (record) => {
+        // Проверяем, что selectedOrder определен и его свойство payed больше нуля
+        if (record?.orders?.payed > 0) {
+            return 'disabled-row';
+        }
+        return ''; // Возвращаем пустую строку, если строка не должна быть disabled
+    };
 
     // Обработчик изменения текста поиска
     const handleSearch = (value) => {
@@ -235,7 +250,7 @@ const Admissions = () => {
                     pagination={pagination}
                     onChange={handleTableChange}
                     rowKey="key"
-                    rowClassName={(record) => (record.status === 'queue' ? 'disabled-row' : '')}
+                    rowClassName={getRowClassName}
                 />
             </Spin>
             <Modal centered
@@ -279,12 +294,20 @@ const Admissions = () => {
                             {/* Summary */}
                             <div className="mb-2 text-gray-700">
                                 <div className="flex justify-between">
-                                    <Text strong>Миқдори:</Text>
+                                    <Text strong>Тўланган:</Text>
                                     <Text>{paymentReceipt.amount} сўм</Text>
                                 </div>
                                 <div className="flex justify-between">
-                                    <Text strong>Тўланган:</Text>
-                                    <Text>{selectedOrder?.payed || 0} сўм</Text>
+                                    <Text strong>Тўлов миқдори:</Text>
+                                    <Text>{parseInt(selectedOrder?.payed || 0, 10) + parseInt(paymentReceipt?.amount || 0, 10)} сўм</Text>
+
+
+                                </div>
+                                <div className="flex justify-between">
+                                    <Text strong>Қолган сумма:</Text>
+                                    <Text>{Math.floor(Number(selectedOrder.amount)) - (parseInt(selectedOrder?.payed || 0, 10) + parseInt(paymentReceipt?.amount || 0, 10))} сўм</Text>
+
+
                                 </div>
                             </div>
 
@@ -322,6 +345,7 @@ const Admissions = () => {
                         <p><strong>Хизмат:</strong> {selectedOrder.service.name}</p>
                         <p><strong>Миқдори:</strong> {selectedOrder.amount}</p>
                         <p><strong>Туланган:</strong> {selectedOrder.payed}</p>
+                        <p><strong>Қолган сумма:</strong> {selectedOrder.amount - selectedOrder.payed}</p>
                         <p><strong>Тўлов усули:</strong> {paymentTypeNames[selectedOrder.type]}</p>
                         <p><strong>Тўлов холати:</strong> {paymentBillNames[selectedOrder.bill]}</p>
                         <Input

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import {Button, Descriptions, FloatButton, Image, Spin} from "antd";
+import {Avatar, Button, Descriptions, FloatButton, Image, Spin} from "antd";
 import {fetchRevisits, fetchVisits} from "../services/visitService";
 import {getDispensaryDataPatient} from "../services/dispansery";
 import {ClipboardDocumentCheckIcon} from "@heroicons/react/24/solid";
@@ -173,7 +173,7 @@ const ParentAdmission = () => {
     }
 
     return (
-        <div className="px-10 ">
+        <div className="px-10 print-area">
             {patient ? (
               <>
                   <Descriptions
@@ -184,14 +184,17 @@ const ParentAdmission = () => {
                           sm: 2,
                           md: 3,
                           lg: 3,
-                          xl: 4,
-                          xxl: 4,
+                          xl: 1,
+                          xxl: 1,
                       }}
                   >
+                      <Descriptions.Item label="Сурат">
+                          <Avatar size={64} loading="lazy" src={`${patient.avatar}`} alt="avatar" variant="rounded" />
+                      </Descriptions.Item>
                       <Descriptions.Item label="Код">SHH7FX6DG</Descriptions.Item>
                       <Descriptions.Item label="ФИО">{patient.name}</Descriptions.Item>
                       <Descriptions.Item label="Тугилган куни">{patient.birth_at}</Descriptions.Item>
-                      <Descriptions.Item label="Печать"> <Button onClick={printPage}  icon={<BsPrinterFill className='w-4 h-4'/>} fullWidth  type="dashed" size="middle" className='capitalize flex items-center  my-2'> Принтердан чиқариш</Button></Descriptions.Item>
+                      <Descriptions.Item className="print-button" label="Печать"> <Button onClick={printPage}  icon={<BsPrinterFill className='w-4 h-4'/>} fullWidth  type="dashed" size="middle" className='capitalize print-button flex items-center  my-2'> Принтердан чиқариш</Button></Descriptions.Item>
 
                   </Descriptions>
                   <Descriptions

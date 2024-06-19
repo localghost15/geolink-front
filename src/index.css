@@ -269,6 +269,7 @@ box-shadow: none !important;
 }
 
 .ps-sidebar-container {
+    /*00AA81*/
     background-color: #fff !important;
     z-index: 999;
 }
@@ -398,3 +399,30 @@ box-shadow: none !important;
     margin-top: 5mm;
 }
 
+
+
+/* Печать только элемента с классом .print-area */
+@media print {
+    /* Скрываем все элементы, кроме .print-area */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Делаем .print-area и её содержимое видимыми */
+    .print-area, .print-area * {
+        visibility: visible;
+    }
+
+    /* Размещаем .print-area на всю страницу */
+    .print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    /* Скрываем кнопку печати */
+    .print-button {
+        display: none;
+    }
+}
