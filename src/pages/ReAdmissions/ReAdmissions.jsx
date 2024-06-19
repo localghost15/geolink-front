@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {Table, Button, Modal, Typography, Input, Radio, Spin, Divider} from 'antd';
+import { Table, Button, Modal, Typography, Input, Radio, Spin, Divider } from 'antd';
 import axiosInstance from "../../axios/axiosInstance";
 import toast from 'react-hot-toast';
-import {Card} from "@material-tailwind/react";
+import {PrinterIcon} from "@heroicons/react/24/solid";
 
 const { Search } = Input;
 
-const ReAdmission = () => {
+const Admissions = () => {
     const [admissions, setAdmissions] = useState([]);
-    const [filteredAdmissions, setFilteredAdmissions] = useState([]); // Состояние для отфильтрованных данных
+    const [filteredAdmissions, setFilteredAdmissions] = useState([]);
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
     const [filters, setFilters] = useState({});
     const [sorter, setSorter] = useState({ field: 'id_visit', order: 'descend' });
@@ -17,25 +17,33 @@ const ReAdmission = () => {
     const [paymentAmount, setPaymentAmount] = useState('');
     const [paymentType, setPaymentType] = useState('cash');
     const [loading, setLoading] = useState(false);
-    const [searchText, setSearchText] = useState(''); // Состояние для текста поиска
+    const [searchText, setSearchText] = useState('');
     const [paymentReceipt, setPaymentReceipt] = useState(null);
+    const [selectedVisit, setSelectedVisit] = useState(null); // Добавлено для отслеживания выбранного визита
 
     const fetchAdmissions = async (page = 1, pageSize = 10, sortField = 'id_visit', sortOrder = 'descend') => {
         setLoading(true);
         try {
             const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=revisit`);
-            const admissionsData = response.data.data.map((item, index) => ({
-                key: index + 1,
-                id_visit: item.id,
-                patient_name: item.patient_id.name,
-                doctor_name: item.doctor.name,
-                total_amount: item.total_amount,
-                total_payed: item.total_payed,
-                total_debit: item.total_debit,
-                date_at: item.date_at,
-                status: item.status,
-                orders: item.orders
-            }));
+            const admissionsData = response.data.data.map((item, index) => {
+                const filteredOrders = item.orders.filter(order => order.service_type && parseFloat(order.payed) === 0);
+                return {
+                    key: index + 1,
+                    id_visit: item.id,
+                    patient_name: item.patient_id.name,
+                    doctor_name: item.doctor.name,
+                    total_amount: item.total_amount,
+                    total_payed: item.total_payed,
+                    total_debit: item.total_debit,
+                    date_at: item.date_at,
+                    status: item.status,
+                    orders: filteredOrders,
+                    children_amount: item.children_amount, // Добавляем необходимые поля
+                    children_payed: item.children_payed,
+                    children_debit: item.children_debit,
+                    debit: item.debit
+                };
+            });
             const total = response.data.meta.total;
 
             const sortedData = admissionsData.sort((a, b) => {
@@ -50,7 +58,7 @@ const ReAdmission = () => {
             });
 
             setAdmissions(sortedData);
-            setFilteredAdmissions(sortedData); // Устанавливаем изначально все данные
+            setFilteredAdmissions(sortedData);
             setPagination({ ...pagination, current: page, pageSize, total });
         } catch (error) {
             console.error("Error fetching admissions:", error);
@@ -75,8 +83,8 @@ const ReAdmission = () => {
             queue: 'Навбатда',
             pending: 'Ожидание',
             examined: 'Қабулда',
-            completed: 'Завершён',
-            revisit: 'Қайта қабул',
+            revisit: 'Қабулда',
+            canceled: 'Отменён',
         };
         return statusNames[status] || status;
     };
@@ -93,42 +101,46 @@ const ReAdmission = () => {
     };
 
     const handlePaymentClick = (record) => {
-        if (record.orders) {
-            setSelectedOrder(record.orders);
+        if (record.orders && record.orders.length > 0) {
+            setSelectedOrder(record.orders[0]);
         } else {
             setSelectedOrder(null);
         }
+        setSelectedVisit(record); // Устанавливаем выбранный визит
         setIsModalVisible(true);
+
     };
 
-    const handlePayment = () => {
+    const handlePayment = async () => {
         if (selectedOrder) {
             const orderId = selectedOrder.id;
             const paymentUrl = `/visit/pay/${orderId}`;
-            axiosInstance.post(paymentUrl, {
-                amount: paymentAmount,
-                type: paymentType
-            })
-                .then(response => {
-                    console.log('Оплата выполнена успешно:', response.data);
-
-                    setPaymentReceipt({
-                        service: selectedOrder.service.name,
-                        amount: paymentAmount,
-                        payed: paymentAmount, // Пока используем сумму оплаты как сумму туланганного
-                        type: paymentType,
-                        bill: 'payed' // Пока устанавливаем статус оплачено
-                    });
-
-
-                    fetchAdmissions();
-                    setPaymentAmount('');
-                    setPaymentType('cash');
-                    toast.success(`Оплачен: ${orderId}`);
-                })
-                .catch(error => {
-                    console.error('Ошибка при выполнении оплаты:', error);
+            try {
+                const response = await axiosInstance.post(paymentUrl, {
+                    amount: paymentAmount,
+                    type: paymentType
                 });
+                console.log('Оплата выполнена успешно:', response.data);
+                const remainingAmount = parseFloat(selectedOrder.total_amount) - parseFloat(paymentAmount); // Исправлено на selectedOrder.total_amount
+                // Вычисляем оставшуюся сумму дебита
+                const remainingDebit = parseFloat(selectedOrder.debit) - parseFloat(paymentAmount);
+                setPaymentReceipt({
+                    service: selectedOrder.service.name,
+                    amount: paymentAmount,
+                    total_amount: selectedOrder.total_amount, // Выводим total_amount из selectedOrder
+                    remaining: remainingDebit,
+                    type: paymentType,
+                    bill: 'payed'
+                });
+
+                fetchAdmissions();
+                setPaymentAmount('');
+                setPaymentType('cash');
+                toast.success(`Оплата выполнена: ${orderId}`);
+            } catch (error) {
+                console.error('Ошибка при выполнении оплаты:', error);
+                toast.error('Ошибка при выполнении оплаты');
+            }
         } else {
             console.error('Выбранный заказ отсутствует для оплаты');
         }
@@ -138,7 +150,12 @@ const ReAdmission = () => {
     const handleModalClose = () => {
         setIsModalVisible(false);
         setSelectedOrder(null);
-        setPaymentReceipt(null)
+        setPaymentReceipt(null);
+        setSelectedVisit(null); // Очищаем выбранный визит
+    };
+
+    const isPaymentButtonDisabled = (record) => {
+        return record.orders.some(order => parseFloat(order.payed) > 0);
     };
 
     const columns = [
@@ -188,21 +205,13 @@ const ReAdmission = () => {
             render: (text) => getStatusName(text),
         },
         {
-            title: 'Сана',
-            dataIndex: 'date_at',
-            key: 'date_at',
-            sorter: (a, b) => a.date_at.localeCompare(b.date_at),
-            sortOrder: sorter.field === 'date_at' && sorter.order,
-            render: (text) => getStatusName(text),
-        },
-        {
             title: 'Оплата',
             key: 'payment',
             render: (_, record) => (
                 <Button
                     type="primary"
                     onClick={() => handlePaymentClick(record)}
-                    disabled={record.status === 'queue'}
+                    disabled={typeof record.total_payed === 'number' && record.total_payed > 0 ? 'disabled-row' : ''}
                 >
                     Оплатить
                 </Button>
@@ -210,12 +219,19 @@ const ReAdmission = () => {
         },
     ];
 
-    // Обработчик изменения текста поиска
+    const getRowClassName = (record) => {
+        if (record.orders.some(order => parseFloat(order.payed) > 0)) {
+            return 'disabled-row';
+        }
+        return '';
+    };
+
     const handleSearch = (value) => {
         setSearchText(value);
         if (value) {
             const filteredData = admissions.filter((admission) =>
-                admission.patient_name.toLowerCase().includes(value.toLowerCase())
+                admission.patient_name.toLowerCase().includes(value.toLowerCase()) ||
+                admission.doctor_name.toLowerCase().includes(value.toLowerCase())
             );
             setFilteredAdmissions(filteredData);
         } else {
@@ -223,77 +239,79 @@ const ReAdmission = () => {
         }
     };
 
-    const { Title, Text } = Typography;
     return (
         <div>
-            <div className="px-10">
-                <h1 className="text-xl font-semibold mb-3">Қайта қабуллар</h1>
-                <Input.Search
-                    placeholder="Поиск по имени пациента"
-                    value={searchText}
-                    allowClear
-                    enterButton="Излаш"
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                <Search
+                    placeholder="Поиск по пациенту или доктору"
+                    onSearch={handleSearch}
                     onChange={(e) => handleSearch(e.target.value)}
-                    style={{marginBottom: 16, width: 300}}
+                    style={{ width: 300 }}
+                    allowClear
                 />
             </div>
-            <Spin spinning={loading}>
-                <Table
-                    columns={columns}
-                    dataSource={filteredAdmissions}
-                    pagination={pagination}
-                    onChange={handleTableChange}
-                    rowKey="key"
-                    rowClassName={(record) => (record.status === 'queue' ? 'disabled-row' : '')}
-                />
-            </Spin>
-            <Modal centered
-                   title="Тўлов малумоти -> Чек чикариш"
-                   visible={isModalVisible}
-                   onCancel={handleModalClose}
-                   footer={[
-                       <Button key="back" onClick={handleModalClose}>
-                           Орқага
-                       </Button>,
-                       paymentReceipt ? (
-                           <Button key="print" type="primary" onClick={() => window.print()}>
-                               Чекни чиқариш
-                           </Button>
-                       ) : (
-                           <Button key="submit" type="primary" onClick={handlePayment}>
-                               Тўлаш
-                           </Button>
-                       )
-                   ]}
+            <Table
+                columns={columns}
+                dataSource={filteredAdmissions}
+                pagination={pagination}
+                loading={loading}
+                onChange={handleTableChange}
+                rowClassName={getRowClassName}
+            />
+            <Modal
+                title="Тўлов -> чекни чиқариш"
+                visible={isModalVisible}
+                onCancel={handleModalClose}
+                footer={[
+                    <Button key="cancel" onClick={handleModalClose}>
+                        Отмена
+                    </Button>,
+                    paymentReceipt && (
+                        <Button icon={<PrinterIcon className="w-4 h-4 inline-flex items-center" />} key="print" type="primary" onClick={() => window.print()}>
+                            Чекни чиқариш
+                        </Button>
+                    ),
+                    paymentReceipt ? null : (
+                        <Button key="submit" type="primary" onClick={handlePayment}>
+                            Оплатить
+                        </Button>
+                    ),
+                ]}
             >
-                {paymentReceipt ? ( // Проверяем, есть ли информация о чеке
+                {paymentReceipt ? (
                     <div>
                         <div className="max-w-sm mx-auto bg-white border border-gray-300 rounded-lg shadow-md p-6">
                             {/* Header with Shop Logo and Name */}
                             <div className="text-center mb-4">
                                 <img src="/logo.svg" alt="Shop Logo" className="h-10 mx-auto mb-2"/>
-                                <Title level={5} style={{fontWeight: 'bold'}} className="uppercase">Geolink Clinic</Title>
-                                <Text className="text-gray-500">ул. Мустақиллик, 123, г. Бухара</Text>
-                                <br/>
+                                <Typography.Title level={5} style={{fontWeight: 'bold'}} className="uppercase">Geolink
+                                    Clinic</Typography.Title>
+                                <Typography.Text className="text-gray-500">ул. Мустақиллик, 123, г.
+                                    Бухара</Typography.Text>
                             </div>
-
 
                             <Divider dashed className="border-gray-300"/>
 
                             {/* Services or Products */}
                             <div className="mb-3 text-gray-700">
-                                {selectedOrder && selectedOrder.service.name}
+                                {paymentReceipt.service}
                             </div>
+
                             <hr/>
+
                             {/* Summary */}
                             <div className="mb-2 text-gray-700">
                                 <div className="flex justify-between">
-                                    <Text strong>Миқдори:</Text>
-                                    <Text>{paymentReceipt.amount} сўм</Text>
+                                    <Typography.Text strong>Миқдори:</Typography.Text>
+                                    <Typography.Text>{selectedOrder.amount} сўм</Typography.Text>
                                 </div>
                                 <div className="flex justify-between">
-                                    <Text strong>Тўланган:</Text>
-                                    <Text>{selectedOrder?.payed || 0} сўм</Text>
+                                    <Typography.Text strong>Тўланган:</Typography.Text>
+                                    <Typography.Text>{paymentReceipt.amount} сўм</Typography.Text>
+                                </div>
+                                <div className="flex justify-between">
+                                    <Typography.Text strong>Қолган сумма:</Typography.Text>
+                                    <Typography.Text>{parseFloat(selectedOrder.amount) - parseFloat(paymentReceipt.amount)} сўм</Typography.Text>
                                 </div>
                             </div>
 
@@ -302,57 +320,59 @@ const ReAdmission = () => {
                             {/* Payment Information */}
                             <div className="mb-4 text-gray-700">
                                 <div className="flex justify-between">
-                                    <Text>Тўлов усули:</Text>
-                                    <Text>{paymentTypeNames[paymentReceipt.type]}</Text>
+                                    <Typography.Text>Тўлов усули:</Typography.Text>
+                                    <Typography.Text>{paymentTypeNames[paymentReceipt.type]}</Typography.Text>
                                 </div>
                                 <div className="flex justify-between">
-                                    <Text>Тўлов холати:</Text>
-                                    <Text>{paymentBillNames[paymentReceipt.bill]}</Text>
+                                    <Typography.Text>Тўлов холати:</Typography.Text>
+                                    <Typography.Text>{paymentBillNames[paymentReceipt.bill]}</Typography.Text>
                                 </div>
                             </div>
 
                             <Divider dashed className="border-gray-300"/>
                             <img src="/qr.svg" className="mx-auto mt-2" width="140" height="140"/>
+
                             {/* Footer */}
                             <div className="text-center">
-                                <Text className="text-gray-500">Харидингиз учун рахмат!</Text>
+                                <Typography.Text className="text-gray-500">Харидингиз учун рахмат!</Typography.Text>
                                 <br/>
-                                <Text className="text-gray-500">Тел: +998 33 135 21 01</Text>
+                                <Typography.Text className="text-gray-500">Тел: +998 33 135 21 01</Typography.Text>
                                 <br/>
-                                <Text className="text-gray-500">front.geolink.uz</Text>
+                                <Typography.Text className="text-gray-500">front.geolink.uz</Typography.Text>
                             </div>
                         </div>
-
-
-                    </div>
-                ) : selectedOrder ? (
-                    <div>
-                        <Typography.Title level={4}>Тўлов квитанцияси</Typography.Title>
-                        <p><strong>Хизмат:</strong> {selectedOrder.service.name}</p>
-                        <p><strong>Миқдори:</strong> {selectedOrder.amount}</p>
-                        <p><strong>Туланган:</strong> {selectedOrder.payed}</p>
-                        <p><strong>Тўлов усули:</strong> {paymentTypeNames[selectedOrder.type]}</p>
-                        <p><strong>Тўлов холати:</strong> {paymentBillNames[selectedOrder.bill]}</p>
-                        <Input
-                            className='mb-5'
-                            type="number"
-                            value={paymentAmount}
-                            onChange={(e) => setPaymentAmount(e.target.value)}
-                            placeholder="Сумма оплаты"
-                            style={{marginTop: 10}}
-                        />
-                        <Radio.Group onChange={(e) => setPaymentType(e.target.value)} value={paymentType}>
-                            <Radio value="cash">Нақд</Radio>
-                            {/*<Radio value="credit">Қарз</Radio>*/}
-                            <Radio value="card">Кредит карта</Radio>
-                        </Radio.Group>
                     </div>
                 ) : (
-                    <p>Нет данных о заказе.</p>
+                    <div>
+                        {selectedOrder ? (
+                            <div>
+                                <Typography.Title level={5}>Выбранный заказ</Typography.Title>
+                                <p>Услуга: {selectedOrder.service.name}</p>
+                                <p>Сумма: {selectedOrder.amount} сўм</p>
+                                <Input
+                                    type="number"
+                                    placeholder="Введите сумму оплаты"
+                                    value={paymentAmount}
+                                    onChange={(e) => setPaymentAmount(e.target.value)}
+                                />
+                                <Radio.Group
+                                    value={paymentType}
+                                    onChange={(e) => setPaymentType(e.target.value)}
+                                    style={{marginTop: 10}}
+                                >
+                                    <Radio.Button value="cash">Нақд</Radio.Button>
+                                    <Radio.Button value="credit">Қарзга</Radio.Button>
+                                    <Radio.Button value="card">Кредит карта</Radio.Button>
+                                </Radio.Group>
+                            </div>
+                        ) : (
+                            <p>Нет доступных заказов для оплаты</p>
+                        )}
+                    </div>
                 )}
             </Modal>
         </div>
     );
 };
 
-export default ReAdmission;
+export default Admissions;

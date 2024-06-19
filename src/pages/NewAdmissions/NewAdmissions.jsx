@@ -1,27 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import {Table, Button, Modal, Typography, Input, Radio, Spin, Divider} from 'antd';
+import { Table, Button, Modal, Typography, Input, Radio, Spin, Divider } from 'antd';
 import axiosInstance from "../../axios/axiosInstance";
 import toast from 'react-hot-toast';
 
 const NewAdmissions = () => {
     const [admissions, setAdmissions] = useState([]);
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
-    const [filters, setFilters] = useState({});
     const [sorter, setSorter] = useState({ field: 'id_visit', order: 'descend' });
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedVisit, setSelectedVisit] = useState(null);
     const [paymentAmount, setPaymentAmount] = useState('');
     const [paymentType, setPaymentType] = useState('cash');
     const [loading, setLoading] = useState(false);
-    const [totalDebit, setTotalDebit] = useState(0);
     const [searchText, setSearchText] = useState('');
     const [paymentReceipt, setPaymentReceipt] = useState(null);
+
     const fetchAdmissions = async (page = 1, pageSize = 10, sortField = 'id_visit', sortOrder = 'descend') => {
         setLoading(true);
         try {
             const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=examined`);
             const admissionsData = response.data.data
-                .filter(admission => admission.bill === 'payed' || admission.bill === 'pending') // Фильтрация по статусу оплаты
+                .filter(admission => admission.bill === 'payed' || admission.bill === 'pending')
                 .map((item, index) => ({
                     key: index + 1,
                     id_visit: item.id,
@@ -37,8 +36,10 @@ const NewAdmissions = () => {
                     status: item.status,
                     bill: item.bill,
                     chilrens: item.chilrens,
-                    orders: item.orders
+                    orders: item.orders.filter(order => order.service_type === false) // Фильтрация по service_type
                 }));
+
+
             const total = response.data.meta.total;
 
             const sortedData = admissionsData.sort((a, b) => {
@@ -106,8 +107,7 @@ const NewAdmissions = () => {
         try {
             const response = await axiosInstance.post(`/visit/pay/${orderId}`, {
                 amount: parseInt(amount),
-                type: paymentType,
-                mass: 1
+                type: paymentType
             });
             return response.data;
         } catch (error) {
@@ -116,16 +116,15 @@ const NewAdmissions = () => {
         }
     };
 
-
-
     const handlePayment = () => {
         if (selectedVisit) {
-            const orderId = selectedVisit.orders?.id;
-            if (!orderId) {
+            const firstOrder = selectedVisit.orders[0];
+            if (!firstOrder) {
                 console.error('Нет доступного ID ордера для оплаты');
                 return;
             }
 
+            const orderId = firstOrder.id;
             const amount = paymentAmount;
             payForServices(orderId, amount, paymentType)
                 .then(response => {
@@ -144,11 +143,10 @@ const NewAdmissions = () => {
         }
     };
 
-
     const handleModalClose = () => {
         setIsModalVisible(false);
         setSelectedVisit(null);
-        setPaymentReceipt(null)
+        setPaymentReceipt(null);
     };
 
     const handleSearch = (value) => {
@@ -280,8 +278,7 @@ const NewAdmissions = () => {
                         {/* Header with Shop Logo and Name */}
                         <div className="text-center mb-4">
                             <img src="/logo.svg" alt="Shop Logo" className="h-10 mx-auto mb-2"/>
-                            <Typography.Title level={5} style={{fontWeight: 'bold'}} className="uppercase">Geolink
-                                Clinic</Typography.Title>
+                            <Typography.Title level={5} style={{fontWeight: 'bold'}} className="uppercase">Geolink Clinic</Typography.Title>
                             <Typography.Text className="text-gray-500">ул. Мустақиллик, 123, г. Бухара</Typography.Text>
                         </div>
 
@@ -308,7 +305,7 @@ const NewAdmissions = () => {
                             </div>
                             <div className="flex justify-between">
                                 <Typography.Text strong>Қолган сумма:</Typography.Text>
-                                <Typography.Text>КОЛГАН сўм</Typography.Text>
+                                <Typography.Text>{selectedVisit.children_debit} сўм</Typography.Text>
                             </div>
                         </div>
 
@@ -341,38 +338,36 @@ const NewAdmissions = () => {
                 ) : selectedVisit ? (
                     <div>
                         <Typography.Title level={4}>Тўлов квитанцияси</Typography.Title>
-                        <p><strong>Асосий Хизмат:</strong> {selectedVisit.orders.service.name}</p>
+                        <p><strong>Асосий Хизмат:</strong> {selectedVisit.orders[0]?.service?.name}</p>
                         <p><strong>Хизматлар:</strong>
-                            {Object.entries(
-                                selectedVisit.chilrens
-                                    .map(child => child.orders?.service?.name)
-                                    .filter(name => name)
-                                    .reduce((acc, serviceName) => {
-                                        acc[serviceName] = (acc[serviceName] || 0) + 1;
-                                        return acc;
-                                    }, {})
-                            )
-                                .map(([serviceName, count]) => `${serviceName} x${count}`)
-                                .join(', ')}
+                            {selectedVisit && selectedVisit.orders && selectedVisit.orders.length > 0 ? (
+                                selectedVisit.orders.map((order, index) => (
+                                    <span key={order.id}>
+                                        {index > 0 && ', '}
+                                        {order.service.name} x{order.count}
+                                    </span>
+                                ))
+                            ) : (
+                                'Нет данных о хизматларе'
+                            )}
                         </p>
                         <p><strong>Миқдори:</strong> {selectedVisit.children_amount} сўм</p>
                         <p><strong>Тўланган:</strong> {selectedVisit.children_payed} сўм</p>
-                        <Divider/>
-                        <p><strong>Тўлов суммаси:</strong> {selectedVisit.children_debit} сўм</p>
-
                         <Input
                             className='mb-5'
                             type="number"
                             value={paymentAmount}
                             onChange={(e) => setPaymentAmount(e.target.value)}
                             placeholder="Сумма оплаты"
-                            style={{marginTop: 10}}
+                            style={{ marginTop: 10 }}
                         />
                         <Radio.Group onChange={(e) => setPaymentType(e.target.value)} value={paymentType}>
                             <Radio value="cash">Нақд</Radio>
-                            {/*<Radio value="credit">Қарз</Radio>*/}
+                            {/* <Radio value="credit">Қарз</Radio> */}
                             <Radio value="card">Кредит карта</Radio>
                         </Radio.Group>
+                        <Divider/>
+                        <p><strong>Тўлов суммаси:</strong> {selectedVisit.children_debit} сўм</p>
                     </div>
                 ) : (
                     <p>Нет данных о заказе.</p>
@@ -383,5 +378,3 @@ const NewAdmissions = () => {
 };
 
 export default NewAdmissions;
-
-

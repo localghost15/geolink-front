@@ -46,28 +46,34 @@ export default function SendAnalysis({ visitId, open }) {
     }
 
     const handleModalOk = () => {
-        const dataToSend = {
-            service: selectedServices.map((item) => item.id),
-            service_count: selectedServices.map((item) => item.count),
-            type: "cash",
-            cash: 1,
-            amount: modalAmount,
-        };
+        const formData = new FormData();
 
-        axiosInstance
-            .post(`visit/service_mass/${visitId}`, dataToSend)
+        selectedServices.forEach((service, index) => {
+            formData.append(`service[${index}]`, service.id);
+            formData.append(`service_count[${index}]`, service.count);
+        });
+
+        formData.append('type', 'cash');
+        formData.append('amount', modalAmount.toString());
+
+        const totalCost = calculateTotalServicesAmount();
+
+        axiosInstance.post(`visit/service_mass/${visitId}`, formData)
             .then((response) => {
                 console.log(response.data);
-                const totalCost = calculateTotalServicesAmount();
+
                 const remaining = modalAmount - totalCost;
+
                 setReceiptData({
                     services: selectedServices,
                     amountPaid: modalAmount,
-                    totalCost: calculateTotalServicesAmount(),
-                    remainingAmount: remaining < 0 ? Math.abs(remaining) : 0, // Correctly calculate the remaining amount
-                    paymentMethod: "Нақд", // Static value, change if dynamic is needed
+                    totalCost: totalCost,
+                    remainingAmount: remaining < 0 ? Math.abs(remaining) : 0,
+                    paymentMethod: "Нақд",
                 });
+
                 setShowReceipt(true);
+
                 toast.success('Хизмат чеки кассага юборилди!');
             })
             .catch((error) => {
@@ -76,12 +82,14 @@ export default function SendAnalysis({ visitId, open }) {
             });
     };
 
+
+
     const handleModalCancel = () => {
         setIsModalVisible(false);
-        setShowReceipt(false); // Reset the receipt state when the modal is closed
-        setSelectedServices([]); // Clear the selected services when closing the modal
-        setModalAmount(0); // Reset the modal amount when closing
-        setReceiptData(null); // Clear the receipt data when closing the modal
+        setShowReceipt(false);
+        setSelectedServices([]);
+        setModalAmount(0);
+        setReceiptData(null);
     };
 
 

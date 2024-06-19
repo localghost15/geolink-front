@@ -1,41 +1,88 @@
 import React, { useEffect, useState } from 'react';
-import {
-  MagnifyingGlassIcon,
-  ChevronUpDownIcon,
-} from "@heroicons/react/24/outline";
-import { PencilIcon } from "@heroicons/react/24/solid";
+import { Table, Modal } from 'antd';
 import axiosInstance from "../axios/axiosInstance";
-import {
-  Card,
-  Typography,
-  Button,
-  CardBody,
-  CardFooter,
-} from "@material-tailwind/react";
-import { Modal } from "antd";
 
-const TABLE_HEAD = ["ID", "Навбат сони", "Сана", "Умумий қиймат", "Хизматлар", "Чек"];
-const TABLE_DIALOG = ["Чек", "Хизматлар", "Нархи"];
+const columns = [
+  {
+    title: 'Рақам',
+    dataIndex: 'id',
+    sorter: true,
+    width: '10%',
+  },
+  {
+    title: 'Кабул ордери',
+    dataIndex: 'service.name',
+    render: (text, record) => {
+      const serviceTypeTrueOrder = record.orders.find(order => order.service_type === true);
+      return serviceTypeTrueOrder ? serviceTypeTrueOrder.id : '';
+    },
+    width: '30%',
+  },
+  {
+    title: 'Сана',
+    dataIndex: 'date_at',
+    sorter: true,
+    width: '20%',
+  },
+  {
+    title: 'Умумий хисоб',
+    dataIndex: 'total_amount',
+    render: (text) => `${text} сўм`,
+    sorter: true,
+    width: '20%',
+  },
+  {
+    title: 'Тўлов Холати',
+    dataIndex: 'bill',
+    filters: [
+      {
+        text: 'Кутилмоқда',
+        value: 'pending',
+      },
+      {
+        text: 'Тўланган',
+        value: 'payed',
+      },
+    ],
+    onFilter: (value, record) => record.bill.includes(value),
+    width: '20%',
+  },
+];
 
-export function PaymentHistoryTable({ patientId }) {
-  const [visits, setVisits] = useState([]);
+export const PaymentHistoryTable = ({ patientId }) => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [tableParams, setTableParams] = useState({
+    pagination: {
+      current: 1,
+      pageSize: 10,
+    },
+    filters: {},
+  });
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [meta, setMeta] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    fetchVisits(currentPage);
-  }, [currentPage, patientId]);
+    fetchData();
+  }, [tableParams.pagination.current, tableParams.pagination.pageSize, tableParams.filters, patientId]);
 
-  const fetchVisits = async (page) => {
+  const fetchData = async () => {
+    setLoading(true);
     try {
-      const response = await axiosInstance.get(`/visit?patient_id=${patientId}&page=${page}`);
+      const response = await axiosInstance.get(`/visit?patient_id=${patientId}&page=${tableParams.pagination.current}`);
       const uniqueVisits = removeDuplicateVisits(response.data.data);
-      setVisits(uniqueVisits.reverse());
-      setMeta(response.data.meta);
+      setData(uniqueVisits.reverse());
+      setTableParams({
+        ...tableParams,
+        pagination: {
+          ...tableParams.pagination,
+          total: response.data.meta.total,
+        },
+      });
     } catch (error) {
-      console.error("Error fetching visits:", error);
+      console.error('Error fetching visits:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,6 +101,14 @@ export function PaymentHistoryTable({ patientId }) {
     });
   };
 
+  const handleTableChange = (pagination, filters, sorter) => {
+    setTableParams({
+      pagination,
+      filters,
+      ...sorter,
+    });
+  };
+
   const handleRowClick = (visit) => {
     setSelectedVisit(visit);
     setModalOpen(true);
@@ -64,159 +119,49 @@ export function PaymentHistoryTable({ patientId }) {
     setModalOpen(false);
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
   return (
-      <Card className="h-full w-full">
-        <CardBody className="overflow-scroll px-0">
-          <table className="w-full table-auto text-left">
-            <thead>
-            <tr>
-              {TABLE_HEAD.map((head, index) => (
-                  <th
-                      key={head}
-                      className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                  >
-                    <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
-                    >
-                      {head}{" "}
-                      {index !== TABLE_HEAD.length - 1 && (
-                          <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
-                      )}
-                    </Typography>
-                  </th>
-              ))}
-            </tr>
-            </thead>
-            <tbody>
-            {visits.map((visit, index) => (
-                <tr
-                    key={visit.id}
-                    onClick={() => handleRowClick(visit)}
-                    className="transition-colors hover:bg-gray-100"
-                >
-                  <td className="p-4 border-b border-blue-gray-50">
-                    <Typography variant="small" color="blue-gray" className="font-normal">
-                      {index + 1}
-                    </Typography>
-                  </td>
-                  <td className="p-4 border-b border-blue-gray-50">
-                    <Typography variant="small" color="blue-gray" className="font-normal">
-                      {visit.id}
-                    </Typography>
-                  </td>
-                  <td className="p-4 border-b border-blue-gray-50">
-                    <Typography variant="small" color="blue-gray" className="font-normal">
-                      {visit.date_at}
-                    </Typography>
-                  </td>
-                  <td className="p-4 border-b border-blue-gray-50">
-                    <Typography variant="small" color="blue-gray" className="font-normal">
-                      {visit.total_amount} сўм
-                    </Typography>
-                  </td>
-                  <td className="p-4 border-b border-blue-gray-50">
-                    <Typography variant="small" color="blue-gray" className="font-normal">
-                      {visit.orders.service.name}
-                      {visit.chilrens.length > 0 && ', '}
-                      {visit.chilrens
-                          .map(child => child.orders.service.name)
-                          .filter((serviceName, index, self) =>
-                              index === self.indexOf(serviceName) && serviceName !== visit.orders.service.name)
-                          .slice(0, 2)
-                          .map((serviceName, index, array) => (
-                              <React.Fragment key={index}>
-                                {index > 0 && ', '}
-                                {serviceName}
-                                {index === 1 && array.length > 1 && visit.chilrens.length > 3 && '...'}
-                              </React.Fragment>
-                          ))}
-                    </Typography>
-                  </td>
-                  <td className="p-4 border-b border-blue-gray-50">
-                    <Typography variant="small" color="blue-gray" className="font-normal">
-                      {visit.orders.id}
-                    </Typography>
-                  </td>
-                </tr>
-            ))}
-            </tbody>
-          </table>
-        </CardBody>
-        <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-          <Typography variant="small" color="blue-gray" className="font-normal">
-            Сахифа {meta.current_page}/{meta.last_page}
-          </Typography>
-          <div className="flex gap-2">
-            {meta.links && meta.links.map((link, index) => (
-                <Button
-                    key={index}
-                    variant={link.active ? "filled" : "outlined"}
-                    size="sm"
-                    onClick={() => link.url && handlePageChange(link.url.split('page=')[1])}
-                    disabled={!link.url}
-                >
-                  {link.label.replace(/&laquo;|&raquo;/g, '')}
-                </Button>
-            ))}
-          </div>
-        </CardFooter>
+      <div>
+        <Table
+            columns={columns}
+            dataSource={data}
+            pagination={tableParams.pagination}
+            loading={loading}
+            onChange={handleTableChange}
+            onRow={(record) => ({
+              onClick: () => handleRowClick(record),
+            })}
+            rowKey={(record) => record.id}
+            filters={tableParams.filters}
+        />
 
         <Modal
+            centered
             title="Тўлов малумоти"
-            open={modalOpen}
+            visible={modalOpen}
             onCancel={handleCloseModal}
-            footer={null} // Убираем нижнюю часть с кнопками
+            footer={null}
         >
-          <div className="h-[22rem] overflow-scroll">
-            <table className="w-full">
-              <thead>
-              <tr>
-                {TABLE_DIALOG.map((head, index) => (
-                    <th
-                        key={head}
-                        className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                    >
-                      <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
-                      >
-                        {head}{" "}
-                        {index !== TABLE_DIALOG.length - 1 && (
-                            <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
-                        )}
-                      </Typography>
-                    </th>
-                ))}
-              </tr>
-              </thead>
-              {selectedVisit && (
-                  <tbody>
-                  {selectedVisit.chilrens.map((child, index) => (
-                      <tr key={index}>
-                        <td className="p-4 border-b border-blue-gray-50">{child.orders.id}</td>
-                        <td className="p-4 border-b border-blue-gray-50">{child.orders.service.name}</td>
-                        <td className="p-4 border-b border-blue-gray-50">{child.orders.amount}</td>
-                      </tr>
-                  ))}
-                  {selectedVisit.orders.service && (
-                      <tr>
-                        <td className="p-4 border-b border-blue-gray-50">{selectedVisit.orders.id}</td>
-                        <td className="p-4 border-b border-blue-gray-50">{selectedVisit.orders.service.name}</td>
-                        <td className="p-4 border-b border-blue-gray-50">{selectedVisit.orders.amount}</td>
-                      </tr>
-                  )}
-                  </tbody>
-              )}
-            </table>
-          </div>
+          {selectedVisit && (
+              <div className="overflow-scroll">
+                <Table
+                    dataSource={selectedVisit.orders}
+                    rowKey={(record) => record.id}
+                    pagination={false}
+                >
+                  <Table.Column title="Транзакция миқдори" dataIndex="amount" key="amount" />
+                  <Table.Column title="Транзакция тури" dataIndex="type" key="type" />
+                  <Table.Column
+                      title="Транзакция санаси"
+                      dataIndex="created_at"
+                      key="created_at"
+                      render={(text) => new Date(text).toLocaleString()}
+                  />
+                </Table>
+              </div>
+          )}
         </Modal>
-      </Card>
+      </div>
   );
-}
+};
+
+export default PaymentHistoryTable;
