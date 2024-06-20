@@ -14,7 +14,7 @@ const columns = [
     dataIndex: 'service.name',
     render: (text, record) => {
       const serviceTypeTrueOrder = record.orders.find(order => order.service_type === true);
-      return serviceTypeTrueOrder ? serviceTypeTrueOrder.id : '';
+      return serviceTypeTrueOrder ? serviceTypeTrueOrder.id.slice(-12) : '';
     },
     width: '30%',
   },

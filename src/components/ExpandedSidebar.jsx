@@ -99,7 +99,7 @@ const ExpandedSidebar = ({
                         <CustomLink to="/admissions"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}>Навбатда</MenuItem></CustomLink>
                         <CustomLink to="/new_admissions"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қайта навбатлар</MenuItem></CustomLink>
                         <CustomLink to="/re_admissions"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қайта қабуллар</MenuItem></CustomLink>
-                        <CustomLink to="/list_of_disponser"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Диспонсер ҳисоби</MenuItem></CustomLink>
+                        <CustomLink to="/list_of_disponser"> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Диспансер ҳисоби</MenuItem></CustomLink>
                     </SubMenu>
                     <SubMenu icon={ <ChartPieIcon className="h-6 w-6" />} label="Ҳисоботлар">
                         {/*<CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}>Навбатда</MenuItem></CustomLink>*/}

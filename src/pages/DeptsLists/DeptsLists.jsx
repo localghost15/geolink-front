@@ -18,7 +18,7 @@ const NewAdmissions = () => {
     const fetchAdmissions = async (page = 1, pageSize = 10, sortField = 'id_visit', sortOrder = 'descend') => {
         setLoading(true);
         try {
-            const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=examined&status[1]=queue`);
+            const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=examined&status[1]=new`);
             const admissionsData = response.data.data
                 .filter(admission => admission.bill === 'payed' || admission.bill === 'pending')
                 .map((item, index) => ({
@@ -36,7 +36,7 @@ const NewAdmissions = () => {
                     status: item.status,
                     bill: item.bill,
                     chilrens: item.chilrens,
-                    orders: item.orders.filter(order => order.service_type === false) // Фильтрация по service_type
+                    orders: item.orders
                 }));
 
 
@@ -229,6 +229,8 @@ const NewAdmissions = () => {
             ),
         },
     ];
+
+
 
     return (
         <div>

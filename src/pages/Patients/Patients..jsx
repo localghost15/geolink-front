@@ -12,7 +12,7 @@ import {EyeIcon, PencilIcon, TrashIcon} from "@heroicons/react/24/solid";
 import {Badge, Button, Tag} from 'antd'
 import {Spin} from "antd";
 
-const TABLE_HEAD = ["ID","ФИО", "Туғилган санаси","Холати","Манзил" , "Телефон", "Харакат"];
+const TABLE_HEAD = ["","Код","ФИО", "Туғилган санаси","Холати","Манзил" , "Телефон", "Харакат"];
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -187,7 +187,16 @@ export default function Patients() {
                       <div className="flex items-center gap-3">
                         <div className="flex flex-col">
                           <Typography variant="small" color="blue-gray" className="font-normal">
-                            {index+1}
+                            {index + 1}
+                          </Typography>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-2 border-b border-blue-gray-50">
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col">
+                          <Typography variant="small" color="blue-gray" className="font-normal">
+                            {patient.code}
                           </Typography>
                         </div>
                       </div>

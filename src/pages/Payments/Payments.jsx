@@ -90,7 +90,7 @@ const Payments = ({ patientId }) => {
                 visit.orders.some(order => order.service_type === true)
             ).map(visit => ({
                 ...visit,
-                serviceId:   visit.orders.find(order => order.service_type === true)?.id,
+                serviceId:   visit.orders.find(order => order.service_type === true)?.id.slice(-12),
                 patientName: visit.patient_id.name,
             }));
             setData(filteredVisits.reverse());

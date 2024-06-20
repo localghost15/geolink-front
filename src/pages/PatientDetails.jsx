@@ -291,7 +291,7 @@ export default function PatientDetails() {
                         <Avatar loading="lazy" src={`${patient.avatar}`} size="lg" alt="avatar" variant="rounded"/>
                         <div>
                           <h3 className="text-base font-semibold leading-7 text-gray-900">{patient.name}</h3>
-                          <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: SHH7FX6DG</p>
+                          <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Код: {patient.code}</p>
                         </div>
                       </div>
                       <CreateVisit mostRecentVisit={mostRecentVisit} onUpdateVisits={fetchPatient} visit={visitId} patientId={index}/>
