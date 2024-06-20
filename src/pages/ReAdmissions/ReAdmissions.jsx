@@ -241,13 +241,15 @@ const Admissions = () => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <Search
-                    placeholder="Поиск по пациенту или доктору"
+            <div className="px-10">
+                <h1 className="text-xl font-semibold mb-3">Қайта Қабуллар</h1>
+                <Input.Search
+                    placeholder="Излаш..."
+                    allowClear
+                    enterButton="Излаш"
                     onSearch={handleSearch}
                     onChange={(e) => handleSearch(e.target.value)}
-                    style={{ width: 300 }}
-                    allowClear
+                    style={{width: 300, marginBottom: 16}}
                 />
             </div>
             <Table
@@ -267,7 +269,8 @@ const Admissions = () => {
                         Отмена
                     </Button>,
                     paymentReceipt && (
-                        <Button icon={<PrinterIcon className="w-4 h-4 inline-flex items-center" />} key="print" type="primary" onClick={() => window.print()}>
+                        <Button icon={<PrinterIcon className="w-4 h-4 inline-flex items-center"/>} key="print"
+                                type="primary" onClick={() => window.print()}>
                             Чекни чиқариш
                         </Button>
                     ),

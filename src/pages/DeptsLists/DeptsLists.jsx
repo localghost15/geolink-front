@@ -18,7 +18,7 @@ const NewAdmissions = () => {
     const fetchAdmissions = async (page = 1, pageSize = 10, sortField = 'id_visit', sortOrder = 'descend') => {
         setLoading(true);
         try {
-            const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=examined`);
+            const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=examined&status[1]=queue`);
             const admissionsData = response.data.data
                 .filter(admission => admission.bill === 'payed' || admission.bill === 'pending')
                 .map((item, index) => ({

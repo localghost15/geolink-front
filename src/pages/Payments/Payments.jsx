@@ -1,147 +1,215 @@
-import React from 'react'
-import { Table } from 'antd';
-import {
-    MagnifyingGlassIcon,
-    ChevronUpDownIcon,
-  } from "@heroicons/react/24/outline";
-  import {
-    Card,CardHeader,Typography,Button,CardBody,CardFooter } from "@material-tailwind/react";
-
-import EpidemiologicalList from '../../components/Lists/EpidemiologicalList';
-import PaymentsList from './components/PaymentsList';
+import React, { useEffect, useState } from 'react';
+import {Table, Typography, Button, Input} from 'antd';
+import axiosInstance from "../../axios/axiosInstance";
+import {Card, CardBody, CardFooter} from "@material-tailwind/react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 const columns = [
     {
-        title: 'Name',
-        dataIndex: 'name',
-        key: 'name',
+        title: 'Рақам',
+        dataIndex: 'id',
+        sorter: true,
+        width: '10%',
     },
     {
-        title: 'Age',
-        dataIndex: 'age',
-        key: 'age',
+        title: 'Хизмат Рақами',
+        dataIndex: 'serviceId', // Новое поле, которое мы будем добавлять в dataSource
+        width: '20%',
     },
     {
-        title: 'Address',
-        dataIndex: 'address',
-        key: 'address',
+        title: 'Бемор',
+        dataIndex: 'patientName', // Новое поле, которое мы будем добавлять в dataSource
+        width: '20%',
     },
     {
-        title: 'Action',
-        dataIndex: '',
-        key: 'x',
-        render: () => <a>Delete</a>,
+        title: 'Тўлов Санаси',
+        dataIndex: 'date_at',
+        sorter: true,
+        width: '10%',
+    },
+    {
+        title: 'Умумий Миқдори',
+        dataIndex: 'total_amount',
+        render: (text) => `${text} сўм`,
+        sorter: true,
+        width: '20%',
+    },
+    {
+        title: 'Тўлов холати',
+        dataIndex: 'bill',
+        filters: [
+            {
+                text: 'Тўлов амалга ошмаган',
+                value: 'pending',
+            },
+            {
+                text: 'Тўлов амалга оширилган',
+                value: 'payed',
+            },
+        ],
+        render: (text) => {
+            switch (text) {
+                case 'pending':
+                    return 'Тўлов амалга ошмаган';
+                case 'payed':
+                    return 'Тўлов амалга оширилган';
+                default:
+                    return text;
+            }
+        },
+        width: '20%',
     },
 ];
-const data = [
-    {
-        key: 1,
-        name: 'John Brown',
-        age: 32,
-        address: 'New York No. 1 Lake Park',
-        description: 'My name is John Brown, I am 32 years old, living in New York No. 1 Lake Park.',
-    },
-    {
-        key: 2,
-        name: 'Jim Green',
-        age: 42,
-        address: 'London No. 1 Lake Park',
-        description: 'My name is Jim Green, I am 42 years old, living in London No. 1 Lake Park.',
-    },
-    {
-        key: 3,
-        name: 'Not Expandable',
-        age: 29,
-        address: 'Jiangsu No. 1 Lake Park',
-        description: 'This not expandable',
-    },
-    {
-        key: 4,
-        name: 'Joe Black',
-        age: 32,
-        address: 'Sydney No. 1 Lake Park',
-        description: 'My name is Joe Black, I am 32 years old, living in Sydney No. 1 Lake Park.',
-    },
-];
-   
- 
-   
-  const TABLE_HEAD = ["ФИО","ID","Телефон номер","Услуга","Нархи","Тўланган сумма","Tўлов"];
-   
-  const TABLE_ROWS = [
-    {
-      name: "Bekzod Negmatillayev",
-      id: "1231",
-      phone: "+998901234567",
-      service: "Капельница",
-      price: "80 000",
-      sum: "140 000",
-      payment: "Туланган",
 
-    },
-  ];
-   
-  export default function Payments() {
+const billNames = {
+    pending: "Тўлов кутилмоқда...",
+    payed: "Тўланган",
+}
+
+const Payments = ({ patientId }) => {
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [tableParams, setTableParams] = useState({
+        pagination: {
+            current: 1,
+            pageSize: 10,
+        },
+    });
+
+    useEffect(() => {
+        fetchData();
+    }, [tableParams.pagination.current, tableParams.pagination.pageSize, patientId]);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const response = await axiosInstance.get(`/visit?page=${tableParams.pagination.current}`);
+            const visits = response.data.data;
+            // Фильтруем визиты, чтобы оставить только те, где есть услуги с service_type: true
+            const filteredVisits = visits.filter(visit =>
+                visit.orders.some(order => order.service_type === true)
+            ).map(visit => ({
+                ...visit,
+                serviceId:   visit.orders.find(order => order.service_type === true)?.id,
+                patientName: visit.patient_id.name,
+            }));
+            setData(filteredVisits.reverse());
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    ...tableParams.pagination,
+                    total: response.data.meta.total,
+                },
+            });
+        } catch (error) {
+            console.error('Error fetching visits:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleTableChange = (pagination, filters, sorter) => {
+        setTableParams({
+            pagination,
+            filters,
+            ...sorter,
+        });
+    };
+
+    const transactionTypeLabels = {
+        cash: 'Нақд пул',
+        card: 'Пластик карта',
+        bank: 'Банк ўтказмаси',
+        online: 'Онлайн тўлов'
+        // Добавьте другие типы транзакций, если они есть
+    };
 
     return (
-      <Card className="h-full w-full rounded-none pt-5">
-           
+        <Card className="h-full w-full rounded-none pt-5">
+            <div className="px-10">
+                <h1 className="text-xl font-semibold text-black mb-3">Тўловлар Тарихи</h1>
+                <Input.Search
+                    placeholder="Излаш..."
+                    allowClear
+                    enterButton="Излаш"
+                    style={{width: 300, marginBottom: 16}}
+                />
+            </div>
 
-        <Typography className="mx-8 mb-2" variant="h3" color="black">Туловлар тарихи</Typography>
+            <CardBody className="overflow-scroll px-0">
+                <Table
+                    columns={columns}
+                    dataSource={data}
+                    pagination={tableParams.pagination}
+                    loading={loading}
+                    onChange={handleTableChange}
+                    expandable={{
+                        expandedRowRender: (record) => (
+                            <Table
+                                columns={[
+                                    {
+                                        title: '№',
+                                        dataIndex: 'index',
+                                        key: 'index',
+                                        render: (text, record, index) => index + 1
+                                    },
+                                    {title: 'Сервис номи', dataIndex: 'serviceName', key: 'serviceName'},
+                                    {title: 'Сервис сони', dataIndex: 'serviceCount', key: 'serviceCount'},
+                                    {title: 'Транзакция Миқдори', dataIndex: 'amount', key: 'amount'},
+                                    {
+                                        title: 'Транзакция Тури',
+                                        dataIndex: 'type',
+                                        key: 'type',
+                                        render: (text) => transactionTypeLabels[text] || text
+                                    },
+                                    {
+                                        title: 'Транзакция Санаси',
+                                        dataIndex: 'created_at',
+                                        key: 'created_at',
+                                        render: (text) => new Date(text).toLocaleString()
+                                    },
+                                ]}
+                                dataSource={record.orders.map(order => ({
+                                    ...order,
+                                    serviceName: order.service.name, // Добавляем поле для имени сервиса
+                                    transactions: order.transactions.map(transaction => ({
+                                        ...transaction,
+                                        serviceName: order.service.name,
+                                        serviceCount: order.count,
+                                        amount: `${transaction.amount} сўм`,
+                                    }))
+                                })).flatMap(order => order.transactions)}
+                                pagination={false}
+                                rowKey="created_at"
+                            />
+                        ),
+                        rowExpandable: (record) => record.orders.some(order => order.transactions.length > 0),
+                    }}
+                    rowKey={(record) => record.id}
+                />
+            </CardBody>
 
-        <div className="flex mx-8 justify-between gap-8">
-        <label
-    className="relative  bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
-    htmlFor="search-bar"
-  >
-    <PaymentsList/>
-  
-    <input
-      id="search-bar"
-      placeholder="Қидириш"
-      className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
-    />
-    <Button size="md" ><MagnifyingGlassIcon className="h-5 w-5" /></Button>
-  </label>
-  
-        </div>
-             
-  
-        <CardHeader floated={false} shadow={false} className="rounded-none">
-  
-         
-        </CardHeader>
-        <CardBody className="overflow-scroll px-0">
-            <Table
-                columns={columns}
-                expandable={{
-                    expandedRowRender: (record) => (
-                        <p
-                            style={{
-                                margin: 0,
-                            }}
-                        >
-                            {record.description}
-                        </p>
-                    ),
-                    rowExpandable: (record) => record.name !== 'Not Expandable',
-                }}
-                dataSource={data}
-            />
-        </CardBody>
-        <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-          <Typography variant="small" color="blue-gray" className="font-normal">
-          Сахифа 1/10
-          </Typography>
-          <div className="flex gap-2">
-            <Button variant="outlined" size="sm">
-             Олдинги
-            </Button>
-            <Button variant="outlined" size="sm">
-             Кейингиси
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
+            <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
+                <Typography variant="small" color="blue-gray" className="font-normal">
+                    Сахифа {tableParams.pagination.current}/{Math.ceil((tableParams.pagination.total || 0) / tableParams.pagination.pageSize)}
+                </Typography>
+                <div className="flex gap-2">
+                    <Button variant="outlined" size="sm" onClick={() => setTableParams({
+                        ...tableParams,
+                        pagination: {...tableParams.pagination, current: tableParams.pagination.current - 1}
+                    })}>
+                        Олдинги
+                    </Button>
+                    <Button variant="outlined" size="sm" onClick={() => setTableParams({
+                        ...tableParams,
+                        pagination: {...tableParams.pagination, current: tableParams.pagination.current + 1}
+                    })}>
+                        Кейингиси
+                    </Button>
+                </div>
+            </CardFooter>
+        </Card>
     );
-  }
+};
+
+export default Payments;

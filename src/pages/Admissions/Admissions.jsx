@@ -239,13 +239,15 @@ const Admissions = () => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <Search
-                    placeholder="Поиск по пациенту или доктору"
+            <div className="px-10">
+                <h1 className="text-xl font-semibold mb-3">Навбатлар</h1>
+                <Input.Search
+                    placeholder="ФИОни киритинг"
+                    allowClear
+                    enterButton="Излаш"
                     onSearch={handleSearch}
                     onChange={(e) => handleSearch(e.target.value)}
-                    style={{ width: 300 }}
-                    allowClear
+                    style={{width: 300, marginBottom: 16}}
                 />
             </div>
             <Table
@@ -256,25 +258,26 @@ const Admissions = () => {
                 onChange={handleTableChange}
                 rowClassName={getRowClassName}
             />
-            <Modal
-                title="Тўлов -> чекни чиқариш"
-                visible={isModalVisible}
-                onCancel={handleModalClose}
-                footer={[
-                    <Button key="cancel" onClick={handleModalClose}>
-                        Отмена
-                    </Button>,
-                    paymentReceipt && (
-                        <Button icon={<PrinterIcon className="w-4 h-4 inline-flex items-center" />} key="print" type="primary" onClick={() => window.print()}>
-                            Чекни чиқариш
-                        </Button>
-                    ),
-                    paymentReceipt ? null : (
-                        <Button key="submit" type="primary" onClick={handlePayment}>
-                            Оплатить
-                        </Button>
-                    ),
-                ]}
+            <Modal centered
+                   title="Тўлов -> чекни чиқариш"
+                   visible={isModalVisible}
+                   onCancel={handleModalClose}
+                   footer={[
+                       <Button key="cancel" onClick={handleModalClose}>
+                           Отмена
+                       </Button>,
+                       paymentReceipt && (
+                           <Button icon={<PrinterIcon className="w-4 h-4 inline-flex items-center"/>} key="print"
+                                   type="primary" onClick={() => window.print()}>
+                               Чекни чиқариш
+                           </Button>
+                       ),
+                       paymentReceipt ? null : (
+                           <Button key="submit" type="primary" onClick={handlePayment}>
+                               Оплатить
+                           </Button>
+                       ),
+                   ]}
             >
                 {paymentReceipt ? (
                     <div>
