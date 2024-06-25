@@ -260,7 +260,7 @@ const Admissions = () => {
                 onChange={handleTableChange}
                 rowClassName={getRowClassName}
             />
-            <Modal
+            <Modal centered
                 title="Тўлов -> чекни чиқариш"
                 visible={isModalVisible}
                 onCancel={handleModalClose}
@@ -364,7 +364,6 @@ const Admissions = () => {
                                     style={{marginTop: 10}}
                                 >
                                     <Radio.Button value="cash">Нақд</Radio.Button>
-                                    <Radio.Button value="credit">Қарзга</Radio.Button>
                                     <Radio.Button value="card">Кредит карта</Radio.Button>
                                 </Radio.Group>
                             </div>

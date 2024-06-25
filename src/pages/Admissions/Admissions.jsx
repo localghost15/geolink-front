@@ -362,7 +362,6 @@ const Admissions = () => {
                                     style={{marginTop: 10}}
                                 >
                                     <Radio.Button value="cash">Нақд</Radio.Button>
-                                    <Radio.Button value="credit">Қарзга</Radio.Button>
                                     <Radio.Button value="card">Кредит карта</Radio.Button>
                                 </Radio.Group>
                             </div>

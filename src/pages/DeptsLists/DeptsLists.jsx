@@ -31,13 +31,13 @@ const NewAdmissions = () => {
                     children_amount: item.children_amount,
                     children_payed: item.children_payed,
                     total_payed: item.total_payed,
-                    total_debit: item.total_debit,
                     date_at: item.date_at,
                     status: item.status,
                     bill: item.bill,
+                    debit: item.debit,
                     chilrens: item.chilrens,
                     orders: item.orders
-                }));
+                })).filter(admission => admission.debit !== 0);
 
 
             const total = response.data.meta.total;
@@ -100,6 +100,7 @@ const NewAdmissions = () => {
 
     const handlePaymentClick = (record) => {
         setSelectedVisit(record);
+        console.log(record)
         setIsModalVisible(true);
     };
 
@@ -185,7 +186,7 @@ const NewAdmissions = () => {
         },
         {
             title: 'Миқдори',
-            dataIndex: 'children_amount',
+            dataIndex: 'total_amount',
             key: 'children_amount',
             sorter: (a, b) => a.children_amount - b.children_amount,
             sortOrder: sorter.field === 'children_amount' && sorter.order,
@@ -193,7 +194,7 @@ const NewAdmissions = () => {
         },
         {
             title: 'Тўланган',
-            dataIndex: 'children_payed',
+            dataIndex: 'total_payed',
             key: 'children_payed',
             sorter: (a, b) => a.children_payed - b.children_payed,
             sortOrder: sorter.field === 'children_payed' && sorter.order,
@@ -201,10 +202,10 @@ const NewAdmissions = () => {
         },
         {
             title: 'Қолган сумма',
-            dataIndex: 'children_debit',
-            key: 'children_debit',
-            sorter: (a, b) => a.children_debit - b.children_debit,
-            sortOrder: sorter.field === 'children_debit' && sorter.order,
+            dataIndex: 'debit',
+            key: 'debit',
+            sorter: (a, b) => a.debit - b.debit,
+            sortOrder: sorter.field === 'debit' && sorter.order,
             render: (text) => `${text} сўм`
         },
         {
@@ -222,7 +223,7 @@ const NewAdmissions = () => {
                 <Button
                     type="primary"
                     onClick={() => handlePaymentClick(record)}
-                    disabled={typeof record.children_debit === 'number' && record.children_debit === 0 ? 'disabled-row' : ''}
+                    disabled={typeof record.debit === 'number' && record.debit === 0 ? 'disabled-row' : ''}
                 >
                     Оплатить
                 </Button>
@@ -252,7 +253,7 @@ const NewAdmissions = () => {
                     pagination={pagination}
                     onChange={handleTableChange}
                     rowKey="key"
-                    rowClassName={(record) => (typeof record.children_debit === 'number' && record.children_debit === 0 ? 'disabled-row' : '')}
+                    rowClassName={(record) => (typeof record.debit === 'number' && record.debit === 0 ? 'disabled-row' : '')}
                 />
             </Spin>
             <Modal
@@ -299,15 +300,15 @@ const NewAdmissions = () => {
                         <div className="mb-2 text-gray-700">
                             <div className="flex justify-between">
                                 <Typography.Text strong>Миқдори:</Typography.Text>
-                                <Typography.Text>{paymentReceipt.children_amount} сўм</Typography.Text>
+                                <Typography.Text>{paymentReceipt.total_amount} сўм</Typography.Text>
                             </div>
                             <div className="flex justify-between">
                                 <Typography.Text strong>Тўланган:</Typography.Text>
-                                <Typography.Text>{selectedVisit.children_payed} сўм</Typography.Text>
+                                <Typography.Text>{selectedVisit.total_payed} сўм</Typography.Text>
                             </div>
                             <div className="flex justify-between">
                                 <Typography.Text strong>Қолган сумма:</Typography.Text>
-                                <Typography.Text>{selectedVisit.children_debit} сўм</Typography.Text>
+                                <Typography.Text>{selectedVisit.debit} сўм</Typography.Text>
                             </div>
                         </div>
 
@@ -353,8 +354,8 @@ const NewAdmissions = () => {
                                 'Нет данных о хизматларе'
                             )}
                         </p>
-                        <p><strong>Миқдори:</strong> {selectedVisit.children_amount} сўм</p>
-                        <p><strong>Тўланган:</strong> {selectedVisit.children_payed} сўм</p>
+                        <p><strong>Миқдори:</strong> {selectedVisit.total_amount} сўм</p>
+                        <p><strong>Тўланган:</strong> {selectedVisit.total_payed} сўм</p>
                         <Input
                             className='mb-5'
                             type="number"
@@ -369,7 +370,7 @@ const NewAdmissions = () => {
                             <Radio value="card">Кредит карта</Radio>
                         </Radio.Group>
                         <Divider/>
-                        <p><strong>Тўлов суммаси:</strong> {selectedVisit.children_debit} сўм</p>
+                        <p><strong>Тўлов суммаси:</strong> {selectedVisit.debit} сўм</p>
                     </div>
                 ) : (
                     <p>Нет данных о заказе.</p>

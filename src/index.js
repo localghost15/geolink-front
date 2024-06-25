@@ -3,18 +3,25 @@ import * as ReactDOMClient from "react-dom/client";
 import { BrowserRouter } from 'react-router-dom'
 import './index.css';
 import App from './App';
+import uzUZ from 'antd/es/locale/uz_UZ';
 import { ThemeProvider } from "@material-tailwind/react";
 import toast, { Toaster } from 'react-hot-toast';
 import {VisitProvider} from "./context/VisitIdContext";
+import {ConfigProvider} from "antd";
 
 const rootElement = document.getElementById("root");
 const root = ReactDOMClient.createRoot(rootElement);
 
 
 root.render(
-
     <BrowserRouter>
-    <ThemeProvider>
+    <ConfigProvider
+        locale={uzUZ}
+        theme={{
+        token: {
+            colorPrimary: "#00AA81"
+        },
+    }}>
         <VisitProvider>
       <App />
         </VisitProvider>
@@ -32,8 +39,6 @@ root.render(
       color: '#fff',
     },
 
-
-
     success: {
       duration: 3000,
       theme: {
@@ -43,7 +48,7 @@ root.render(
     },
   }}
 />
-    </ThemeProvider>
+    </ConfigProvider>
     </BrowserRouter>,
   document.getElementById('root')
 );

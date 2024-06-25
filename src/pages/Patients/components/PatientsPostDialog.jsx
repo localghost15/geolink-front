@@ -245,8 +245,8 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                     </Form.Item>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
-                                                <Form.Item
+                                            <div className="flex w-full items-center gap-4">
+                                                <Form.Item className="w-full"
                                                     layout="vertical"
                                                     label="Яшаш Манзили"
                                                     name="location"

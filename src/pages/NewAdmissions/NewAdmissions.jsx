@@ -36,7 +36,11 @@ const NewAdmissions = () => {
                     status: item.status,
                     bill: item.bill,
                     chilrens: item.chilrens,
-                    orders: item.orders.filter(order => order.service_type === false) // Фильтрация по service_type
+                    orders: item.orders.filter(order => order.service_type === false) ,
+                    services: item.orders
+                        .filter(order => order.service_type === false)
+                        .map(order => order.service.name)
+                        .join(', ') // Формирование строки из названий услуг
                 }));
 
 
@@ -182,6 +186,13 @@ const NewAdmissions = () => {
             key: 'doctor_name',
             sorter: (a, b) => a.doctor_name.localeCompare(b.doctor_name),
             sortOrder: sorter.field === 'doctor_name' && sorter.order,
+        },
+
+        {
+            title: 'Хизматлар',
+            dataIndex: 'services',
+            key: 'services',
+            render: (text) => text || 'Нет услуг'
         },
         {
             title: 'Миқдори',

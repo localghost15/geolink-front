@@ -1,16 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
 *{
-  font-family: "Inter", sans-serif;
+  font-family: "Noto Sans", sans-serif !important;
 }
 
 #province {
   background-color: #fff !important;
-
 }
+
 
 .layout-bg {
   background-image: url('/public/Home\ \(1\).svg');
@@ -63,9 +63,31 @@
     background-image: url('/public/9.jpg');
 }
 
+:where(.css-dev-only-do-not-override-j9bb5n).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled)::before {
+    background-color: #00AA81 !important;
+}
+
+.ant-radio-button-wrapper-checked {
+    color: #fff !important;
+}
+
+.ant-btn-primary, .ant-radio-button-checked, .ant-radio-button-wrapper-checked{
+    background-color: #00AA81 !important;
+    border-color: #00AA81 !important;
+}
+
+.ant-btn-primary:hover {
+    background-color: #008567 !important;
+}
+
+.ant-btn-primary:disabled{
+    background-color: rgb(241 243 245) !important;
+    border-color: rgb(241 243 245) !important;
+}
+
 
 .peer:checked {
-  border-color: #000 !important;
+  border-color: #00AA81 !important;
 }
 
 
@@ -82,7 +104,7 @@
 }
 
 .fc-today-button, .fc-prev-button, .fc-next-button {
-background-color: #161616 !important;
+background-color: #00AA81 !important;
 border-color: transparent !important;
 padding: 1em 2em !important;
 border-radius: 0px !important;
@@ -99,7 +121,7 @@ border-radius: 0px !important;
 }
 
 .fc-today-button:focus, .fc-prev-button:focus, .fc-next-button:focus {
-    background-color: #010101 !important;
+    background-color: #008567 !important;
     box-shadow: none !important;
 }
 
@@ -121,15 +143,25 @@ border-radius: 0px !important;
 
 
 .fc-event {
-    border-left: 4px solid #2A9D8F;
-    background-color: #CFE9E7 !important;
-    color: #1E1D1D !important;
+    /*border-left: 4px solid #2A9D8F;*/
+    /*!*background-color: #CFE9E7 !important;*!*/
+    /*!*color: #1E1D1D !important;*!*/
+
+
+
     /*border-left: 3px solid #F43F5E;*/
     /*background-color: #FFE4E6 !important;*/
     /*color: #BE123C !important;*/
-    /* border-left: 3px solid #0EA5E9;
-    background-color: #E0F2FE !important;
-    color: #0369A1 !important; */
+
+
+
+   border-left: 3px solid #00AA81;
+    background-color: rgb(241 243 245) !important;
+    color: #00AA81 !important;
+
+    /*border-left: 3px solid rgb(42 99 246);*/
+    /*background-color: rgb(241 243 245) !important;*/
+    /*color: rgb(42 99 246) !important;*/
     padding: 5px !important;
     padding-left: 10px !important;
     margin: 10px !important;
@@ -143,9 +175,10 @@ border-radius: 0px !important;
 
 
 .fc-timeGridWeek-button, .fc-dayGridMonth-button, .fc-timeGridDay-button    {
-background-color: #161616 !important;
-text-transform: uppercase !important;
+background-color: #00AA81 !important;
+text-transform: capitalize !important;
 font-size: 15px !important;
+    font-weight: 500 !important;
 border-color: transparent !important;
 padding: 1em 2em !important;
 border-radius: 0px !important;
@@ -155,7 +188,7 @@ box-shadow: none !important;
 }
 
 .fc-button-active   {
-background-color: #010101 !important;
+    background-color: #008567 !important;
 box-shadow: none !important;
 }
 
@@ -271,7 +304,22 @@ box-shadow: none !important;
 .ps-sidebar-container {
     /*00AA81*/
     background-color: #fff !important;
+    font-weight: 500;
     z-index: 999;
+}
+
+.sidebar-icon {
+    /*color: rgb(42 99 246);*/
+    color: #00AA81;
+}
+
+.sidebar-icon-bg {
+    background-color: rgb(241 243 245);
+
+}
+
+.css-1t8x7v1 >.ps-menu-button:hover {
+    background-color: #fff !important;
 }
 
 .ps-sidebar-container::-webkit-scrollbar {

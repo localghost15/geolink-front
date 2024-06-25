@@ -429,16 +429,25 @@ export default function Doctors() {
                 users.map((user, index) => (
                     <tr key={index} className="bg-white">
                       <td className="p-2">
+                        <div className="flex flex-col">
+                          <Typography variant="small" color="blue-gray"
+                                      className="font-normal">{index + 1}</Typography>
+                        </div>
+                      </td>
+                      <td className="p-2">
                         <div className="flex items-center gap-3">
                           <div className="flex flex-col">
-                            <Typography variant="small" color="blue-gray" className="font-normal">{user.name}</Typography>
-                            <Typography variant="small" color="blue-gray" className="font-normal opacity-70">{user.email}</Typography>
+                            <Typography variant="small" color="blue-gray"
+                                        className="font-normal">{user.name}</Typography>
+                            <Typography variant="small" color="blue-gray"
+                                        className="font-normal opacity-70">{user.email}</Typography>
                           </div>
                         </div>
                       </td>
                       <td className="p-2">
                         <div className="flex flex-col">
-                          <Typography variant="small" color="blue-gray" className="font-normal">{user.login}</Typography>
+                          <Typography variant="small" color="blue-gray"
+                                      className="font-normal">{user.login}</Typography>
                         </div>
                       </td>
                       <td className="p-2">
@@ -447,19 +456,24 @@ export default function Doctors() {
                       <td className="p-2">
                         <Typography variant="small" color="blue-gray" className="font-normal">
                           {user.roles.map((role, index) => (
-                              <Typography key={index} variant="small" color="blue-gray" className="font-normal">{role}</Typography>
+                              <Typography key={index} variant="small" color="blue-gray"
+                                          className="font-normal">{role}</Typography>
                           ))}
                         </Typography>
                       </td>
                       <td className="p-2 space-x-1">
-                        <Tooltip className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Редактировать">
+                        <Tooltip
+                            className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10"
+                            content="Редактировать">
                           <Button type="dashed" variant="text" onClick={() => openEditDialog(user)}>
-                            <PencilIcon className="h-4 w-4" />
+                            <PencilIcon className="h-4 w-4"/>
                           </Button>
                         </Tooltip>
-                        <Tooltip className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Удалить">
+                        <Tooltip
+                            className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10"
+                            content="Удалить">
                           <Button type="dashed" variant="text" onClick={() => deleteUser(user.id)}>
-                            <TrashIcon className="h-4 w-4" />
+                            <TrashIcon className="h-4 w-4"/>
                           </Button>
                         </Tooltip>
                       </td>

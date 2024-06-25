@@ -73,6 +73,20 @@ export default function PatientsUpdateDialog({ selectedPatient, onUpdatePatient 
         onUpdatePatient(patientData);
     };
 
+    const handleLocationChange = (selectedValues) => {
+        setPatientData((prevData) => ({
+            ...prevData,
+            ...selectedValues,
+        }));
+    };
+
+    const handleDoctorChange = (partnerId) => {
+        setPatientData((prevData) => ({
+            ...prevData,
+            partner_id: partnerId,
+        }));
+    };
+
     return (
         <>
 
@@ -116,10 +130,15 @@ export default function PatientsUpdateDialog({ selectedPatient, onUpdatePatient 
                                             <DateSelect value={patientData.birth_at} onChange={(date) => handleChange(date)} />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
-                                            <LocationSelect label="District"  onChange={(selectedValues) => setPatientData({ ...patientData, ...selectedValues })} />
+                                            <LocationSelect
+                                                label="District"
+                                                value={{ province_id: patientData.province_id, district_id: patientData.district_id }}
+                                                onChange={handleLocationChange}
+                                            />
                                             <DoctorsSelect
                                                 label="Ким йуборди"
-                                                onChange={(partnerId) => setPatientData({ ...patientData, partner_id: partnerId })}
+                                                value={patientData.partner_id}
+                                                onChange={handleDoctorChange}
                                             />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">

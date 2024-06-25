@@ -15,10 +15,12 @@ import {
     MenuHandler,
     MenuList,
     MenuItem,
-    Button,
   } from "@material-tailwind/react";
   import { logout, isLoggedIn , getUserRole } from '../services/authServices';
 import ExpandedSidebar from "./ExpandedSidebar";
+import {RiMenu2Line} from "react-icons/ri";
+import {Button} from "antd";
+import {TbArrowRampLeft3, TbArrowRampRight3} from "react-icons/tb";
 
 const Layout = () => {
   const [userRole, setUserRole] = useState(null);
@@ -115,11 +117,15 @@ const Layout = () => {
         </button>
       </div>
       <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-        <div className="">
+        <Button
+            onClick={handleCollapsedChange}
+            icon={
+              collapsed
+                  ? <TbArrowRampRight3 size='23' /> // Иконка для свернутого состояния
+                  : <TbArrowRampLeft3 size='23' />   // Иконка для развернутого состояния
+            }
+        />
 
-       <Hamburger onToggle={handleCollapsedChange} className="will-change-auto" size="20"  />
-        </div>
-        
       </div>
       <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
       <Menu placement="bottom-end"
@@ -186,7 +192,7 @@ const Layout = () => {
     </div>
   </div>
 </nav>
-<div className="bg-white w-full h-full pt-20">
+<div className="bg-white w-full h-full pt-20 md:transition-all">
   <Outlet />
 
 </div>

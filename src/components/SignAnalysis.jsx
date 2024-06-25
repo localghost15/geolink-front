@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 import {List, Button, Input, Modal, Divider, Typography} from 'antd';
 import POSReceipt from "./POSReceipt";
 import {FaReceipt} from "react-icons/fa6";
+import {CgMathMinus, CgMathPlus} from "react-icons/cg";
 
 const TABLE_HEAD = ['Хизматлар', 'Нархи', 'Количество', 'Умумий сумма'];
 
@@ -296,23 +297,19 @@ export default function SendAnalysis({ visitId, open }) {
                                     </td>
                                     <td className="p-4 border-b border-blue-gray-50">
                                         <div className="flex items-center gap-3">
-                                            <button
-                                                type="button"
+                                            <Button
+                                                icon={ <CgMathMinus size="16" />}
+                                                type="primary"
                                                 onClick={() => decrementQuantity({ id, name, price })}
-                                                className="bg-gray-100 border border-gray-300 p-2 focus:outline-none"
-                                            >
-                                                -
-                                            </button>
+                                            />
                                             <Typography variant="small" color="blue-gray" className="font-normal">
                                                 {quantity}
                                             </Typography>
-                                            <button
-                                                type="button"
+                                            <Button
+                                                icon={ <CgMathPlus size="16" />}
+                                                type="primary"
                                                 onClick={() => incrementQuantity({ id, name, price })}
-                                                className="bg-gray-100 border border-gray-300 rounded-full p-2 focus:outline-none"
-                                            >
-                                                +
-                                            </button>
+                                            />
                                         </div>
                                     </td>
                                     <td className="p-4 border-b border-blue-gray-50">
