@@ -24,7 +24,7 @@ import DoctorsList from './components/DoctorsList';
 import axios from 'axios';
 import RolesList from "./components/RolesList";
 
-const TABLE_HEAD = ["ФИО", "Логин", "Телефон", "Роль", "Харакат"];
+const TABLE_HEAD = [ "#","ФИО", "Логин", "Телефон", "Роль", "Харакат"];
 
 const createValidationSchema = yup.object({
   name: yup.string().required('ФИО майдони тулдириши шарт'),

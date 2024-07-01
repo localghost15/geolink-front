@@ -196,17 +196,35 @@ export default function Calendar() {
   const handleEventDrop = async (info) => {
     const { event } = info;
 
-    // Создаем новый объект Date с текущей датой и временем события
-    const updatedDate = new Date(event.start);
+    console.log("Event info:", event);
 
-    // Создаем новый объект Date с текущей датой и временем события, сохраняя только дату
-    const updatedStartDate = new Date(selectedEvent.start);
-    updatedStartDate.setHours(updatedDate.getHours(), updatedDate.getMinutes());
+    if (!event.start) {
+      console.error("Event start is null or undefined:", event);
+      return;
+    }
+
+    // Новая дата после перетаскивания
+    const newDate = new Date(event.start);
+
+    // Оригинальное событие (может быть selectedEvent или event, если selectedEvent недоступен)
+    const originalEvent = selectedEvent || event;
+
+    if (!originalEvent || !originalEvent.start) {
+      console.error("Original event start is null or undefined:", originalEvent);
+      return;
+    }
+
+    // Оригинальное время события
+    const originalStartTime = new Date(originalEvent.start);
+
+    // Сочетание новой даты с оригинальным временем
+    const updatedStartDate = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate(),
+        originalStartTime.getHours(), originalStartTime.getMinutes(), originalStartTime.getSeconds());
 
     const updatedEvent = {
       title: event.title,
       phone: event.extendedProps.phone,
-      start_at: updatedStartDate.toISOString() // Используем только дату, без изменения времени
+      start_at: updatedStartDate.toISOString() // Используем новую дату с оригинальным временем
     };
 
     try {
@@ -220,6 +238,8 @@ export default function Calendar() {
       console.error("Ошибка при обновлении события:", error);
     }
   };
+
+
 
 
 

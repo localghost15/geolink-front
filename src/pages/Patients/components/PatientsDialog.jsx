@@ -138,7 +138,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                         as="h3"
                                         className="text-lg font-medium leading-6 text-gray-900"
                                     >
-                                        Add New Patient
+                                      Бемор малумотни ўзгартириш
                                     </Dialog.Title>
                                     <form onSubmit={formik.handleSubmit}>
                                         <div className="mt-2">

@@ -9,8 +9,9 @@ import PatientsUpdateDialog from "./components/PatientsUpdateDialog";
 import toast from "react-hot-toast";
 import debounce from 'lodash/debounce';
 import {EyeIcon, PencilIcon, TrashIcon} from "@heroicons/react/24/solid";
-import {Badge, Button, Tag} from 'antd'
+import {Badge, Button, Popconfirm, Tag} from 'antd'
 import {Spin} from "antd";
+import {QuestionCircleOutlined} from "@ant-design/icons";
 
 const TABLE_HEAD = ["","Код","ФИО", "Туғилган санаси","Холати","Манзил" , "Телефон", "Харакат"];
 
@@ -97,6 +98,10 @@ export default function Patients() {
     }
   };
 
+  const handleCloseUpdateDialog = () => {
+    setSelectedPatient(null); // Функция для сброса selectedPatient
+  };
+
   const handleAddPatient = (newPatient) => {
     setPatients([...patients, newPatient]);
   };
@@ -149,6 +154,7 @@ export default function Patients() {
           <div className="flex items-center shrink-0 flex-col gap-2 sm:flex-row">
             <PatientsPostDialog onAddPatient={handleAddPatient} />
             <PatientsUpdateDialog
+                onCloseDialog={handleCloseUpdateDialog}
                 selectedPatient={selectedPatient}
                 onUpdatePatient={handleUpdatePatient}
             />
@@ -253,14 +259,29 @@ export default function Patients() {
                           </Button>
                         </Tooltip>
                       </Link>
-                      <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўчириш">
-                        <Button type="dashed" className="rounded-full"  size="sm" variant="gradient"  onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemovePatient(patient.id)
-                        }}>
+                      <Popconfirm
+                          onConfirm={() => handleRemovePatient(patient.id)}
+                          title="Ёзувни ўчириш"
+                          description="Ҳақиқатдан ҳам бу ёзувни ўчириб ташламоқчимисиз?"
+                          icon={
+                            <QuestionCircleOutlined
+                                style={{
+                                  color: 'red',
+                                }}
+                            />
+                          }
+                      >
+                        <Button
+                            type="dashed"
+                            className="rounded-full"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation(); // предотвращает всплытие событий
+                            }}
+                        >
                           <TrashIcon className="h-4 w-4" />
                         </Button>
-                      </Tooltip>
+                      </Popconfirm>
                     </td>
                   </tr>
               ))}

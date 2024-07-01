@@ -1,6 +1,6 @@
 // PatientsUpdateDialog.js
 import React, { Fragment, useState, useEffect } from 'react';
-import { Button, Input, Radio, Textarea, Typography } from "@material-tailwind/react";
+import {  Textarea, Typography } from "@material-tailwind/react";
 import { Dialog, Transition } from '@headlessui/react';
 import { UserPlusIcon } from "@heroicons/react/24/solid";
 import DatePicker from '../../../components/DatePicker';
@@ -8,8 +8,9 @@ import LocationSelect from '../../../components/LocationSelect';
 import Dropzone from '../../../components/Dropzone';
 import DoctorsSelect from './DoctorsList';
 import DateSelect from "../../../components/DateSelect";
+import {Radio, Button, Input} from "antd";
 
-export default function PatientsUpdateDialog({ selectedPatient, onUpdatePatient }) {
+export default function PatientsUpdateDialog({ selectedPatient, onUpdatePatient, onCloseDialog }) {
     const [isOpen, setIsOpen] = useState(false);
     const [patientData, setPatientData] = useState({
         name: "",
@@ -51,6 +52,7 @@ export default function PatientsUpdateDialog({ selectedPatient, onUpdatePatient 
 
     const closeModal = () => {
         setIsOpen(false);
+        onCloseDialog();
     };
 
     const handleChange = (e) => {
@@ -121,56 +123,46 @@ export default function PatientsUpdateDialog({ selectedPatient, onUpdatePatient 
                                         as="h3"
                                         className="text-lg font-medium leading-6 text-gray-900"
                                     >
-                                        Update Patient
+                                        Бемор малумотни ўзгартириш
                                     </Dialog.Title>
                                     <div className="mt-2">
                                         <div className="grid grid-cols-3 gap-4">
-                                            <Input label="ФИО: *" size="lg" name="name" value={patientData.name} onChange={handleChange} />
-                                            <Input label="Иш манзили" size="lg" name="work_address" value={patientData.work_address} onChange={handleChange} />
+                                            <Input placeholder="ФИО: *" size="lg" name="name" value={patientData.name} onChange={handleChange} />
+                                            <Input placeholder="Иш манзили" size="lg" name="work_address" value={patientData.work_address} onChange={handleChange} />
                                             <DateSelect value={patientData.birth_at} onChange={(date) => handleChange(date)} />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
                                             <LocationSelect
-                                                label="District"
+                                                placeholder="District"
                                                 value={{ province_id: patientData.province_id, district_id: patientData.district_id }}
                                                 onChange={handleLocationChange}
                                             />
                                             <DoctorsSelect
-                                                label="Ким йуборди"
+                                                placeholder="Ким йуборди"
                                                 value={patientData.partner_id}
                                                 onChange={handleDoctorChange}
                                             />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
-                                            <Input label="Касби:" size="lg" name="profession" value={patientData.profession} onChange={handleChange} />
-                                            <Input label="Телефон раками:" size="lg" name="phone" value={patientData.phone} onChange={handleChange} />
-                                            <Input label="Яшаш манзили:" size="lg" name="home_address" value={patientData.home_address} onChange={handleChange} />
+                                            <Input placeholder="Касби:" size="lg" name="profession" value={patientData.profession} onChange={handleChange} />
+                                            <Input placeholder="Телефон раками:" size="lg" name="phone" value={patientData.phone} onChange={handleChange} />
+                                            <Input placeholder="Яшаш манзили:" size="lg" name="home_address" value={patientData.home_address} onChange={handleChange} />
                                         </div>
                                         <div className="mt-4 grid grid-cols-3 gap-4">
-                                            <Radio
-                                                name="gender"
-                                                value="men"
-                                                checked={patientData.gender === 'men'}
-                                                onChange={() => handleChange({ target: { name: 'gender', value: 'men' } })}
-                                                label="Еркак"
-                                            />
-                                            <Radio
-                                                name="gender"
-                                                value="female"
-                                                checked={patientData.gender === 'women'}
-                                                onChange={() => handleChange({ target: { name: 'gender', value: 'women' } })}
-                                                label="Айол"
-                                            />
-                                            <Input label="ПИНФЛ:" size="lg" name="pinfl" value={patientData.pinfl} onChange={handleChange} />
+                                            <Radio.Group onChange={(e) => handleChange({ target: { name: 'gender', value: e.target.value } })} value={patientData.gender}>
+                                                <Radio.Button value="men">Еркак</Radio.Button>
+                                                <Radio.Button value="women">Айол</Radio.Button>
+                                            </Radio.Group>
+                                            <Input placeholder="ПИНФЛ:" size="lg" name="pinfl" value={patientData.pinfl} onChange={handleChange} />
                                         </div>
                                         <div className="mt-4 flex gap-4">
-                                            <Textarea label="Исох:" fullWidth name="remark" value={patientData.remark} onChange={handleChange} />
+                                            <Textarea placeholder="Исох:" fullWidth name="remark" value={patientData.remark} onChange={handleChange} />
                                             <Dropzone onFilesChange={(file) => setPatientData({ ...patientData, file: file })} />
                                         </div>
                                     </div>
 
                                     <div className="mt-4">
-                                        <Button className="font-medium" onClick={handleSubmit} variant="gradient" fullWidth>
+                                        <Button type="primary" className="w-full font-medium" onClick={handleSubmit} variant="gradient" fullWidth>
                                             Узгартиришни Саклаш
                                         </Button>
                                     </div>

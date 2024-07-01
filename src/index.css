@@ -474,3 +474,76 @@ box-shadow: none !important;
         display: none;
     }
 }
+
+
+/* Плавная анимация для всего сайдбара */
+.sidebar {
+    transition: width 0.5s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+}
+
+.sidebar.collapsed {
+    width: 80px; /* Примерная ширина для свернутого состояния */
+}
+
+.sidebar:not(.collapsed) {
+    width: 350px; /* Примерная ширина для развернутого состояния */
+}
+
+/* Плавная анимация для меню */
+.ant-menu {
+    transition: width 0.5s ease, opacity 0.5s ease;
+}
+
+.ant-menu-submenu-title, .ant-menu-item {
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    padding-inline: 16px !important;
+}
+
+.ant-menu-inline-collapsed {
+    width: 80px !important;
+}
+
+.ant-menu-item,
+.ant-menu-submenu-title {
+    transition: padding 0.3s ease;
+    font-size: 15px;
+    font-weight: 500;
+
+}
+
+/* Плавная анимация для иконок и текста */
+.ant-menu-item-icon,
+.ant-menu-item span,
+.ant-menu-submenu-title span {
+    transition: opacity 0.3s ease;
+}
+
+
+
+.toggle-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    transition: transform 0.3s ease;
+}
+
+.toggle-button:hover {
+    transform: scale(1.1);
+}
+
+/* Убедитесь, что элементы внутри остаются выровненными */
+.ant-menu-item {
+    display: flex;
+    align-items: center;
+}
+
+.sidebar.collapsed .ant-menu-item {
+    justify-content: center;
+}

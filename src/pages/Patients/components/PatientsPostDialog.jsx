@@ -264,6 +264,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                 />
                                                 </Form.Item>
                                                 <Form.Item
+                                                    className="w-full"
                                                     layout="vertical"
                                                     label="Ким юборилди"
                                                     name="partner"

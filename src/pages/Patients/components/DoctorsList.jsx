@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
+import { Select } from 'antd';
 import axios from 'axios';
+
+const { Option } = Select;
 
 export default function DoctorsSelect({ value, onChange }) {
   const [partners, setPartners] = useState([]);
@@ -28,28 +30,27 @@ export default function DoctorsSelect({ value, onChange }) {
     // Устанавливаем значение выбранного партнера при инициализации
     if (value && partners.length > 0) {
       const selected = partners.find(partner => partner.id === value);
-      setSelectedPartner(selected ? { value: selected.id, label: selected.name } : null);
+      setSelectedPartner(selected ? selected.id : null);
     }
   }, [value, partners]);
 
-  const handlePartnerChange = (selectedOption) => {
-    setSelectedPartner(selectedOption);
-    onChange(selectedOption.value);
+  const handlePartnerChange = (selectedValue) => {
+    setSelectedPartner(selectedValue);
+    onChange(selectedValue);
   };
-
-  const options = partners.map(partner => ({
-    value: partner.id,
-    label: partner.name,
-  }));
 
   return (
       <Select
           id='doctors'
-          className='text-sm'
-          options={options}
+          className='text-sm '
           value={selectedPartner}
           onChange={handlePartnerChange}
           placeholder="Ким юборди"
-      />
+          allowClear
+      >
+        {partners.map(partner => (
+            <Option key={partner.id} value={partner.id}>{partner.name}</Option>
+        ))}
+      </Select>
   );
 }

@@ -125,10 +125,10 @@ const ExpandedSidebar = ({
                     </SubMenu>
                         <SubMenu icon={<div className="sidebar-icon-bg p-2 rounded-lg"><ChartPieIcon
                             className="h-6 w-6 sidebar-icon"/></div>} label="Ҳисоботлар">
-                        {/*    <CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}>Навбатда</MenuItem></CustomLink>*/}
-                        {/*<CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қайта навбатлар</MenuItem></CustomLink>*/}
-                        {/*<CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қайта қабуллар</MenuItem></CustomLink>*/}
-                        {/*<CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Диспонсер ҳисоби</MenuItem></CustomLink>*/}
+                            <CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}>Навбатда</MenuItem></CustomLink>
+                        <CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қайта навбатлар</MenuItem></CustomLink>
+                        <CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Қайта қабуллар</MenuItem></CustomLink>
+                        <CustomLink to=""> <MenuItem icon={<CgMenuGridO   className="h-6 w-6"/>}> Диспонсер ҳисоби</MenuItem></CustomLink>
                     </SubMenu>
                 </Menu>
             </Sidebar>

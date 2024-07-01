@@ -3,13 +3,14 @@ import {
     Card,
     CardHeader,
     Typography,
-    Button,
     CardBody,
     CardFooter,
 } from "@material-tailwind/react";
 import ListOfDisponserList from './components/ListOfDisponserList';
 import { getDispensaryData } from "../../services/dispansery";
 import {ChevronUpDownIcon, MagnifyingGlassIcon} from "@heroicons/react/24/solid";
+import {Button} from "antd";
+import ListsMenu from "../Patients/components/ListsMenu";
 
 const TABLE_HEAD = ["ФИО", "Туғилган санаси", "Телефон номер", "Идентификатор", "Қабул куни"];
 
@@ -46,13 +47,23 @@ const ListOfDisponser = () => {
 
     return (
         <Card className="h-full w-full rounded-none pt-5">
-            <Typography className="mx-8 mb-2" variant="h3" color="black">Диспонсер ҳисоби</Typography>
-
+            <Typography className="mx-8 mb-4" variant="h5" color="black">
+                Диспансер ҳисоби
+            </Typography>
             <div className="flex mx-8 justify-between gap-8">
-                <label className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2 focus-within:border-gray-300" htmlFor="search-bar">
-                    <ListOfDisponserList />
-                    <input id="search-bar" placeholder="Қидириш" className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white" />
-                    <Button size="md"><MagnifyingGlassIcon className="h-5 w-5" /></Button>
+                <label
+                    className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2 focus-within:border-gray-300"
+                    htmlFor="search-bar"
+                >
+                    <ListOfDisponserList/>
+                    <input
+                        id="search-bar"
+                        placeholder="Қидириш"
+                        className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
+                    />
+                    <Button type="primary" size="md">
+                        <MagnifyingGlassIcon className="h-5 w-5"/>
+                    </Button>
                 </label>
             </div>
 

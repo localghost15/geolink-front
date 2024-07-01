@@ -23,6 +23,10 @@ import { isLoggedIn, getUserRole } from './services/authServices';
 import Users from "./pages/Users/Users";
 import PatientAdmission from "./pages/PatientAdmission";
 import PatientBioCard from './pages/PatientBioCard';
+import PatientsReport from "./pages/Reports/PatientsReport";
+import DoctorsReport from "./pages/Reports/DoctorsReport";
+import FundsReport from "./pages/Reports/FundsReport";
+import DoctorsReportDetail from "./pages/Reports/DoctorsReportDetail";
 
 function PrivateRoute({ children }) {
   const navigate = useNavigate();
@@ -77,18 +81,23 @@ function App() {
       <Route path="/patient-old/:index" element={<PatientDetails />} />
       <Route path="/patient/:index" element={<PatientBioCard />} />
       <Route path="/patient/admission/:index" element={<PatientAdmission />} />
-      <Route path="doctors" element={<Doctors />} />
+      <Route path="/catalog/doctors" element={<Doctors />} />
       {/*<Route path="users" element={<Users />} />*/}
-      <Route path="services" element={<Services />} />
-      <Route path="partners" element={<Partners />} />
-      <Route path="epidemiological_history" element={<EpidemiologicalHistory />} />
-      <Route path="international-classification-of-diseases" element={<Mkb10 />} />
-      <Route path="payments" element={<Payments />} />
-      <Route path="depts_lists" element={<DeptsLists />} />
-      <Route path="admissions" element={<Admissions />} />
-      <Route path="new_admissions" element={<NewAdmissions />} />
-      <Route path="re_admissions" element={<ReAdmissions />} />
-      <Route path="list_of_disponser" element={<ListOfDisponser />} />
+      <Route path="/catalog/services" element={<Services />} />
+      <Route path="/catalog/partners" element={<Partners />} />
+      <Route path="/catalog/epidemiological_history" element={<EpidemiologicalHistory />} />
+      <Route path="/catalog/international-classification-of-diseases" element={<Mkb10 />} />
+      <Route path="/payments/history" element={<Payments />} />
+      <Route path="/payments/debtors" element={<DeptsLists />} />
+      <Route path="/appointments/queue" element={<Admissions />} />
+      <Route path="/appointments/reappointments" element={<NewAdmissions />} />
+      <Route path="/appointments/followups" element={<ReAdmissions />} />
+      <Route path="/appointments/dispensary" element={<ListOfDisponser />} />
+      <Route path="/reports/patients" element={<PatientsReport />} />
+      <Route path="/reports/patients" element={<PatientsReport />} />
+      <Route path="/reports/doctors" element={<DoctorsReport />} />
+      <Route path="/reports/finance" element={<FundsReport />} />
+      <Route path="/reports/doctors/:doctorId" element={<DoctorsReportDetail />} />
       <Route path="*" element={<Notfoundpage />} />
     </Route>
   </Routes>

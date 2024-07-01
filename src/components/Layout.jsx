@@ -40,6 +40,10 @@ const Layout = () => {
   };
 
   const [collapsed, setCollapsed] = useState(false);
+
+  const toggleCollapsed = () => {
+    setCollapsed(!collapsed);
+  };
   const [openNav, setOpenNav] = React.useState(false);
   const [toggled, setToggled] = useState(false);
 
@@ -55,12 +59,13 @@ const Layout = () => {
         <>
         <div className="min-h-screen relative flex flex-row bg-white">
         {/*<Sidebar/>*/}
-          <ExpandedSidebar
-              className={`app flex ${toggled ? 'toggled' : ''}`}
-              collapsed={collapsed}
-                            toggled={toggled}
-                            handleToggleSidebar={handleToggleSidebar}
-                            handleCollapsedChange={handleCollapsedChange} />
+        {/*  <ExpandedSidebar*/}
+        {/*      className={`app flex ${toggled ? 'toggled' : ''}`}*/}
+        {/*      collapsed={collapsed}*/}
+        {/*                    toggled={toggled}*/}
+        {/*                    handleToggleSidebar={handleToggleSidebar}*/}
+        {/*                    handleCollapsedChange={handleCollapsedChange} />*/}
+          <Sidebar collapsed={collapsed}/>
 
   <div className="content w-full relative">
   <nav className="bg-white  border-b-[1px] border-gray-300 absolute w-full top-0 z-10 h-max max-w-full rounded-none px-4 lg:px-8">
@@ -118,11 +123,11 @@ const Layout = () => {
       </div>
       <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
         <Button
-            onClick={handleCollapsedChange}
+            onClick={toggleCollapsed}
             icon={
               collapsed
-                  ? <TbArrowRampRight3 size='23' /> // Иконка для свернутого состояния
-                  : <TbArrowRampLeft3 size='23' />   // Иконка для развернутого состояния
+                  ? <TbArrowRampRight3 size='23' />
+                  : <TbArrowRampLeft3 size='23' />
             }
         />
 
