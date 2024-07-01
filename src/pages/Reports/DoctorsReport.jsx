@@ -140,10 +140,11 @@ const DoctorsReport = () => {
         },
         {
             title: 'Сумма',
-            dataIndex: 'phone',
-            key: 'phone',
-            sorter: (a, b) => a.phone.localeCompare(b.phone),
-            ...getColumnSearchProps('phone'),
+            dataIndex: 'visits_amount',
+            key: 'visits_amount',
+            sorter: (a, b) => a.visits_amount.localeCompare(b.visits_amount),
+            ...getColumnSearchProps('visits_amount'),
+            render: (text) => `${text} сўм`,
         },
         {
             title: 'Ҳаракатлар',

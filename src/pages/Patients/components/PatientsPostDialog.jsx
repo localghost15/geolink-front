@@ -165,7 +165,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                         as="h3"
                                         className="text-lg font-medium leading-6 text-gray-900"
                                     >
-                                       Янги бемор қушиш -> Малумотларни киритиш
+                                       Янги бемор қушиш -> Мъалумотларни киритиш
                                     </Dialog.Title>
                                     <Form  layout="vertical" onFinish={formik.handleSubmit}>
                                         <div className="mt-2">
@@ -391,8 +391,8 @@ export default function PatientsPostDialog({ onAddPatient }) {
                                                             value="women"
                                                             checked={formik.values.gender === 'women'}
                                                             onChange={() => formik.setFieldValue('gender', 'women')}
-                                                            label="Айол"
-                                                        >Айол</Radio.Button>
+                                                            label="Аёл"
+                                                        >Аёл</Radio.Button>
                                                     </Radio.Group>
                                                 </Form.Item>
                                                 <Form.Item

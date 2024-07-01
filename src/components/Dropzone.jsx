@@ -44,7 +44,7 @@ function Dropzone({ onFilesChange }) {
         <h3 className="mt-2 text-sm font-medium text-gray-900">
           <label htmlFor="file-upload" className="relative cursor-pointer">
             <span>Расмни танланг</span>
-            <span className="text-indigo-600">&nbsp; йоки колдиринг</span>
+            <span className="text-indigo-600">&nbsp; ёки колдиринг</span>
             <input id="file-upload" name="file-upload" type="file" className="sr-only" />
           </label>
         </h3>
