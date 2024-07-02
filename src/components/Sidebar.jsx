@@ -124,7 +124,7 @@ export const Sidebar = ({collapsed}) => {
 
   return (
       <div className={`sidebar  ${collapsed ? 'collapsed' : ''}`}>
-        <img height="60" width="60" src="/logo1.svg" />
+        <img className="my-5" height="60" width="60" src="/logo1.svg" />
         <Menu
             className="h-[97vh]"
             defaultSelectedKeys={['1']}

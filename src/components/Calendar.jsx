@@ -4,12 +4,12 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import uzLocale from '@fullcalendar/core/locales/uz';
-import {Button, Dialog, DialogHeader, DialogBody, DialogFooter, Input, IconButton,} from '@material-tailwind/react';
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Input, IconButton,} from '@material-tailwind/react';
 import {ArrowUpOnSquareIcon, ClockIcon, PhoneIcon, TrashIcon} from '@heroicons/react/24/solid';
 import Select from 'react-select';
 import axios from 'axios';
 import {PhoneInput, FlagEmoji, usePhoneInput, defaultCountries, parseCountry} from "react-international-phone";
-
+import {Button} from "antd";
 
 function Icon() {
   return (
@@ -43,7 +43,7 @@ export default function Calendar() {
   const [events, setEvents] = useState([{}]);
   const [openDialog, setOpenDialog] = useState(false);
   const [errors, setErrors] = useState({});
-
+  const [isLoading, setIsLoading] = useState(false);
   
   const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
@@ -66,14 +66,17 @@ export default function Calendar() {
   useEffect(() => {
     fetchEvents();
     fetchServices();
-  }, []); 
+  }, []);
 
   const fetchServices = async () => {
+    setIsLoading(true);
     try {
       const response = await axiosInstance.get("/admin/service");
       setServices(response.data.data);
     } catch (error) {
       console.error("Ошибка при получении списка сервисов:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
   const fetchEvents = async (calendarId) => {
@@ -151,8 +154,8 @@ export default function Calendar() {
     try {
       const response = await axiosInstance.delete(`/calendar/${selectedEvent.id}`);
       if (response.status === 200) {
-        fetchEvents(); 
-        setOpenDialog(false); 
+        fetchEvents();
+        setOpenDialog(false);
         setEventTitle('');
         setEventNumber('');
       } else {
@@ -171,18 +174,18 @@ export default function Calendar() {
     const date = new Date(selectedEvent.start);
     const [hours, minutes] = selectedTime.split(':');
     date.setHours(hours, minutes);
-  
+
     const updatedEventData = {
       title: eventTitle,
       phone: eventNumber,
       start_at: date.toISOString(),
     };
-  
+
     try {
       const response = await axiosInstance.put(`/calendar/${selectedEvent.id}`, updatedEventData);
       if (response.status === 200) {
-        fetchEvents(); 
-        setOpenDialog(false); 
+        fetchEvents();
+        setOpenDialog(false);
         setEventTitle('');
         setEventNumber('');
       } else {
@@ -247,14 +250,14 @@ export default function Calendar() {
     if (validateFields()) {
       return;
     }
-  
+
     const eventData = {
       title: eventTitle,
       phone: eventNumber,
       start_at: `${selectedDate}T${selectedTime}`
     };
     console.log(selectedService)
-  
+
     try {
       const response = await axiosInstance.post("/calendar", eventData);
       const newEvent = response.data.data;
@@ -390,14 +393,14 @@ export default function Calendar() {
           <TimePicker selectedTime={selectedTime} onTimeChange={handleTimeChange} error={errors.selectedTime}/>
         </DialogBody>
         <DialogFooter className='flex gap-x-4'>
-          <Button className='flex gap-x-1 items-center font-medium' onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
+          <Button type="primary" className='flex gap-x-1 items-center font-medium' onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
             {selectedEvent ? 'Обновить' : 'Сохранить'}
             <ArrowUpOnSquareIcon className="h-4 w-4" />
           </Button>
           {selectedEvent && (
-            <IconButton onClick={handleDeleteEvent}  className="rounded-full">
+            <Button danger shape="round" onClick={handleDeleteEvent}  className="rounded-full">
             <TrashIcon className="h-4 w-4" />
-            </IconButton>
+            </Button>
           )}
 
         </DialogFooter>

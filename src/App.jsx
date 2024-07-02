@@ -27,6 +27,7 @@ import PatientsReport from "./pages/Reports/PatientsReport";
 import DoctorsReport from "./pages/Reports/DoctorsReport";
 import FundsReport from "./pages/Reports/FundsReport";
 import DoctorsReportDetail from "./pages/Reports/DoctorsReportDetail";
+import FundsReportDetail from "./pages/Reports/FundsReportDetail";
 
 function PrivateRoute({ children }) {
   const navigate = useNavigate();
@@ -98,6 +99,7 @@ function App() {
       <Route path="/reports/doctors" element={<DoctorsReport />} />
       <Route path="/reports/finance" element={<FundsReport />} />
       <Route path="/reports/doctors/:doctorId" element={<DoctorsReportDetail />} />
+      <Route path="/reports/finance/:date" element={<FundsReportDetail />} />
       <Route path="*" element={<Notfoundpage />} />
     </Route>
   </Routes>
