@@ -3,6 +3,7 @@ import { Card, Typography, Input, Button, IconButton } from "@material-tailwind/
 import { Dialog, Transition } from '@headlessui/react';
 import { PlusCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import axios from 'axios';
+import axiosInstance from "../axios/axiosInstance";
 
 
 
@@ -12,23 +13,6 @@ export default function Roles() {
   const [isOpen, setIsOpen] = useState(false);
   const [newRole, setNewRole] = useState('');
   const [roles, setRoles] = useState([]);
-
-  const axiosInstance = axios.create({
-    baseURL: 'https://back.geolink.uz/api/v1'
-  });
-
-  axiosInstance.interceptors.request.use(
-    config => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    error => {
-      return Promise.reject(error);
-    }
-  );
 
   useEffect(() => {
     fetchRoles();

@@ -10,6 +10,7 @@ import axios from 'axios';
 import {PhoneInput, FlagEmoji, usePhoneInput, defaultCountries, parseCountry} from "react-international-phone";
 import {Button, Modal, notification, TimePicker as TimePickerInput, Input} from "antd";
 import moment from "moment";
+import axiosInstance from "../axios/axiosInstance";
 
 function Icon() {
   return (
@@ -46,23 +47,7 @@ export default function Calendar() {
   const [isLoading, setIsLoading] = useState(false);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const axiosInstance = axios.create({
-    baseURL: 'https://back.geolink.uz/api/v1'
-  });
 
-
-  axiosInstance.interceptors.request.use(
-    config => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    error => {
-      return Promise.reject(error);
-    }
-  );
 
   useEffect(() => {
     fetchEvents();

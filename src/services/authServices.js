@@ -1,13 +1,5 @@
 import axios from "axios";
-
-// Создание экземпляра axios с базовой конфигурацией
-const axiosInstance = axios.create({
-    baseURL: 'https://back.geolink.uz/api/v1',
-    timeout: 10000, // Установить тайм-аут запроса
-    headers: {
-        'Content-Type': 'application/json'
-    }
-});
+import axiosInstance from "../axios/axiosInstance";
 
 // Интерсептор для запросов: добавляем токен аутентификации и роль пользователя
 axiosInstance.interceptors.request.use(

@@ -6,6 +6,7 @@ import { Card, CardHeader, Typography, Button, CardBody, CardFooter, IconButton,
 import UserList from './components/UserList';
 import RolesList from './components/RolesList';
 import axios from 'axios';
+import axiosInstance from "../../axios/axiosInstance";
 
 const TABLE_HEAD = ["ФИО", "Логин", "Телефон", "Роль", "Харакат"];
 
@@ -31,22 +32,6 @@ export default function Users() {
         fetchUsers();
     }, []);
 
-    const axiosInstance = axios.create({
-        baseURL: 'https://back.geolink.uz/api/v1'
-    });
-
-    axiosInstance.interceptors.request.use(
-        config => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-            return config;
-        },
-        error => {
-            return Promise.reject(error);
-        }
-    );
 
     const fetchUsers = async () => {
         setIsLoading(true);

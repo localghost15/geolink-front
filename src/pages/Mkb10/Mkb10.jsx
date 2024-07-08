@@ -19,6 +19,7 @@ import {
 } from "@material-tailwind/react";
 import {Button} from "antd";
 import Mkb10List from './components/Mkb10List';
+import axiosInstance from "../../axios/axiosInstance";
 
 const TABLE_HEAD = ["Код", "Номланиши", "Кушимча малумот"];
 
@@ -32,22 +33,6 @@ export default function Mkb10() {
     const [currentPage, setCurrentPage] = useState(1); // Track current page
     const [totalPages, setTotalPages] = useState(1);
 
-    const axiosInstance = axios.create({
-        baseURL: 'https://back.geolink.uz/api/v1'
-    });
-
-    axiosInstance.interceptors.request.use(
-        config => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-            return config;
-        },
-        error => {
-            return Promise.reject(error);
-        }
-    );
 
     useEffect(() => {
         fetchRecords();
@@ -55,7 +40,7 @@ export default function Mkb10() {
 
     const fetchRecords = async (page = 1) => { 
       try {
-          const response = await axiosInstance.get(`/mkb10?page=${page}`); 
+          const response = await axiosInstance.get(`/mkb10?page=${page}`);
           setRecords(response.data.data);
           setCurrentPage(response.data.meta.current_page); 
           setTotalPages(response.data.meta.last_page);

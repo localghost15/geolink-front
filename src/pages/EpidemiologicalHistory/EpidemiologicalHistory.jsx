@@ -19,6 +19,7 @@ import {
 } from "@material-tailwind/react";
 import {Button} from "antd";
 import EpidemiologicalList from './components/EpidemiologicalList';
+import axiosInstance from "../../axios/axiosInstance";
 
 const TABLE_HEAD = ["ID","Номланиши", "Харакат"];
 
@@ -30,22 +31,6 @@ export default function EpidemiologicalHistory() {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const axiosInstance = axios.create({
-        baseURL: 'https://back.geolink.uz/api/v1'
-    });
-
-    axiosInstance.interceptors.request.use(
-        config => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-            return config;
-        },
-        error => {
-            return Promise.reject(error);
-        }
-    );
 
     useEffect(() => {
         fetchRecords();

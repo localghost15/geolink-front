@@ -12,6 +12,7 @@ import {EyeIcon, PencilIcon, TrashIcon} from "@heroicons/react/24/solid";
 import {Badge, Button, Popconfirm, Tag} from 'antd'
 import {Spin} from "antd";
 import {QuestionCircleOutlined} from "@ant-design/icons";
+import axiosInstance from "../../axios/axiosInstance";
 
 const TABLE_HEAD = ["","Код","ФИО", "Туғилган санаси","Холати","Манзил" , "Телефон", "Харакат"];
 
@@ -29,7 +30,7 @@ export default function Patients() {
         setIsLoading(true); // Set loading state to true
         try {
           const token = localStorage.getItem('token');
-          const response = await axios.get(`https://back.geolink.uz/api/v1/patients`, {
+          const response = await axiosInstance.get(`/patients`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -52,7 +53,7 @@ export default function Patients() {
   const handleRemovePatient = async (patientId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`https://back.geolink.uz/api/v1/patients/${patientId}`, {
+      await axiosInstance.delete(`/patients/${patientId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -80,7 +81,7 @@ export default function Patients() {
         delete dataToSend.remark;
       }
 
-      const response = await axios.put(`https://back.geolink.uz/api/v1/patients/${selectedPatient.id}`, dataToSend, {
+      const response = await axiosInstance.put(`/patients/${selectedPatient.id}`, dataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

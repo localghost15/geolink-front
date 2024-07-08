@@ -12,6 +12,7 @@ import {
 } from "@material-tailwind/react";
 import axios from 'axios';
 import {Button} from "antd";
+import axiosInstance from "../axios/axiosInstance";
 
 const TABLE_HEAD = ["ID", "Номланиши", "Нархи", "Хизмат тури","Харакат"];
 
@@ -23,23 +24,7 @@ export default function Services() {
   const [newServiceTime, setNewServiceTime] = useState('');
   const [isPrimary, setIsPrimary] = useState(false);
   const [editServiceId, setEditServiceId] = useState(null);
-  
-  const axiosInstance = axios.create({
-    baseURL: 'https://back.geolink.uz/api/v1'
-  });
-
-  axiosInstance.interceptors.request.use(
-    config => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    error => {
-      return Promise.reject(error);
-    }
-  );
+  console.log(process.env.REACT_APP_API_URL)
 
   useEffect(() => {
     fetchServices();

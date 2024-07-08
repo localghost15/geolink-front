@@ -23,6 +23,7 @@ import * as yup from 'yup';
 import DoctorsList from './components/DoctorsList';
 import axios from 'axios';
 import RolesList from "./components/RolesList";
+import axiosInstance from "../../axios/axiosInstance";
 
 const TABLE_HEAD = [ "#","ФИО", "Логин", "Телефон", "Роль", "Харакат"];
 
@@ -73,22 +74,6 @@ export default function Doctors() {
     fetchUsers();
   }, []);
 
-  const axiosInstance = axios.create({
-    baseURL: 'https://back.geolink.uz/api/v1'
-  });
-
-  axiosInstance.interceptors.request.use(
-      config => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      error => {
-        return Promise.reject(error);
-      }
-  );
 
   const fetchUsers = async () => {
     setIsLoading(true);

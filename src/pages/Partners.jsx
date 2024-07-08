@@ -6,6 +6,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { PencilIcon, TrashIcon, UserPlusIcon } from '@heroicons/react/24/solid';
 import { Card, Typography, CardBody, CardFooter, IconButton, Tooltip, Input, Menu, MenuHandler, MenuList, MenuItem } from '@material-tailwind/react';
 import {Button} from "antd";
+import axiosInstance from "../axios/axiosInstance";
 
 const TABLE_HEAD = ['ID', 'ФИО', 'Телефон рақами', 'Харакат'];
 
@@ -41,11 +42,7 @@ export default function Partners() {
   const fetchPartners = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('https://back.geolink.uz/api/v1/partners', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axiosInstance.get('/partners');
       setPartners(response.data.data);
     } catch (error) {
       console.error('Error fetching partners:', error);
@@ -59,10 +56,7 @@ export default function Partners() {
   const deletePartner = async (partnerId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`https://back.geolink.uz/api/v1/partners/${partnerId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      await axiosInstance.delete(`/partners/${partnerId}`, {
       });
       setPartners(partners.filter((partner) => partner.id !== partnerId));
     } catch (error) {
@@ -70,34 +64,26 @@ export default function Partners() {
     }
   };
 
+
+
   const addOrUpdatePartner = async () => {
     const token = localStorage.getItem('token');
     try {
       if (modalMode === 'add') {
-        const response = await axios.post(
-            'https://back.geolink.uz/api/v1/partners',
+        const response = await axiosInstance.post(
+            '/partners',
             {
               name: newPartnerName,
               phone: newPartnerPhone,
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
             }
         );
         setPartners([...partners, response.data]);
       } else if (modalMode === 'edit' && selectedPartner) {
-        await axios.put(
-            `https://back.geolink.uz/api/v1/partners/${selectedPartner.id}`,
+        await axiosInstance.put(
+            `/partners/${selectedPartner.id}`,
             {
               name: newPartnerName,
               phone: newPartnerPhone,
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
             }
         );
         setPartners(
