@@ -12,6 +12,11 @@ export const endVisit = async (visitId) => {
     return axiosInstance.put(`/visit/end/${visitId}`, payload);
 };
 
+export const reVisit = async (visitId) => {
+    const payload = { signal: new AbortController().signal };
+    return axiosInstance.put(`/visit/revisit/update/${visitId}`, payload);
+};
+
 // Функция для получения списка визитов пациента
 export const fetchVisits = async (patientId, page) => {
     const payload = { signal: new AbortController().signal };

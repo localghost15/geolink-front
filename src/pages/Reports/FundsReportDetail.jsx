@@ -80,7 +80,8 @@ const FundsReportDetail = () => {
                 </Button>
             </div>
             <Spin spinning={loading}>
-                <Table
+                <Table bordered
+                       size="small"
                     dataSource={reportData}
                     columns={columns}
                     rowClassName="report-row"

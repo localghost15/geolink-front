@@ -205,7 +205,8 @@ const PatientsReport = () => {
                     </Button>
                 </div>
             <div className="report-page pt-10">
-                <Table
+                <Table bordered
+                       size="small"
                     dataSource={reportData} // Use reportData instead of static data
                     columns={columns}
                     rowClassName="report-row"

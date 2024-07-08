@@ -3,6 +3,12 @@
 @tailwind utilities;
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
+@font-face {
+    font-family: "Aeonik";   /*Can be any text*/
+    src: local("AeonikProTRIAL-Regular"),
+    url("./font/AeonikProTRIAL-Regular.otf") format("truetype");
+}
+
 *{
   font-family: "Noto Sans", sans-serif !important;
 }
@@ -146,10 +152,18 @@ border-radius: 0px !important;
 }
 
 
-.fc-event {
+.fc-h-event {
+    background-color: transparent;
+    border: none;
+    display: block;
+}
+
+
+
+ .fc-event-main, .fc-event1 {
     /*border-left: 4px solid #2A9D8F;*/
-    /*!*background-color: #CFE9E7 !important;*!*/
-    /*!*color: #1E1D1D !important;*!*/
+    /*background-color: #CFE9E7 !important;*/
+    /*color: #1E1D1D !important;*/
 
 
 
@@ -158,9 +172,9 @@ border-radius: 0px !important;
     /*color: #BE123C !important;*/
 
 
-
-   border-left: 3px solid #00AA81;
-    background-color: rgb(241 243 245) !important;
+     border-radius: 7px;
+   border-left: 4px solid #00AA81;
+    background-color: rgba(241, 243, 245, 0.61) !important;
     color: #00AA81 !important;
 
     /*border-left: 3px solid rgb(42 99 246);*/

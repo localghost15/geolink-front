@@ -27,9 +27,13 @@ const FundsReport = () => {
             const start_at = dateRange[0] ? new Date(dateRange[0]).toISOString().split('T')[0] : '';
             const end_at = dateRange[1] ? new Date(dateRange[1]).toISOString().split('T')[0] : '';
             const apiResponse = await getDatesReport(start_at, end_at);
+
             if (apiResponse && apiResponse.data) {
-                // Добавляем ключ "key" к данным для таблицы для уникальности строк
-                const dataWithKey = apiResponse.data.map((item, index) => ({ ...item, key: index + 1 }));
+                // Filter out items where count is zero
+                const filteredData = apiResponse.data.filter(item => item.count !== 0);
+
+                // Add a unique key to each item for the table
+                const dataWithKey = filteredData.map((item, index) => ({ ...item, key: index + 1 }));
                 setReportData(dataWithKey);
             } else {
                 setReportData([]);
@@ -126,7 +130,7 @@ const FundsReport = () => {
             ...getColumnSearchProps('key'),
         },
         {
-            title: 'Келган беморлар сони',
+            title: 'Сана',
             dataIndex: 'date_at',
             key: 'date_at',
             sorter: (a, b) => a.date_at.localeCompare(b.date_at),
@@ -207,8 +211,10 @@ const FundsReport = () => {
                         Экспорт в Excel
                     </Button>
                 </div>
-                <div className="report-page pt-10">
+                <div className="report-page pt-10 ">
                     <Table
+                        bordered
+                        size="small"
                         dataSource={reportData} // Use reportData instead of static data
                         columns={columns}
                         rowClassName="report-row"

@@ -3,13 +3,13 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import uzLocale from '@fullcalendar/core/locales/uz';
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Input, IconButton,} from '@material-tailwind/react';
+import uzLocale from '@fullcalendar/core/locales/uz-cy';
+import { Dialog, DialogHeader, DialogBody, DialogFooter, IconButton,} from '@material-tailwind/react';
 import {ArrowUpOnSquareIcon, ClockIcon, PhoneIcon, TrashIcon} from '@heroicons/react/24/solid';
-import Select from 'react-select';
 import axios from 'axios';
 import {PhoneInput, FlagEmoji, usePhoneInput, defaultCountries, parseCountry} from "react-international-phone";
-import {Button} from "antd";
+import {Button, Modal, notification, TimePicker as TimePickerInput, Input} from "antd";
+import moment from "moment";
 
 function Icon() {
   return (
@@ -44,7 +44,8 @@ export default function Calendar() {
   const [openDialog, setOpenDialog] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [searchText, setSearchText] = useState('');
   const axiosInstance = axios.create({
     baseURL: 'https://back.geolink.uz/api/v1'
   });
@@ -68,6 +69,7 @@ export default function Calendar() {
     fetchServices();
   }, []);
 
+
   const fetchServices = async () => {
     setIsLoading(true);
     try {
@@ -79,11 +81,14 @@ export default function Calendar() {
       setIsLoading(false);
     }
   };
-  const fetchEvents = async (calendarId) => {
+
+
+
+  const fetchEvents = async () => {
     try {
-      const response = await axiosInstance.get(`/calendar`);
+      const response = await axiosInstance.get("/calendar");
       setEvents(response.data.data);
-      console.log(response.data.data);
+      setFilteredEvents(response.data.data); // Initialize filtered events
     } catch (error) {
       console.error("Ошибка при получении списка событий календаря:", error);
     }
@@ -103,12 +108,14 @@ export default function Calendar() {
     setSelectedType('');
     setSelectedService('');
     setSelectedEvent(null);
-    setErrors({}); 
+    setSelectedTime('');
+    setErrors({});
   };
 
   const handleTimeChange = (time) => {
-    setSelectedTime(time);
+    setSelectedTime(time ? time.format('HH:mm') : '');
   };
+
 
   const handleTitleChange = (event) => {
     setEventTitle(event.target.value);
@@ -149,6 +156,19 @@ export default function Calendar() {
     setOpenDialog(true);
     setSelectedEvent(event);
   };
+  const handleSearchInputChange = (e) => {
+    const searchText = e.target.value;
+    setSearchText(searchText);
+    filterEvents(searchText);
+  };
+
+  const filterEvents = (searchText) => {
+    const filteredEvents = events.filter(event =>
+        event.title.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setFilteredEvents(filteredEvents);
+  };
+
 
   const handleDeleteEvent = async () => {
     try {
@@ -157,6 +177,7 @@ export default function Calendar() {
         fetchEvents();
         setOpenDialog(false);
         setEventTitle('');
+        setSelectedTime('');
         setEventNumber('');
       } else {
         console.error("Ошибка при удалении события:", response);
@@ -187,6 +208,7 @@ export default function Calendar() {
         fetchEvents();
         setOpenDialog(false);
         setEventTitle('');
+        setSelectedTime('');
         setEventNumber('');
       } else {
         console.error("Ошибка при обновлении события:", response);
@@ -195,6 +217,8 @@ export default function Calendar() {
       console.error("Ошибка при обновлении события:", error);
     }
   };
+
+
 
   const handleEventDrop = async (info) => {
     const { event } = info;
@@ -206,41 +230,37 @@ export default function Calendar() {
       return;
     }
 
-    // Новая дата после перетаскивания
-    const newDate = new Date(event.start);
+    // Create a new Date object with the dropped event's start time
+    const newStartDate = new Date(event.start);
 
-    // Оригинальное событие (может быть selectedEvent или event, если selectedEvent недоступен)
-    const originalEvent = selectedEvent || event;
+    // Format the date as "YYYY-MM-DD HH:mm:ss"
+    const formattedStartDate = `${newStartDate.getFullYear()}-${String(newStartDate.getMonth() + 1).padStart(2, '0')}-${String(newStartDate.getDate()).padStart(2, '0')} ${event.extendedProps.start_time}`;
 
-    if (!originalEvent || !originalEvent.start) {
-      console.error("Original event start is null or undefined:", originalEvent);
-      return;
-    }
-
-    // Оригинальное время события
-    const originalStartTime = new Date(originalEvent.start);
-
-    // Сочетание новой даты с оригинальным временем
-    const updatedStartDate = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate(),
-        originalStartTime.getHours(), originalStartTime.getMinutes(), originalStartTime.getSeconds());
-
+    // Prepare updated event data
     const updatedEvent = {
       title: event.title,
       phone: event.extendedProps.phone,
-      start_at: updatedStartDate.toISOString() // Используем новую дату с оригинальным временем
+      start_at: formattedStartDate // Update start date/time of the dropped event in the desired format
     };
 
     try {
       const response = await axiosInstance.put(`/calendar/${event.id}`, updatedEvent);
       if (response.status === 200) {
-        fetchEvents(); // Обновление событий после успешного обновления
+        notification.success({
+          message: 'Учрашув янгиланди',
+          description: `Учрашув "${event.title}" га янгиланди`,
+          duration: 2,
+          placement: 'bottomRight'
+        });
+        fetchEvents();
       } else {
-        console.error("Ошибка при обновлении события:", response);
+        console.error("Error updating event:", response);
       }
     } catch (error) {
-      console.error("Ошибка при обновлении события:", error);
+      console.error("Error updating event:", error);
     }
   };
+
 
 
 
@@ -271,21 +291,22 @@ export default function Calendar() {
   };
 
   const renderEventContent = (eventInfo) => {
-    const { title, phone } = eventInfo.event.extendedProps;
-    const startTime = eventInfo.event.start ? eventInfo.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const { title, phone, start_time } = eventInfo.event.extendedProps;
     return (
-      <div>
-        <p className='flex font-semibold items-center text-xs gap-1'>
-          <img src="/watch2.png" className='h-4 w-4' alt="" /> {startTime}
-        </p>
-        <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'> <img src="/patient.png" className='h-4 w-4' alt="" /> {title}</p>
-        <p className='font-medium text-xs flex items-center gap-1 mt-1'> <img src="/mobile4.png" className='h-4 w-4' alt="" /> {phone}</p>
-      </div>
+        <div >
+          <p className='flex font-semibold items-center text-xs gap-1'>
+           <div className="bg-white rounded-md p-1"><img src="/icons8-будущее-время-96.png" className='h-6 w-6' /></div>  {start_time}
+          </p>
+          <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'>
+            <div className="bg-white rounded-md p-1"><img src="/icons8-пользователь-96.png" className='h-6 w-6' alt=""/></div>
+            {title}</p>
+          {/*<p className='font-medium text-xs flex items-center gap-1 mt-1'><img src="/mobile4.png" className='h-4 w-4' alt="" /> {phone}</p>*/}
+        </div>
     );
   };
 
 
-  
+
 
   const handleTypeChange = (event) => {
     setSelectedType(event.target.value);
@@ -319,118 +340,132 @@ export default function Calendar() {
     setErrors(newErrors);
     return hasError;
   };
-  
+
 
   return (
-    <div className="w-full px-12">
-      <FullCalendar
-        locale={uzLocale}
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        headerToolbar={{
-          start: 'prev,next today',
-          center: 'title',
-          end: 'dayGridMonth,timeGridWeek,timeGridDay',
-        }}
-        themeSystem="lux"
-        editable={true}
-        height={'90vh'}
-        selectable={true}
-        selectMirror={true}
-        events={events.map(event => ({
-          id: event.id,
-          title: event.title,
-          start: event.start_at,
-          end: event.end_at,
-          extendedProps: {
-            phone: event.phone,
-            title: event.title,
-            start: event.start
-          },
-        }))}
-        select={handleDateSelect}
-        eventContent={renderEventContent}
-        eventClick={handleEventClick}
-        eventDrop={handleEventDrop}
-      />
-      <Dialog className='w-min' open={openDialog} handler={handleDialogClose}>
-        <DialogHeader className="text-lg font-medium leading-6 text-gray-900">Бемор қўшиш</DialogHeader>
-        <DialogBody>
-          <div className="mb-4">
-            <label htmlFor="time" className="block mb-1 text-sm font-medium text-gray-700">
-              ФИО:
-            </label>
-            <Input
-                name="name"
-                value={eventTitle}
-                onChange={handleTitleChange}
-                placeholder="ФИО: *"
-                className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 placeholder:opacity-100 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
-                labelProps={{
-                  className: "hidden",
-                }}
-                containerProps={{className: "min-w-[100px]"}}
-                size="lg"
+    <div className="w-full ">
+    <div className="flex w-full">
+      <div className="w-1/5 ">
+        <h1 className="text-xl font-semibold mb-3 px-3 pb-1">Барча банд қилинган учрашувлар</h1>
+       <div className="px-3">
+         <Input
+             value={searchText}
+             onChange={handleSearchInputChange}
+             placeholder="Излаш..."
+             className="w-full border border-gray-300 p-2 mb-4 rounded-md"
+         />
+       </div>
+        <div className="h-[50vh] overflow-y-auto">
+          {filteredEvents.map(event => (
+              <div className="fc-event1" key={event.id}>
+                <p className='flex font-semibold items-center text-xs gap-1'>
+                  <img src="/watch2.png" className='h-4 w-4' alt=""/>
+                  {event.start_at}  {event.start_time}
+                </p>
+                <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'><img src="/patient.png"
+                                                                                              className='h-4 w-4'
+                                                                                              alt=""/> {event.title}</p>
+                <p className='font-medium text-xs flex items-center gap-1 mt-1'><img src="/mobile4.png"
+                                                                                     className='h-4 w-4'
+                                                                                     alt=""/> {event.phone}</p>
+              </div>
 
-                error={errors.eventTitle}
-            />
-            {errors.eventTitle && <p className="text-red-500 text-xs mt-1">{errors.eventTitle}</p>}
-            <div className="mt-4">
-              <label htmlFor="time" className="block text-sm mb-1 font-medium text-gray-700">
-                Телефон раками:
-              </label>
-              <PhoneInput
-                  label="Static"
-                  international={false}
-                  defaultCountry="uz"
-                  prefix=""
-                  value={eventNumber || ''}
-                  onChange={(phone) => handleNumberChange(phone)} // Передаем значение телефона напрямую
-              />
-            </div>
-            {errors.eventNumber && <p className="text-red-500 text-xs mt-1">{errors.eventNumber}</p>}
-          </div>
-          <TimePicker selectedTime={selectedTime} onTimeChange={handleTimeChange} error={errors.selectedTime}/>
-        </DialogBody>
-        <DialogFooter className='flex gap-x-4'>
-          <Button type="primary" className='flex gap-x-1 items-center font-medium' onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
-            {selectedEvent ? 'Обновить' : 'Сохранить'}
-            <ArrowUpOnSquareIcon className="h-4 w-4" />
-          </Button>
-          {selectedEvent && (
-            <Button danger shape="round" onClick={handleDeleteEvent}  className="rounded-full">
-            <TrashIcon className="h-4 w-4" />
-            </Button>
-          )}
+          ))}
+        </div>
+      </div>
 
-        </DialogFooter>
-      </Dialog>
+      <div className="w-full px-5">
+        <FullCalendar
+            locale={uzLocale}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            headerToolbar={{
+              start: 'prev,next today',
+              center: '',
+              end: 'dayGridMonth,timeGridWeek,timeGridDay',
+            }}
+            // dayMaxEvents={true}
+            themeSystem="lux"
+            editable={true}
+            height={'85vh'}
+            selectable={true}
+            selectMirror={true}
+            events={events.map(event => ({
+              id: event.id,
+              title: event.title,
+              start: event.start_at,
+              start_time: event.start_time,
+              end: event.end_at,
+              extendedProps: {
+                phone: event.phone,
+                title: event.title,
+                start: event.start_at,
+                start_time: event.start_time,
+              },
+            }))}
+            select={handleDateSelect}
+            eventContent={renderEventContent}
+            eventClick={handleEventClick}
+            eventDrop={handleEventDrop}
+        />
+      </div>
     </div>
-  );
-}
+      <Modal title="Бемор қўшиш" centered footer={[
+          <div className="flex gap-3 justify-end">
+            <Button type="primary" className='flex gap-x-1 items-center font-medium'
+                    onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
+              {selectedEvent ? 'Обновить' : 'Сохранить'}
+              <ArrowUpOnSquareIcon className="h-4 w-4"/>
+            </Button>
+            {selectedEvent && (
+                <Button danger shape="round" onClick={handleDeleteEvent} className="rounded-full">
+                  <TrashIcon className="h-4 w-4"/>
+                </Button>
+            )}
+          </div>
+      ]} className='w-min' open={openDialog} onCancel={handleDialogClose}>
+        <div className="mb-4">
+          <label htmlFor="time" className="block mb-1 text-sm font-medium text-gray-700">
+            ФИО:
+          </label>
+          <Input
+              name="name"
+              value={eventTitle}
+              onChange={handleTitleChange}
+              placeholder="ФИО: *"
+              labelProps={{
+                className: "hidden",
+              }}
+              containerProps={{className: "min-w-[100px]"}}
+              size="lg"
 
-function TimePicker({ selectedTime, onTimeChange, error }) {
-  const handleTimeChange = (event) => {
-    onTimeChange(event.target.value);
-  };
+              error={errors.eventTitle}
+          />
+          {errors.eventTitle && <p className="text-red-500 text-xs mt-1">{errors.eventTitle}</p>}
+          <div className="mt-4">
+            <label htmlFor="time" className="block text-sm mb-1 font-medium text-gray-700">
+              Телефон раками:
+            </label>
+            <PhoneInput
+                label="Static"
+                international={false}
+                defaultCountry="uz"
+                prefix=""
+                value={eventNumber || ''}
+                onChange={(phone) => handleNumberChange(phone)} // Передаем значение телефона напрямую
+            />
+          </div>
+          {errors.eventNumber && <p className="text-red-500 text-xs mt-1">{errors.eventNumber}</p>}
+        </div>
+        <TimePickerInput
+            needConfirm={false}
+            id="time"
+            className="w-full"
+            onChange={handleTimeChange}
+            format={'HH:mm'}
+        />
 
-  return (
-    <div className="mb-4">
-      <label htmlFor="time" className="block text-sm font-medium text-gray-700">
-        Келиш вақти:
-      </label>
-      <Input
-        type="time"
-        id="time"
-        className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 placeholder:opacity-100 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
-        labelProps={{
-          className: "hidden",
-        }}
-        containerProps={{ className: "min-w-[100px]" }}
-        value={selectedTime}
-        onChange={handleTimeChange}
-      />
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+      </Modal>
     </div>
   );
 }
