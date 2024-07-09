@@ -256,12 +256,16 @@ export default function Calendar() {
       return;
     }
 
+    const selectedDateTime = `${selectedDate} ${selectedTime}`;
+
+    // Format the date without the "T" separator
+    const formattedDateTime = moment(selectedDateTime).format('YYYY-MM-DD HH:mm');
+
     const eventData = {
       title: eventTitle,
       phone: eventNumber,
-      start_at: `${selectedDate}T${selectedTime}`
+      start_at: formattedDateTime,
     };
-    console.log(selectedService)
 
     try {
       const response = await axiosInstance.post("/calendar", eventData);
@@ -274,6 +278,7 @@ export default function Calendar() {
       console.error("Error creating event:", error);
     }
   };
+
 
   const renderEventContent = (eventInfo) => {
     const { title, phone, start_time } = eventInfo.event.extendedProps;

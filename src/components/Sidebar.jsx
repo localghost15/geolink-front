@@ -45,6 +45,10 @@ const items = [
         label: <Link to="/catalog/doctors">Докторлар</Link>,
       },
       {
+        key: '22',
+        label: <Link to="/catalog/partners">Хамкорлар</Link>,
+      },
+      {
         key: '10',
         label: <Link to="/catalog/services">Хизматлар</Link>,
       },
