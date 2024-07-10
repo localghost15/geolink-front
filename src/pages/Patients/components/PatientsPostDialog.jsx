@@ -67,6 +67,44 @@ const customWeekStartEndFormat = (value) =>
 export default function PatientsPostDialog({ onAddPatient }) {
     const [isOpen, setIsOpen] = useState(false);
 
+    const onSubmit = async (values) => {
+        const token = localStorage.getItem("token");
+
+        const formData = new FormData();
+        Object.keys(values).forEach((key) => {
+            if (values[key] !== undefined && values[key] !== null && values[key] !== "") {
+                formData.append(key, values[key]);
+            }
+        });
+
+        try {
+            const response = await fetch("https://back.geolink.uz/api/v1/patients", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+            });
+
+            const responseData = await response.json();
+            if (response.status === 400 && responseData.message === "The phone has already been taken.") {
+                formik.setFieldError('phone', "Телефон ракам ишлатилмокда");
+            } else if (response.ok) {
+                onAddPatient(responseData.data);
+                formik.resetForm();
+                closeModal();
+                toast.success('Бемор кушилди!');
+            } else {
+                // Handle other potential errors
+                toast.error('Қатолик юз берди, илтимос қайтадан уринп кўринг.');
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error('Қатолик юз берди, илтимос қайтадан уринп кўринг.');
+        }
+    };
+
+
     const formik = useFormik({
         initialValues: {
             name: "",
@@ -83,38 +121,7 @@ export default function PatientsPostDialog({ onAddPatient }) {
             file: null,
         },
         validationSchema: validationSchema,
-        onSubmit: async (values) => {
-            const token = localStorage.getItem("token");
-
-            const formData = new FormData();
-            Object.keys(values).forEach((key) => {
-                if (values[key] !== undefined && values[key] !== null) {
-                    formData.append(key, values[key]);
-                }
-            });
-
-            try {
-                const response = await fetch("https://back.geolink.uz/api/v1/patients", {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: formData,
-                });
-
-                const responseData = await response.json();
-                if (response.status === 400 && responseData.message === "The phone has already been taken.") {
-                    formik.setFieldError('phone', "Телефон ракам ишлатилмокда");
-                } else {
-                    onAddPatient(responseData.data);
-                    formik.resetForm();
-                    closeModal();
-                    toast.success('Бемор кушилди!')
-                }
-            } catch (error) {
-                console.error("Error:", error);
-            }
-        },
+        onSubmit: onSubmit,
 
     });
 

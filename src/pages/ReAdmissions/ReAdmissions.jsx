@@ -22,6 +22,7 @@ const Admissions = () => {
 
             const admissionsData = response.data.data.map((item, index) => {
                 const serviceId = item.orders.find(order => order.service_type)?.service.id || 'Service ID Not Found';
+                console.log(item); // Log each item to inspect its structure
                 return {
                     key: index + 1,
                     id_visit: item.id,
@@ -34,6 +35,7 @@ const Admissions = () => {
                     date_at: item.date_at,
                     status: item.status,
                     service_id: serviceId
+
                 };
             });
             const total = response.data.meta.total;
