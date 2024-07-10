@@ -87,22 +87,21 @@ export default function PatientsPostDialog({ onAddPatient }) {
             });
 
             const responseData = await response.json();
-            if (response.status === 400 && responseData.message === "The phone has already been taken.") {
-                formik.setFieldError('phone', "Телефон ракам ишлатилмокда");
-            } else if (response.ok) {
-                onAddPatient(responseData.data);
-                formik.resetForm();
-                closeModal();
-                toast.success('Бемор кушилди!');
-            } else {
-                // Handle other potential errors
-                toast.error('Қатолик юз берди, илтимос қайтадан уринп кўринг.');
+            if (!response.ok) {
+                // Handle server-side errors
+                throw new Error(`HTTP error! Status: ${response.status}`);
             }
+
+            onAddPatient(responseData.data);
+            formik.resetForm();
+            closeModal();
+            toast.success('Бемор кушилди!');
         } catch (error) {
             console.error("Error:", error);
             toast.error('Қатолик юз берди, илтимос қайтадан уринп кўринг.');
         }
     };
+
 
 
     const formik = useFormik({

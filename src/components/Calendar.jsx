@@ -285,10 +285,10 @@ export default function Calendar() {
     return (
         <div >
           <p className='flex font-semibold items-center text-xs gap-1'>
-           <div className="bg-white rounded-md p-1"><img src="/icons8-будущее-время-96.png" className='h-6 w-6' /></div>  {start_time}
+           <div className="bg-white rounded-md p-1"><img src="/watch2.png" className='h-6 w-6' /></div>  {start_time}
           </p>
           <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'>
-            <div className="bg-white rounded-md p-1"><img src="/icons8-пользователь-96.png" className='h-6 w-6' alt=""/></div>
+            <div className="bg-white rounded-md p-1"><img src="/patient.png" className='h-6 w-6' alt=""/></div>
             {title}</p>
           {/*<p className='font-medium text-xs flex items-center gap-1 mt-1'><img src="/mobile4.png" className='h-4 w-4' alt="" /> {phone}</p>*/}
         </div>
