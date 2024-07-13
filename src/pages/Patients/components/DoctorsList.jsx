@@ -42,7 +42,7 @@ export default function DoctorsSelect({ value, onChange }) {
   return (
       <Select
           id='doctors'
-          className='text-sm '
+          className='text-sm h-10'
           value={selectedPartner}
           onChange={handlePartnerChange}
           placeholder="Ким юборди"

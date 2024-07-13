@@ -119,13 +119,13 @@ const NewAdmissions = () => {
 
     const handlePayment = () => {
         if (selectedVisit) {
-            const firstOrder = selectedVisit.orders[0];
-            if (!firstOrder) {
+            const orderToPay = selectedVisit.orders.find(order => order.service_type === true);
+
+            if (!orderToPay) {
                 console.error('Нет доступного ID ордера для оплаты');
                 return;
             }
-
-            const orderId = firstOrder.id;
+            const orderId = orderToPay.id;
             const amount = paymentAmount;
             payForServices(orderId, amount, paymentType)
                 .then(response => {

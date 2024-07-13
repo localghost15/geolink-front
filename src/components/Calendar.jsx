@@ -7,10 +7,12 @@ import uzLocale from '@fullcalendar/core/locales/uz-cy';
 import { Dialog, DialogHeader, DialogBody, DialogFooter, IconButton,} from '@material-tailwind/react';
 import {ArrowUpOnSquareIcon, ClockIcon, PhoneIcon, TrashIcon} from '@heroicons/react/24/solid';
 import axios from 'axios';
-import {PhoneInput, FlagEmoji, usePhoneInput, defaultCountries, parseCountry} from "react-international-phone";
 import {Button, Modal, notification, TimePicker as TimePickerInput, Input} from "antd";
-import moment from "moment";
+import moment from 'moment';
+import 'moment/locale/uz';
 import axiosInstance from "../axios/axiosInstance";
+import PhoneInput from 'react-phone-input-2'
+import 'react-phone-input-2/lib/high-res.css'
 
 function Icon() {
   return (
@@ -34,9 +36,9 @@ function Icon() {
 export default function Calendar() {
   const [services, setServices] = useState([]);
   const [country, setCountry] = useState(177);
-  const [selectedTime, setSelectedTime] = useState('00:00');
+  const [selectedTime, setSelectedTime] = useState(null);
   const [eventTitle, setEventTitle] = useState('');
-  const [eventNumber, setEventNumber] = useState('');
+  const [eventNumber, setEventNumber] = useState('+998');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const [selectedType, setSelectedType] = useState('');
@@ -81,7 +83,7 @@ export default function Calendar() {
 
   const handleDateSelect = (selectInfo) => {
     const selectedDate = selectInfo.startStr;
-    setSelectedTime('00:00');
+    setSelectedTime(null);
     setOpenDialog(true);
     setSelectedDate(selectedDate);
   };
@@ -89,7 +91,7 @@ export default function Calendar() {
   const handleDialogClose = () => {
     setOpenDialog(false);
     setEventTitle('');
-    setEventNumber('');
+    setEventNumber('+998');
     setSelectedType('');
     setSelectedService('');
     setSelectedEvent(null);
@@ -98,7 +100,7 @@ export default function Calendar() {
   };
 
   const handleTimeChange = (time) => {
-    setSelectedTime(time ? time.format('HH:mm') : '');
+    setSelectedTime(time ? time.format('HH:mm') : null);
   };
 
 
@@ -114,6 +116,10 @@ export default function Calendar() {
     const event = clickInfo.event;
     setEventTitle(event.title);
     setEventNumber(event.extendedProps.phone);
+    setSelectedDate(event.extendedProps.start)
+
+    // Устанавливаем `start_time` для TimePickerInput
+    setSelectedTime(event.extendedProps.start_time);
 
     // Находим объект сервиса по его id
     const selectedService = services.find(service => service.id === event.extendedProps.service?.id);
@@ -125,22 +131,11 @@ export default function Calendar() {
       setSelectedService(''); // Если объект сервиса не найден, сбрасываем выбранный сервис
     }
 
-    if (event.start) {
-      const date = event.start.toISOString().split('T')[0];
-      let hours = event.start.getHours();
-      let minutes = event.start.getMinutes();
-
-      hours = hours < 10 ? `0${hours}` : hours;
-      minutes = minutes < 10 ? `0${minutes}` : minutes;
-
-      setSelectedDate(date);
-      setSelectedTime(`${hours}:${minutes}`);
-    }
     setSelectedType(event.extendedProps.type || '');
-
-    setOpenDialog(true);
     setSelectedEvent(event);
+    setOpenDialog(true);
   };
+
   const handleSearchInputChange = (e) => {
     const searchText = e.target.value;
     setSearchText(searchText);
@@ -163,7 +158,7 @@ export default function Calendar() {
         setOpenDialog(false);
         setEventTitle('');
         setSelectedTime('');
-        setEventNumber('');
+        setEventNumber('+998');
       } else {
         console.error("Ошибка при удалении события:", response);
       }
@@ -177,14 +172,12 @@ export default function Calendar() {
       return;
     }
 
-    const date = new Date(selectedEvent.start);
-    const [hours, minutes] = selectedTime.split(':');
-    date.setHours(hours, minutes);
+    const selectedDateTime = `${selectedDate} ${selectedTime}`;
 
     const updatedEventData = {
       title: eventTitle,
       phone: eventNumber,
-      start_at: date.toISOString(),
+      start_at: selectedDateTime, // Use the formatted date and time
     };
 
     try {
@@ -194,7 +187,7 @@ export default function Calendar() {
         setOpenDialog(false);
         setEventTitle('');
         setSelectedTime('');
-        setEventNumber('');
+        setEventNumber('+998');
       } else {
         console.error("Ошибка при обновлении события:", response);
       }
@@ -202,6 +195,7 @@ export default function Calendar() {
       console.error("Ошибка при обновлении события:", error);
     }
   };
+
 
 
 
@@ -273,29 +267,48 @@ export default function Calendar() {
       setEvents([...events, newEvent]);
       setOpenDialog(false);
       setEventTitle('');
-      setEventNumber('');
+      setEventNumber('+998');
     } catch (error) {
       console.error("Error creating event:", error);
     }
   };
 
 
+
   const renderEventContent = (eventInfo) => {
     const { title, phone, start_time } = eventInfo.event.extendedProps;
     return (
-        <div >
-          <p className='flex font-semibold items-center text-xs gap-1'>
-           <div className="bg-white rounded-md p-1"><img src="/watch2.png" className='h-6 w-6' /></div>  {start_time}
-          </p>
-          <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'>
-            <div className="bg-white rounded-md p-1"><img src="/patient.png" className='h-6 w-6' alt=""/></div>
-            {title}</p>
-          {/*<p className='font-medium text-xs flex items-center gap-1 mt-1'><img src="/mobile4.png" className='h-4 w-4' alt="" /> {phone}</p>*/}
+        // <div >
+        //   <p className='flex font-semibold items-center text-xs gap-1'>
+        //    <div className="bg-white rounded-md p-1"><img src="/watch2.png" className='h-6 w-6' /></div>  {start_time}
+        //   </p>
+        //   <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'>
+        //     <div className="bg-white rounded-md p-1"><img src="/patient.png" className='h-6 w-6' alt=""/></div>
+        //     {title}</p>
+        // </div>
+
+        <div className="flex flex-col justify-center text-xs text-white bg-[#00AA81] rounded-md max-w-[319px]">
+          <div className="flex overflow-hidden relative flex-col px-4 py-3 w-full aspect-[2.33]">
+            <img
+                loading="lazy"
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/6c9086af62bd60c01abe617a3837f029e0a89ab60334f8892969364d7c6e7b2b?apiKey=0e60d26ffe404316aa35b6241738714a&"
+                className="object-cover absolute inset-0 size-full"
+            />
+            <div className="flex relative gap-5 justify-between px-0.5 text-sm font-semibold whitespace-nowrap">
+              <div className="my-auto">{start_time}</div>
+              <img
+                  loading="lazy"
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/b378760b1d802bb67646e80faaec3f0b81d42d209110e43f6035386283b8b36d?apiKey=0e60d26ffe404316aa35b6241738714a&"
+                  className="shrink-0 w-6 aspect-square"
+              />
+            </div>
+            <div className="relative  font-medium">
+              {title}
+            </div>
+          </div>
         </div>
     );
   };
-
-
 
 
   const handleTypeChange = (event) => {
@@ -333,58 +346,59 @@ export default function Calendar() {
 
 
   return (
-    <div className="w-full ">
-    <div className="flex w-full">
-      <div className="w-1/5 ">
-        <h1 className="text-xl font-semibold mb-3 px-3 pb-1">Барча банд қилинган учрашувлар</h1>
-       <div className="px-3">
-         <Input
-             value={searchText}
-             onChange={handleSearchInputChange}
-             placeholder="Излаш..."
-             className="w-full border border-gray-300 p-2 mb-4 rounded-md"
-         />
-       </div>
-        <div className="h-[50vh] overflow-y-auto">
-          {filteredEvents.map(event => (
-              <div className="fc-event1" key={event.id}>
-                <p className='flex font-semibold items-center text-xs gap-1'>
-                  <img src="/watch2.png" className='h-4 w-4' alt=""/>
-                  {event.start_at}  {event.start_time}
-                </p>
-                <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'><img src="/patient.png"
-                                                                                              className='h-4 w-4'
-                                                                                              alt=""/> {event.title}</p>
-                <p className='font-medium text-xs flex items-center gap-1 mt-1'><img src="/mobile4.png"
-                                                                                     className='h-4 w-4'
-                                                                                     alt=""/> {event.phone}</p>
-              </div>
+      <div className="w-full ">
+        <div className="flex w-full">
+          <div className="w-1/5 ">
+            <h1 className="text-xl font-semibold mb-3 px-3 pb-1">Барча банд қилинган учрашувлар</h1>
+            <div className="px-3">
+              <Input
+                  value={searchText}
+                  onChange={handleSearchInputChange}
+                  placeholder="Излаш..."
+                  className="w-full border border-gray-300 p-2 mb-4 rounded-md"
+              />
+            </div>
+            <div className="h-[50vh] overflow-y-auto">
+              {filteredEvents.map(event => (
+                  <div className="fc-event12" key={event.id}>
+                    <p className='flex font-semibold items-center text-xs gap-1'>
+                      <img src="/watch2.png" className='h-4 w-4' alt=""/>
+                      {event.start_at} {event.start_time}
+                    </p>
+                    <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'><img src="/patient.png"
+                                                                                                  className='h-4 w-4'
+                                                                                                  alt=""/> {event.title}
+                    </p>
+                    <p className='font-medium text-xs flex items-center gap-1 mt-1'><img src="/mobile4.png"
+                                                                                         className='h-4 w-4'
+                                                                                         alt=""/> {event.phone}</p>
+                  </div>
 
-          ))}
-        </div>
-      </div>
+              ))}
+            </div>
+          </div>
 
-      <div className="w-full px-5">
-        <FullCalendar
-            locale={uzLocale}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{
-              start: 'prev,next today',
-              center: '',
-              end: 'dayGridMonth,timeGridWeek,timeGridDay',
-            }}
-            // dayMaxEvents={true}
-            themeSystem="lux"
-            editable={true}
-            height={'85vh'}
-            selectable={true}
-            selectMirror={true}
-            events={events.map(event => ({
-              id: event.id,
-              title: event.title,
-              start: event.start_at,
-              start_time: event.start_time,
+          <div className="w-full px-5">
+            <FullCalendar
+                locale={uzLocale}
+                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                initialView="dayGridMonth"
+                headerToolbar={{
+                  start: 'prev,next today',
+                  center: '',
+                  end: 'dayGridMonth,timeGridWeek,timeGridDay',
+                }}
+                // dayMaxEvents={true}
+                themeSystem="lux"
+                editable={true}
+                height={'85vh'}
+                selectable={true}
+                selectMirror={true}
+                events={events.map(event => ({
+                  id: event.id,
+                  title: event.title,
+                  start: event.start_at,
+                  start_time: event.start_time,
               end: event.end_at,
               extendedProps: {
                 phone: event.phone,
@@ -432,22 +446,29 @@ export default function Calendar() {
               error={errors.eventTitle}
           />
           {errors.eventTitle && <p className="text-red-500 text-xs mt-1">{errors.eventTitle}</p>}
-          <div className="mt-4">
-            <label htmlFor="time" className="block text-sm mb-1 font-medium text-gray-700">
+          <div className="mt-4 ">
+            <label htmlFor="time" className="block text-sm font-medium text-gray-700">
               Телефон раками:
             </label>
             <PhoneInput
-                label="Static"
-                international={false}
-                defaultCountry="uz"
-                prefix=""
+                dropdownClass="will-change-auto"
+                countryCodeEditable={false}
+                disableDropdown={true}
+                country={'uz'}
+                preferredCountries={['uz']}
+                onlyCountries={['uz']}
+                inputClass="ant-input"
+                containerClass="ant-input"
+                inputStyle={{ width: '100%' }}
+                placeholder="Введите номер телефона"
                 value={eventNumber || ''}
-                onChange={(phone) => handleNumberChange(phone)} // Передаем значение телефона напрямую
+                onChange={(phone) => handleNumberChange(phone)}
             />
           </div>
           {errors.eventNumber && <p className="text-red-500 text-xs mt-1">{errors.eventNumber}</p>}
         </div>
         <TimePickerInput
+            value={selectedTime ? moment(selectedTime, 'HH:mm') : null}
             needConfirm={false}
             id="time"
             className="w-full"

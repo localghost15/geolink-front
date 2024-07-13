@@ -1,54 +1,88 @@
 import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import { Avatar, Card, CardBody, CardFooter, CardHeader, Tooltip, Typography } from "@material-tailwind/react";
-import { MagnifyingGlassIcon, ChevronUpDownIcon, } from "@heroicons/react/24/outline";
-import ListsMenu from "./components/ListsMenu";
-import { Link, useNavigate } from "react-router-dom";
-import PatientsPostDialog from "./components/PatientsPostDialog";
-import PatientsUpdateDialog from "./components/PatientsUpdateDialog";
-import toast from "react-hot-toast";
-import debounce from 'lodash/debounce';
-import {EyeIcon, PencilIcon, TrashIcon} from "@heroicons/react/24/solid";
-import {Badge, Button, Popconfirm, Tag} from 'antd'
-import {Spin} from "antd";
-import {QuestionCircleOutlined} from "@ant-design/icons";
+import {Button, Popconfirm, Spin, Table, Tag, Tooltip, Typography, message, Input} from "antd";
+import { EyeOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import axiosInstance from "../../axios/axiosInstance";
+import PatientFormModal from "./components/PatientFormModal";
+import {FaAddressBook, FaEye, FaStreetView, FaUserEdit} from "react-icons/fa";
+import {MdDelete} from "react-icons/md";
+import {RiUserSearchLine} from "react-icons/ri";
+import {LuSearch} from "react-icons/lu";
+import {BiDialpadAlt} from "react-icons/bi";
+import {Link} from "react-router-dom";
 
-const TABLE_HEAD = ["","Код","ФИО", "Туғилган санаси","Холати","Манзил" , "Телефон", "Харакат"];
+const { Column } = Table;
 
-export default function Patients() {
+const statusLabels = {
+  queue: 'Навбатда...',
+  examined: 'Қабулда...',
+  new: 'Янги кабул',
+  pending: 'Тўлов кутилмоқда',
+  payed: 'Тўланган',
+  revisit: 'Навбатда...',
+  default: 'Навбатда...'  // Дефолтная метка для null
+};
+
+const statusColors = {
+  queue: 'gold',
+  examined: '#87d068',
+  new: 'blue',
+  pending: 'orange',
+  payed: 'purple',
+  revisit: 'gold',
+  default: 'gold'  // Дефолтный цвет для null
+};
+
+const Patients = () => {
   const [patients, setPatients] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchCategory, setSearchCategory] = useState("name");
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchCategory, setSearchCategory] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentPatient, setCurrentPatient] = useState(null);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10, // Ваше предпочтительное количество на странице
+    total: 0
+  });
 
-  const fetchPatients = useCallback(
-      debounce(async (query, category) => {
-        setIsLoading(true); // Set loading state to true
-        try {
-          const token = localStorage.getItem('token');
-          const response = await axiosInstance.get(`/patients`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            params: query ? { [category]: query } : {}
-          });
-          setPatients(response.data.data);
-        } catch (error) {
-          console.error("Ошибка при получении пациентов:", error);
-        } finally {
-          setIsLoading(false); // Set loading state to false
+
+
+  const fetchPatients = useCallback(async (page = 1) => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axiosInstance.get(`/patients`, {
+        params: {
+          page,
+          per_page: pagination.pageSize,
+          [searchCategory]: searchQuery
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json; charset=utf-8'
         }
-      }, 300),
-      []
-  );
+      });
+      setPatients(response.data.data);
+      setPagination({
+        ...pagination,
+        current: response.data.meta.current_page,
+        total: response.data.meta.total
+      });
+    } catch (error) {
+      console.error("Ошибка при получении пациентов:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchQuery, searchCategory, pagination.pageSize]);
 
   useEffect(() => {
-    fetchPatients(searchQuery, searchCategory);
-  }, [searchQuery, searchCategory, fetchPatients]);
+    fetchPatients();
+  }, [fetchPatients]);
+
+  const handleTableChange = (pagination, filters, sorter) => {
+    const { current } = pagination;
+    fetchPatients(current);
+  };
 
   const handleRemovePatient = async (patientId) => {
     try {
@@ -60,249 +94,190 @@ export default function Patients() {
       });
       const updatedPatients = patients.filter(patient => patient.id !== patientId);
       setPatients(updatedPatients);
-      toast.success('Бемор учрилди!');
+      message.success('Бемор учрилди!');
     } catch (error) {
       console.error("Ошибка при удалении пациента:", error);
     }
   };
 
   const handleOpenUpdateDialog = (patient) => {
-    setSelectedPatient(patient);
-    setIsOpen(true);
+    setCurrentPatient(patient);
+    setIsModalVisible(true);
   };
 
-  const handleUpdatePatient = async (updatedPatientData) => {
-    try {
-      const token = localStorage.getItem('token');
-      const { pinfl, ...dataWithoutPinfl } = updatedPatientData;
-
-      const dataToSend = { ...dataWithoutPinfl };
-      if (dataToSend.remark === null || dataToSend.remark === '') {
-        delete dataToSend.remark;
-      }
-
-      const response = await axiosInstance.put(`/patients/${selectedPatient.id}`, dataToSend, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const updatedPatient = response.data.data;
-
-      const updatedPatients = patients.map(patient =>
-          patient.id === selectedPatient.id ? updatedPatient : patient
-      );
-      setPatients(updatedPatients);
-      setIsOpen(false);
-      setSelectedPatient(null);
-    } catch (error) {
-      console.error("Error updating patient:", error);
-    }
-  };
-
-  const handleCloseUpdateDialog = () => {
-    setSelectedPatient(null); // Функция для сброса selectedPatient
-  };
-
-  const handleAddPatient = (newPatient) => {
-    setPatients([...patients, newPatient]);
+  const handleClose = () => {
+    setIsModalVisible(false);
+    setCurrentPatient(null);
   };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  const statusLabels = {
-    queue: 'Навбатда...',
-    examined: 'Қабулда...',
-    new: 'Янги кабул',
-    pending: 'Ожидает оплаты',
-    payed: 'Оплачено',
-    revisit: 'Навбатда...'
+  const handleSubmit = async (values) => {
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append('name', values.name);
+    formData.append('district_id', values.location.district_id);
+    formData.append('partner_id', values.partner_id);
+    if (values.pinfl) {
+      formData.append('pinfl', values.pinfl);
+    }
+    formData.append('phone', values.phone);
+    formData.append('profession', values.profession);
+    formData.append('gender', values.gender);
+    formData.append('home_address', values.home_address);
+    formData.append('work_address', values.work_address);
+    formData.append('remark', values.remark);
+    if (values.file) {
+      formData.append('file', values.file.file);
+    }
+    formData.append('birth_at', values.birth_at.format('YYYY-MM-DD'));
+
+    try {
+      if (currentPatient) {
+        await axiosInstance.put(`/patients/${currentPatient.id}`, formData,{
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8', // Добавляем сюда
+          }
+        });
+        fetchPatients();
+        message.success('Patient updated successfully!');
+      } else {
+        await axiosInstance.post('/patients', formData);
+        fetchPatients();
+        message.success('Patient created successfully!');
+      }
+      handleClose();
+    } catch (error) {
+      message.error('Error saving patient');
+      console.error('Error saving patient:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const statusColors = {
-    queue: 'gold',
-    examined: 'green',
-    new: 'blue',
-    pending: 'orange',
-    payed: 'purple',
-    revisit: 'gold'
-  };
+  const columns = [
+    {
+      title: "Код",
+      dataIndex: "code",
+      key: "code",
+      sorter: (a, b) => a.code.localeCompare(b.code),
+    },
+    {
+      title: "ФИО",
+      dataIndex: "name",
+      key: "name",
+      sorter: (a, b) => a.name.localeCompare(b.name),
+    },
+    {
+      title: "Туғилган санаси",
+      dataIndex: "birth_at",
+      key: "birth_at",
+      sorter: (a, b) => new Date(a.birth_at) - new Date(b.birth_at),
+    },
+    {
+      title: "Холати",
+      dataIndex: "visit_status",
+      key: "visit_status",
+      render: (visitStatus) => (
+          <Tag color={visitStatus ? statusColors[visitStatus.status] : 'default'}>
+            {visitStatus ? statusLabels[visitStatus.status] : 'Статус неизвестен'}
+          </Tag>
+      ),
+      filters: Object.keys(statusLabels).map(key => ({ text: statusLabels[key], value: key })),
+      onFilter: (value, record) => record.visit_status.status === value,
+    },
+    {
+      title: "Манзил",
+      dataIndex: "home_address",
+      key: "home_address",
+    },
+    {
+      title: "Телефон",
+      dataIndex: "phone",
+      key: "phone",
+    },
+    {
+      title: "Харакат",
+      key: "action",
+      render: (text, record) => (
+          <span className="flex items-center gap-1">
+          <Tooltip title="Ўзгартириш">
+            <Button
+                size="large"
+                type="primary"
+                icon={<FaUserEdit size="25"  />}
+                onClick={() => handleOpenUpdateDialog(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Бемор картаси">
+            <Link to={`/patient/${record.id}`}>
+            <Button
+                size="large"
+                type="primary"
+                icon={<FaStreetView  size="25" />}
+                onClick={() => console.log(record.id)}
+            />
+              </Link>
+          </Tooltip>
+          <Popconfirm
+              title="Ёзувни ўчириш"
+              onConfirm={() => handleRemovePatient(record.id)}
+              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+              okText="Ўчириш"
+              cancelText="Бекор қилиш"
+          >
+            <Button size="large" type="primary" icon={<MdDelete size="25"  />} />
+          </Popconfirm>
+        </span>
+      ),
+    },
+  ];
 
   return (
-      <Card className="h-full w-full rounded-none pt-5">
-        <Typography className="mx-8 mb-4" variant="h5" color="black">
-          Барча беморлар
-        </Typography>
+      <>
+        <div className="px-10">
+          <Typography.Title level={3}>Барча беморлар</Typography.Title>
 
-        <div className="flex mx-8 justify-between gap-8">
-          <label
-              className="relative bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2 focus-within:border-gray-300"
-              htmlFor="search-bar"
-          >
-            <ListsMenu onSelect={setSearchCategory} />
-            <input
-                id="search-bar"
-                placeholder="Қидириш"
-                className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
+          <div className="w-full flex items-center justify-between" style={{marginBottom: 16}}>
+            <Input
+                prefix={<BiDialpadAlt  size="20"  />}
+                size="large"
+                placeholder="Беморни Қидириш"
                 onChange={handleSearchChange}
+                className="ant-input rounded-md"
+                style={{width: 300}}
             />
-            <Button type="primary" size="md">
-              <MagnifyingGlassIcon className="h-5 w-5" />
+            <Button icon={<FaAddressBook size="20" />} className="text-sm flex items-center gap-1" size="large" type="primary" onClick={() => setIsModalVisible(true)}>
+              Янги Бемор Қўшиш
             </Button>
-          </label>
-
-          <div className="flex items-center shrink-0 flex-col gap-2 sm:flex-row">
-            <PatientsPostDialog onAddPatient={handleAddPatient} />
-            <PatientsUpdateDialog
-                onCloseDialog={handleCloseUpdateDialog}
-                selectedPatient={selectedPatient}
-                onUpdatePatient={handleUpdatePatient}
-            />
           </div>
         </div>
 
-        <CardHeader floated={false} shadow={false} className="rounded-none"></CardHeader>
-        <Spin colorPrimary="#000" tip="Загрузка" spinning={isLoading}>
-          <CardBody className="overflow-scroll px-0">
-            <table className=" w-full min-w-max table-auto text-left">
-              <thead>
-              <tr>
-                {TABLE_HEAD.map((head, index) => (
-                    <th
-                        key={head}
-                        className="cursor-pointer  dark:border-neutral-600 border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                    >
-                      <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
-                      >
-                        {head}{" "}
-                        {index !== TABLE_HEAD.length - 1 && (
-                            <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
-                        )}
-                      </Typography>
-                    </th>
-                ))}
-              </tr>
-              </thead>
-              <tbody>
-              {patients.map((patient, index) => (
-                  <tr className="cursor-pointer transition-colors hover:bg-gray-100"   onClick={() => navigate(`/patient/${patient.id}`)} key={patient.id}>
-                    <td className="p-2 border-b border-blue-gray-50">
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col">
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {index + 1}
-                          </Typography>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-2 border-b border-blue-gray-50">
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col">
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {patient.code}
-                          </Typography>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-2 border-b border-blue-gray-50">
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col">
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {patient.name}
-                          </Typography>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
-                      <div className="flex flex-col">
-                        <Typography variant="small" color="blue-gray" className="font-normal">
-                          {patient.birth_at}
-                        </Typography>
-                      </div>
-                    </td>
-                    <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
-                      <div className="">
-                        <Tag bordered={false} color={patient.visit_status ? statusColors[patient.visit_status.status] : 'defaultColor'}>
-                          {patient.visit_status ? statusLabels[patient.visit_status.status] : 'Статус неизвестен'}
-                        </Tag>
-                      </div>
-                    </td>
-                    <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
-                      <div className="flex flex-col">
-                        <Typography variant="small" color="blue-gray" className="font-normal">
-                          {patient.home_address}
-                        </Typography>
-                      </div>
-                    </td>
-                    <td className="p-2 border-b border-blue-gray-50  dark:border-neutral-600">
-                      <Typography variant="small" color="blue-gray" className="font-normal">
-                        {patient.phone}
-                      </Typography>
-                    </td>
 
-                    <td className="p-2 border-b border-blue-gray-50 space-x-1  dark:border-neutral-600">
-                      <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўзгартириш">
-                        <Button type="dashed" className="rounded-full" size="sm" variant="gradient" onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenUpdateDialog(patient)
-                        }} >
-                          <PencilIcon className="h-4 w-4" />
-                        </Button>
-                      </Tooltip>
-                      <Link to={`/patient/${patient.id}`}>
-                        <Tooltip  className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Бемор картаси">
-                          <Button type="dashed" className="rounded-full" size="sm" variant="gradient" >
-                            <EyeIcon className="h-4 w-4" />
-                          </Button>
-                        </Tooltip>
-                      </Link>
-                      <Popconfirm
-                          onConfirm={() => handleRemovePatient(patient.id)}
-                          title="Ёзувни ўчириш"
-                          description="Ҳақиқатдан ҳам бу ёзувни ўчириб ташламоқчимисиз?"
-                          icon={
-                            <QuestionCircleOutlined
-                                style={{
-                                  color: 'red',
-                                }}
-                            />
-                          }
-                      >
-                        <Button
-                            type="dashed"
-                            className="rounded-full"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation(); // предотвращает всплытие событий
-                            }}
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </Button>
-                      </Popconfirm>
-                    </td>
-                  </tr>
-              ))}
-              </tbody>
-            </table>
-          </CardBody>
+        <Spin spinning={isLoading}>
+          <Table
+              dataSource={patients}
+              columns={columns}
+              rowKey="id"
+              pagination={{
+                ...pagination,
+                onChange: handleTableChange
+              }}
+              onChange={handleTableChange}
+          />
         </Spin>
-        <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-          <Typography variant="small" color="blue-gray" className="font-normal">
-            Сахифа 1/10
-          </Typography>
-          <div className="flex gap-2">
-            <Button variant="outlined" size="sm">
-              Олдинги
-            </Button>
-            <Button variant="outlined" size="sm">
-              Кейингиси
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
+
+        <PatientFormModal
+            visible={isModalVisible}
+            onClose={handleClose}
+            onSubmit={handleSubmit}
+            loading={isLoading}
+            initialValues={currentPatient}
+        />
+      </>
   );
-}
+};
+
+export default Patients;

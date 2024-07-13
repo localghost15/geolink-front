@@ -6,24 +6,24 @@ import { PencilIcon, TrashIcon, UserPlusIcon } from "@heroicons/react/24/solid";
 import {
   Card,
   CardHeader,
-  Typography,
+
   CardBody,
   CardFooter,
   Tooltip,
-  Input,
   Menu,
   MenuHandler,
   MenuList,
   MenuItem,
   Textarea
 } from "@material-tailwind/react";
-import {Button} from 'antd'
+import {  Typography,Button, Input} from 'antd'
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import DoctorsList from './components/DoctorsList';
 import axios from 'axios';
 import RolesList from "./components/RolesList";
 import axiosInstance from "../../axios/axiosInstance";
+import {BiDialpadAlt} from "react-icons/bi";
 
 const TABLE_HEAD = [ "#","ФИО", "Логин", "Телефон", "Роль", "Харакат"];
 
@@ -181,219 +181,216 @@ export default function Doctors() {
   };
 
   return (
-      <Card className="h-full w-full rounded-none pt-5">
-        <Typography className="mx-8 mb-2" variant="h5" color="black">Докторлар</Typography>
-        <div className="flex mx-8 justify-between gap-8">
-          <label
-              className="relative  bg-white min-w-sm flex flex-col md:flex-row items-center justify-center border py-2 px-2 rounded-md gap-2  focus-within:border-gray-300"
-              htmlFor="search-bar"
-          >
-            <DoctorsList />
-            <input
-                id="search-bar"
-                placeholder="Қидириш"
-                className="px-8 py-1 w-full rounded-md flex-1 outline-none bg-white"
+      <Card className="h-full w-full rounded-none">
+        <div className=" px-10">
+          <Typography.Title level={3}>Докторлар</Typography.Title>
+          <div className="flex  justify-between gap-8">
+            <Input
+                prefix={<BiDialpadAlt  size="20"  />}
+                size="large"
+                placeholder="Беморни Қидириш"
+                className="ant-input rounded-md"
+                style={{width: 300}}
             />
-            <Button type="primary" size="md"><MagnifyingGlassIcon className="h-5 w-5" /></Button>
-          </label>
-          <div className="flex items-center shrink-0 flex-col gap-2 sm:flex-row">
-            <Button type="primary" onClick={openModal} className="flex items-center h-10 gap-3 normal-case font-normal" >
-              <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Янги  қўшиш
-            </Button>
-            <Transition appear show={isOpen} as={Fragment}>
-              <Dialog as="div" className="relative z-10 " onClose={closeModal}>
-                <Transition.Child
-                    as={Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                  <div className="fixed inset-0 bg-black/25" />
-                </Transition.Child>
-                <div className="fixed inset-0 overflow-y-auto">
-                  <div className="flex min-h-full items-center justify-center p-4 text-center">
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0 scale-95"
-                        enterTo="opacity-100 scale-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100 scale-100"
-                        leaveTo="opacity-0 scale-95"
-                    >
-                      <Dialog.Panel className="w-full max-w-4xl transform  rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                        <Dialog.Title
-                            as="h3"
-                            className="text-lg font-medium leading-6 text-gray-900"
-                        >
-                          {editUser ? "Доктор малумотларни Узгартириш" : "Янги доктор кушиш"}
-                        </Dialog.Title>
-                        <div className="mt-2">
-                          <form onSubmit={formik.handleSubmit}>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <Input
-                                    label="ФИО: *"
-                                    size="lg"
-                                    name="name"
-                                    value={formik.values.name}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.name && Boolean(formik.errors.name)}
-                                    helperText={formik.touched.name && formik.errors.name}
-                                />
-                                {formik.touched.name && Boolean(formik.errors.name) && (
-                                    <Typography variant="small" color="red" className="mt-1">
-                                      {formik.errors.name}
-                                    </Typography>
-                                )}
-                              </div>
-                              <div>
-                                <Input
-                                    label="Логин"
-                                    size="lg"
-                                    name="login"
-                                    value={formik.values.login}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.login && Boolean(formik.errors.login)}
-                                    helperText={formik.touched.login && formik.errors.login}
-                                />
-                                {formik.touched.login && Boolean(formik.errors.name) && (
-                                    <Typography variant="small" color="red" className="mt-1">
-                                      {formik.errors.login}
-                                    </Typography>
-                                )}
-                              </div>
-
-                            </div>
-                            <div className="grid mt-4 grid-cols-2 gap-4">
-                              <div>
-                                <Input
-                                    label="Пароль: *"
-                                    size="lg"
-                                    type="password"
-                                    name="password"
-                                    value={formik.values.password}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.password && Boolean(formik.errors.password)}
-                                    helperText={formik.touched.password && formik.errors.password}
-                                />
-                                {formik.touched.password && Boolean(formik.errors.password) && (
-                                    <Typography variant="small" color="red" className="mt-1">
-                                      {formik.errors.password}
-                                    </Typography>
-                                )}
-                              </div>
-                              <div>
-                                <Input
-                                    label="Паролни такрорланг"
-                                    size="lg"
-                                    type="password"
-                                    name="confirmPassword"
-                                    value={formik.values.confirmPassword}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
-                                    helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
-                                />
-                                {formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword) && (
-                                    <Typography variant="small" color="red" className="mt-1">
-                                      {formik.errors.confirmPassword}
-                                    </Typography>
-                                )}
-                              </div>
-
-
-                            </div>
-                            <div className="mt-4 grid grid-cols-2 gap-4">
-                            <div>
-                              <div className="flex">
-                                <Menu placement="bottom-start ">
-                                  <MenuHandler>
-                                    <Button
-                                        ripple={false}
-                                        variant="text"
-                                        color="blue-gray"
-                                        className="flex h-11 items-center gap-2 rounded-md rounded-r-none border border-r-0 border-blue-gray-200 bg-blue-gray-500/10 pl-3"
-                                    >
-                                      <img
-                                          src={flags.svg}
-                                          alt={name}
-                                          className="h-5 w-5 rounded-full object-cover"
-                                      />
-                                      {countryCallingCode}
-                                    </Button>
-                                  </MenuHandler>
-                                  <MenuList className="max-h-[20rem] max-w-[18rem]">
-                                    {countries.map(({ name, flags, countryCallingCode }, index) => {
-                                      return (
-                                          <MenuItem
-                                              key={name}
-                                              value={name}
-                                              className="flex items-center gap-2"
-                                              onClick={() => setCountry(index)}
-                                          >
-                                            <img
-                                                src={flags.svg}
-                                                alt={name}
-                                                className="h-5 w-5 rounded object-cover"
-                                            />
-                                            {name} <span className="ml-auto">{countryCallingCode}</span>
-                                          </MenuItem>
-                                      );
-                                    })}
-                                  </MenuList>
-                                </Menu>
-                                <Input
-                                    size="lg"
-                                    type="tel"
-                                    placeholder="Телефон раками:"
-                                    className="rounded-md rounded-l-none !border-t-blue-gray-200 focus:!border-t-gray-900"
-                                    labelProps={{
-                                      className: "before:content-none after:content-none",
-                                    }}
-                                    containerProps={{
-                                      className: "min-w-0",
-                                    }}
-                                    name="phone"
-                                    value={formik.values.phone}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.phone && Boolean(formik.errors.phone)}
-                                    helperText={formik.touched.phone && formik.errors.phone}
-                                />
+            <div className="flex items-center shrink-0 flex-col gap-2 sm:flex-row">
+              <Button type="primary" onClick={openModal} className="flex items-center h-10 gap-3 normal-case font-normal" >
+                <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Янги  қўшиш
+              </Button>
+              <Transition appear show={isOpen} as={Fragment}>
+                <Dialog as="div" className="relative z-10 " onClose={closeModal}>
+                  <Transition.Child
+                      as={Fragment}
+                      enter="ease-out duration-300"
+                      enterFrom="opacity-0"
+                      enterTo="opacity-100"
+                      leave="ease-in duration-200"
+                      leaveFrom="opacity-100"
+                      leaveTo="opacity-0"
+                  >
+                    <div className="fixed inset-0 bg-black/25" />
+                  </Transition.Child>
+                  <div className="fixed inset-0 overflow-y-auto">
+                    <div className="flex min-h-full items-center justify-center p-4 text-center">
+                      <Transition.Child
+                          as={Fragment}
+                          enter="ease-out duration-300"
+                          enterFrom="opacity-0 scale-95"
+                          enterTo="opacity-100 scale-100"
+                          leave="ease-in duration-200"
+                          leaveFrom="opacity-100 scale-100"
+                          leaveTo="opacity-0 scale-95"
+                      >
+                        <Dialog.Panel className="w-full max-w-4xl transform  rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                          <Dialog.Title
+                              as="h3"
+                              className="text-lg font-medium leading-6 text-gray-900"
+                          >
+                            {editUser ? "Доктор малумотларни Узгартириш" : "Янги доктор кушиш"}
+                          </Dialog.Title>
+                          <div className="mt-2">
+                            <form onSubmit={formik.handleSubmit}>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Input
+                                      placeholder="ФИО: *"
+                                      size="lg"
+                                      name="name"
+                                      value={formik.values.name}
+                                      onChange={formik.handleChange}
+                                      error={formik.touched.name && Boolean(formik.errors.name)}
+                                      helperText={formik.touched.name && formik.errors.name}
+                                  />
+                                  {formik.touched.name && Boolean(formik.errors.name) && (
+                                      <Typography variant="small" color="red" className="mt-1">
+                                        {formik.errors.name}
+                                      </Typography>
+                                  )}
+                                </div>
+                                <div>
+                                  <Input
+                                      placeholder="Логин"
+                                      size="lg"
+                                      name="login"
+                                      value={formik.values.login}
+                                      onChange={formik.handleChange}
+                                      error={formik.touched.login && Boolean(formik.errors.login)}
+                                      helperText={formik.touched.login && formik.errors.login}
+                                  />
+                                  {formik.touched.login && Boolean(formik.errors.name) && (
+                                      <Typography variant="small" color="red" className="mt-1">
+                                        {formik.errors.login}
+                                      </Typography>
+                                  )}
+                                </div>
 
                               </div>
-                              {formik.touched.phone && Boolean(formik.errors.phone) && (
-                                  <Typography variant="small" color="red" className="mt-1">
-                                    {formik.errors.phone}
-                                  </Typography>
-                              )}
-                            </div>
-                              <RolesList value={formik.values.roles} onChange={(value) => formik.setFieldValue('roles', value)} />
+                              <div className="grid mt-4 grid-cols-2 gap-4">
+                                <div>
+                                  <Input
+                                      placeholder="Пароль: *"
+                                      size="lg"
+                                      type="password"
+                                      name="password"
+                                      value={formik.values.password}
+                                      onChange={formik.handleChange}
+                                      error={formik.touched.password && Boolean(formik.errors.password)}
+                                      helperText={formik.touched.password && formik.errors.password}
+                                  />
+                                  {formik.touched.password && Boolean(formik.errors.password) && (
+                                      <Typography variant="small" color="red" className="mt-1">
+                                        {formik.errors.password}
+                                      </Typography>
+                                  )}
+                                </div>
+                                <div>
+                                  <Input
+                                      placeholder="Паролни такрорланг"
+                                      size="lg"
+                                      type="password"
+                                      name="confirmPassword"
+                                      value={formik.values.confirmPassword}
+                                      onChange={formik.handleChange}
+                                      error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
+                                      helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
+                                  />
+                                  {formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword) && (
+                                      <Typography variant="small" color="red" className="mt-1">
+                                        {formik.errors.confirmPassword}
+                                      </Typography>
+                                  )}
+                                </div>
 
-                            </div>
-                            <div className="mt-4 flex gap-4">
-                              <Button onClick={closeModal} variant="text" fullWidth>
-                                Отмена
-                              </Button>
-                              <Button htmlType="submit" variant="gradient" fullWidth>
-                                {editUser ? "Узгартириш" : "Саклаш"}
-                              </Button>
-                            </div>
-                          </form>
-                        </div>
-                      </Dialog.Panel>
-                    </Transition.Child>
+
+                              </div>
+                              <div className="mt-4 grid grid-cols-2 gap-4">
+                                <div>
+                                  <div className="flex">
+                                    <Menu placement="bottom-start ">
+                                      <MenuHandler>
+                                        <Button
+                                            ripple={false}
+                                            variant="text"
+                                            color="blue-gray"
+                                            className="flex h-11 items-center gap-2 rounded-md rounded-r-none border border-r-0 border-blue-gray-200 bg-blue-gray-500/10 pl-3"
+                                        >
+                                          <img
+                                              src={flags.svg}
+                                              alt={name}
+                                              className="h-5 w-5 rounded-full object-cover"
+                                          />
+                                          {countryCallingCode}
+                                        </Button>
+                                      </MenuHandler>
+                                      <MenuList className="max-h-[20rem] max-w-[18rem]">
+                                        {countries.map(({ name, flags, countryCallingCode }, index) => {
+                                          return (
+                                              <MenuItem
+                                                  key={name}
+                                                  value={name}
+                                                  className="flex items-center gap-2"
+                                                  onClick={() => setCountry(index)}
+                                              >
+                                                <img
+                                                    src={flags.svg}
+                                                    alt={name}
+                                                    className="h-5 w-5 rounded object-cover"
+                                                />
+                                                {name} <span className="ml-auto">{countryCallingCode}</span>
+                                              </MenuItem>
+                                          );
+                                        })}
+                                      </MenuList>
+                                    </Menu>
+                                    <Input
+                                        size="lg"
+                                        type="tel"
+                                        placeholder="Телефон раками:"
+                                        className="rounded-md rounded-l-none !border-t-blue-gray-200 focus:!border-t-gray-900"
+                                        labelProps={{
+                                          className: "before:content-none after:content-none",
+                                        }}
+                                        containerProps={{
+                                          className: "min-w-0",
+                                        }}
+                                        name="phone"
+                                        value={formik.values.phone}
+                                        onChange={formik.handleChange}
+                                        error={formik.touched.phone && Boolean(formik.errors.phone)}
+                                        helperText={formik.touched.phone && formik.errors.phone}
+                                    />
+
+                                  </div>
+                                  {formik.touched.phone && Boolean(formik.errors.phone) && (
+                                      <Typography variant="small" color="red" className="mt-1">
+                                        {formik.errors.phone}
+                                      </Typography>
+                                  )}
+                                </div>
+                                <RolesList value={formik.values.roles} onChange={(value) => formik.setFieldValue('roles', value)} />
+
+                              </div>
+                              <div className="mt-4 flex gap-4">
+                                <Button onClick={closeModal} variant="text" fullWidth>
+                                  Отмена
+                                </Button>
+                                <Button htmlType="submit" variant="gradient" fullWidth>
+                                  {editUser ? "Узгартириш" : "Саклаш"}
+                                </Button>
+                              </div>
+                            </form>
+                          </div>
+                        </Dialog.Panel>
+                      </Transition.Child>
+                    </div>
                   </div>
-                </div>
-              </Dialog>
-            </Transition>
+                </Dialog>
+              </Transition>
+            </div>
           </div>
         </div>
         <CardHeader floated={false} shadow={false} className="rounded-none"></CardHeader>
         <CardBody className="overflow-scroll px-0">
-          <table className="mt-4 w-full min-w-max table-auto text-left">
+          <table className="w-full min-w-max table-auto text-left">
             <thead>
             <tr>
               {TABLE_HEAD.map((header, index) => (
