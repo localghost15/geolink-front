@@ -183,7 +183,10 @@ const Payments = ({ patientId }) => {
                                 rowKey="created_at"
                             />
                         ),
-                        rowExpandable: (record) => record.orders.some(order => order.transactions.length > 0),
+                        rowExpandable: (record) => {
+                            return record.orders && record.orders.some(order => order.transactions && order.transactions.length > 0);
+                        }
+
                     }}
                     rowKey={(record) => record.id}
                 />
