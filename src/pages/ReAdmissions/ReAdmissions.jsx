@@ -127,11 +127,12 @@ const Admissions = () => {
             sorter: (a, b) => a.doctor_name.localeCompare(b.doctor_name),
             sortOrder: sorter.field === 'doctor_name' && sorter.order,
         },{
-            title: 'Сана',
+            title: 'Қайта қабул санаси',
             dataIndex: 'date_at',
             key: 'date_at',
             sorter: (a, b) => a.date_at.localeCompare(b.date_at),
             sortOrder: sorter.field === 'date_at' && sorter.order,
+            width: '20%'
         },
         {
             title: 'Действия',
