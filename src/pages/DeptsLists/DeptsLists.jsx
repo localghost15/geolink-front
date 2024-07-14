@@ -20,7 +20,7 @@ const NewAdmissions = () => {
         try {
             const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=examined&status[1]=new`);
             const admissionsData = response.data.data
-                .filter(admission => admission.bill === 'payed' || admission.bill === 'pending')
+                .filter(admission => admission.bill === 'payed' || admission.bill === 'pending' || admission.bill === null)
                 .map((item, index) => ({
                     key: index + 1,
                     id_visit: item.id,
@@ -74,6 +74,8 @@ const NewAdmissions = () => {
     const filteredData = admissions.filter(admission =>
         admission.patient_name && admission.patient_name.toLowerCase().includes(searchText.toLowerCase())
     );
+
+    console.log(filteredData)
 
     const getStatusName = (status) => {
         const statusNames = {

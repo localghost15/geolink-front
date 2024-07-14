@@ -26,7 +26,7 @@ const Admissions = () => {
         try {
             const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=new`);
             const admissionsData = response.data.data.map((item, index) => {
-                const filteredOrders = item.orders.filter(order => order.service_type && parseFloat(order.payed) === 0);
+                const filteredOrders = item.orders.filter(order => order.service_type && !order.payed);
                 return {
                     key: index + 1,
                     id_visit: item.id,
@@ -100,13 +100,14 @@ const Admissions = () => {
     };
 
     const handlePaymentClick = (record) => {
-        if (record.orders && record.orders.length > 0) {
-            setSelectedOrder(record.orders[0]);
+        const availableOrder = record.orders.find(order => !order.payed);
+        if (availableOrder) {
+            setSelectedOrder(availableOrder);
+            setSelectedVisit(record);
+            setIsModalVisible(true);
         } else {
-            setSelectedOrder(null);
+            toast.error('Нет доступных заказов для оплаты');
         }
-        setSelectedVisit(record); // Устанавливаем выбранный визит
-        setIsModalVisible(true);
     };
 
     const handlePayment = async () => {

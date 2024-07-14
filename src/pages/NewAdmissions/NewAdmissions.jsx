@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Typography, Input, Radio, Spin, Divider } from 'antd';
+import { Table, Button, Modal, Typography, Input, Radio, Spin, Divider, message } from 'antd';
 import axiosInstance from "../../axios/axiosInstance";
 import toast from 'react-hot-toast';
 
@@ -21,28 +21,27 @@ const NewAdmissions = () => {
             const response = await axiosInstance.get(`/visit?page=${page}&size=${pageSize}&status[0]=examined`);
             const admissionsData = response.data.data
                 .filter(admission => admission.bill === 'payed' || admission.bill === 'pending')
-                .map((item, index) => ({
-                    key: index + 1,
-                    id_visit: item.id,
-                    patient_name: item.patient_id.name,
-                    doctor_name: item.doctor.name,
-                    total_amount: item.total_amount,
-                    children_debit: item.children_debit,
-                    children_amount: item.children_amount,
-                    children_payed: item.children_payed,
-                    total_payed: item.total_payed,
-                    total_debit: item.total_debit,
-                    date_at: item.date_at,
-                    status: item.status,
-                    bill: item.bill,
-                    chilrens: item.chilrens,
-                    orders: item.orders.filter(order => order.service_type === false) ,
-                    services: item.orders
-                        .filter(order => order.service_type === false)
-                        .map(order => order.service.name)
-                        .join(', ') // Формирование строки из названий услуг
-                }));
+                .map((item, index) => {
+                    const orders = item.orders.filter(order => order.service_type === false);
+                    const totalAmount = orders.reduce((sum, order) => sum + parseFloat(order.amount), 0);
+                    const totalPayed = item.transaction.reduce((sum, txn) => sum + parseFloat(txn.amount), 0);
+                    const totalDebit = totalAmount - totalPayed;
 
+                    return {
+                        key: index + 1,
+                        id_visit: item.id,
+                        patient_name: item.patient_id.name,
+                        doctor_name: item.doctor.name,
+                        total_amount: totalAmount,
+                        total_payed: totalPayed,
+                        total_debit: totalDebit,
+                        date_at: item.date_at,
+                        status: item.status,
+                        bill: item.bill,
+                        orders: orders,
+                        services: orders.map(order => order.service.name).join(', '),
+                    };
+                });
 
             const total = response.data.meta.total;
 
@@ -137,7 +136,7 @@ const NewAdmissions = () => {
                     setPaymentReceipt(response.data);
                     setPaymentAmount('');
                     setPaymentType('cash');
-                    toast.success(`Оплачен: ${orderId}`);
+                    message.success(`Оплачен: ${orderId}`);
                 })
                 .catch(error => {
                     console.error('Ошибка при выполнении оплаты:', error);
@@ -212,8 +211,8 @@ const NewAdmissions = () => {
         },
         {
             title: 'Қолган сумма',
-            dataIndex: 'children_debit',
-            key: 'children_debit',
+            dataIndex: 'total_debit',
+            key: 'total_debit',
             sorter: (a, b) => a.children_debit - b.children_debit,
             sortOrder: sorter.field === 'children_debit' && sorter.order,
             render: (text) => `${text} сўм`
@@ -362,8 +361,8 @@ const NewAdmissions = () => {
                                 'Нет данных о хизматларе'
                             )}
                         </p>
-                        <p><strong>Миқдори:</strong> {selectedVisit.children_amount} сўм</p>
-                        <p><strong>Тўланган:</strong> {selectedVisit.children_payed} сўм</p>
+                        <p><strong>Миқдори:</strong> {selectedVisit.total_amount} сўм</p>
+                        <p><strong>Тўланган:</strong> {selectedVisit.total_payed} сўм</p>
                         <Input
                             className='mb-5'
                             type="number"
