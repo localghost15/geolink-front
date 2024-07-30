@@ -174,7 +174,7 @@ border-radius: 0px !important;
 
      border-radius: 7px;
    border-left: 4px solid #00AA81;
-    background-color: rgba(241, 243, 245, 0.61) !important;
+    background-color: #EEF9F7 !important;
     color: #00AA81 !important;
 
     /*border-left: 3px solid rgb(42 99 246);*/
@@ -190,6 +190,41 @@ border-radius: 0px !important;
   background-size: cover;
 }
 
+/* styles.css or a similar CSS file */
+
+.tag-free {
+    background-color: #e3fcef; /* Light green background */
+    color: #2e8b57; /* Dark green text */
+    border-radius: 12px; /* Rounded corners */
+    font-weight: 500; /* Slightly bold text */
+    padding: 4px 8px; /* Padding around text */
+    display: flex;
+    align-items: center;
+}
+
+.ant-cascader-menu-item {
+    font-weight: normal;
+    transition: none !important; /* Убираем анимации, которые могут вызывать мерцание */
+}
+
+.ant-cascader-menu-item-active {
+    font-weight: bold; /* Включаем жирный шрифт только при активации элемента */
+    transition: none !important; /* Убираем анимации */
+}
+
+.tag-busy {
+    background-color: #fef0f0; /* Light red background */
+    color: #d9534f; /* Dark red text */
+    border-radius: 12px; /* Rounded corners */
+    font-weight: 500; /* Slightly bold text */
+    padding: 4px 8px; /* Padding around text */
+    display: flex;
+    align-items: center;
+}
+
+.tag-icon {
+    margin-right: 4px; /* Space between icon and text */
+}
 
 
 .fc-timeGridWeek-button, .fc-dayGridMonth-button, .fc-timeGridDay-button    {
@@ -209,6 +244,10 @@ box-shadow: none !important;
     background-color: #008567 !important;
 box-shadow: none !important;
 }
+
+
+
+
 
 .fc-button-group {
     background-color: transparent !important;

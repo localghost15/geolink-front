@@ -28,6 +28,8 @@ import DoctorsReport from "./pages/Reports/DoctorsReport";
 import FundsReport from "./pages/Reports/FundsReport";
 import DoctorsReportDetail from "./pages/Reports/DoctorsReportDetail";
 import FundsReportDetail from "./pages/Reports/FundsReportDetail";
+import Apartaments from "./pages/Apartaments";
+import StationaryTable from "./pages/StationaryList";
 
 function PrivateRoute({ children }) {
   const navigate = useNavigate();
@@ -79,12 +81,14 @@ function App() {
         <Route path="roles" element={<AdminRoute><Roles /></AdminRoute>} />
       )}
       <Route path="patients" element={<Patients />} />
+      <Route path="stationary" element={<StationaryTable />} />
       <Route path="/patient-old/:index" element={<PatientDetails />} />
       <Route path="/patient/:index" element={<PatientBioCard />} />
       <Route path="/patient/admission/:index" element={<PatientAdmission />} />
       <Route path="/catalog/doctors" element={<Doctors />} />
       {/*<Route path="users" element={<Users />} />*/}
       <Route path="/catalog/services" element={<Services />} />
+      <Route path="/apartaments" element={<Apartaments />} />
       <Route path="/catalog/partners" element={<Partners />} />
       <Route path="/catalog/epidemiological_history" element={<EpidemiologicalHistory />} />
       <Route path="/catalog/international-classification-of-diseases" element={<Mkb10 />} />

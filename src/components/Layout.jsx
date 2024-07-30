@@ -21,6 +21,9 @@ import ExpandedSidebar from "./ExpandedSidebar";
 import {RiMenu2Line} from "react-icons/ri";
 import {Button} from "antd";
 import {TbArrowRampLeft3, TbArrowRampRight3} from "react-icons/tb";
+import {FaBell, FaUserFriends} from "react-icons/fa";
+import {LuLogOut} from "react-icons/lu";
+import {IoPeopleCircle} from "react-icons/io5";
 
 const Layout = () => {
   const [userRole, setUserRole] = useState(null);
@@ -121,30 +124,36 @@ const Layout = () => {
           </svg>
         </button>
       </div>
-      <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+      <div className="flex  gap-3 items-center justify-center sm:items-stretch sm:justify-start">
         <Button
+            type="primary"
+            size="large"
+            className="my-auto"
             onClick={toggleCollapsed}
             icon={
               collapsed
-                  ? <TbArrowRampRight3 size='23' />
-                  : <TbArrowRampLeft3 size='23' />
+                  ? <TbArrowRampRight3 size='23'/>
+                  : <TbArrowRampLeft3 size='23'/>
             }
         />
-
+        <div className="flex flex-col">
+          <h1 className="text-gray-900 font-bold">"Geolink Clinics"</h1>
+          <h1 className=" text-sm text-gray-700/70">Медецинский центр</h1>
+        </div>
       </div>
       <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-      <Menu placement="bottom-end"
-      animate={{
-        mount: { y: 0 },
-        unmount: { y: 25 },
-      }}
-    >
-      <Badge content="5">
-      <MenuHandler >
+        <Menu placement="bottom-end"
+              animate={{
+                mount: {y: 0},
+                unmount: {y: 25},
+              }}
+        >
+          <Badge withBorder content="0">
+            <MenuHandler>
 
-        <button className='inline-flex h-10 animate-background-shine items-center justify-center rounded-md border border-gray-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-3 font-medium text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-50'>
-          <BellIcon className="h-5 w-5" />
-        </button>
+            <Button size="large" type="primary" icon={<FaBell  className="h-6 w-6" />}>
+
+        </Button>
       </MenuHandler>
 
       </Badge>
@@ -154,13 +163,16 @@ const Layout = () => {
     </Menu>
         {/* Profile dropdown */}
         <div className="relative ml-3">
-          <div>
-          <button className='inline-flex h-10 animate-background-shine items-center justify-center rounded-md border border-gray-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-3 font-medium text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-50' onClick={handleLogout}>
-          <PowerIcon className="h-5 w-5" />
-        </button>
+          <div className="flex items-center">
+            <Button size="large" type="primary" icon={<IoPeopleCircle className="h-7 w-7"/>} onClick={handleLogout}>
+            </Button>
           </div>
-
-
+        </div>
+        <div className="relative ml-3">
+          <div>
+            <Button size="large" type="default" icon={<LuLogOut className="h-6 w-6"/>} onClick={handleLogout}>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

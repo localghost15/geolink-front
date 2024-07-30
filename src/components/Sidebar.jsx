@@ -1,26 +1,31 @@
 import React, { useState } from 'react';
-import {
-  AppstoreOutlined,
-  ContainerOutlined,
-  DesktopOutlined,
-  MailOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  PieChartOutlined,
-} from '@ant-design/icons';
-import { Button, Menu } from 'antd';
+import {Badge, Button, Menu} from 'antd';
 import {BsCalendar2WeekFill, BsFillCalendar2CheckFill} from "react-icons/bs";
 import { Link } from 'react-router-dom';
 import {HiUserGroup} from "react-icons/hi";
 import {BanknotesIcon, ClipboardDocumentCheckIcon, RectangleStackIcon, UserGroupIcon} from "@heroicons/react/24/solid";
 import {BiSolidReport} from "react-icons/bi";
+import {FiLogOut} from "react-icons/fi";
+import {IoIosBed} from "react-icons/io";
+import {FaClinicMedical} from "react-icons/fa";
 
 const items = [
   {
     key: '1',
-    icon: <div className="sidebar-icon-bg p-2 rounded-lg"><BsFillCalendar2CheckFill className="h-5 w-5 sidebar-icon"/>
+    icon: <div className="sidebar-icon-bg p-2 rounded-lg"><BsCalendar2WeekFill  className="h-5 w-5 sidebar-icon"/>
     </div>,
     label: <Link to="/">Календарь</Link>,
+  },
+  {
+    key: '2',
+    icon: <div className="sidebar-icon-bg p-2 rounded-lg"><IoIosBed  className="h-5 w-5 sidebar-icon"/>
+    </div>,
+    label: <Link to="/apartaments">Койкалар</Link>,
+  }, {
+    key: '3',
+    icon: <div className="sidebar-icon-bg p-2 rounded-lg"><FaClinicMedical   className="h-5 w-5 sidebar-icon"/>
+    </div>,
+    label: <Link to="/stationary">Стационар</Link>,
   },
   {
     key: 'sub1',
@@ -126,9 +131,15 @@ const items = [
 
 export const Sidebar = ({collapsed}) => {
 
+  const [isCollapsed, setIsCollapsed] = useState(collapsed);
+
+  const toggleCollapsed = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
       <div className={`sidebar  ${collapsed ? 'collapsed' : ''}`}>
-        <img className="my-5" height="60" width="60" src="/logo1.svg" />
+        <img className="my-5" src="/logomain.svg"/>
         <Menu
             style={{
               overflow: 'auto',

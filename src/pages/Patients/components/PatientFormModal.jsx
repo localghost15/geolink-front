@@ -67,12 +67,6 @@ const PatientFormModal = ({ visible, onClose, onSubmit, loading, initialValues }
                         <DoctorsSelect/>
                     </Form.Item>
                     <Form.Item
-                        name="pinfl"
-                        label="ПИНФЛ"
-                    >
-                        <Input placeholder="ПИНФЛ" className="h-10" />
-                    </Form.Item>
-                    <Form.Item
                         tooltip={{
                             title: 'Тугри телефон рақамни киритинг код билан',
                             icon: <BiInfoCircle />,

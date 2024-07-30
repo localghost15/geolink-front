@@ -510,14 +510,14 @@ function PatientBioCard() {
 </Typography>
 
 {(mostRecentVisit && (mostRecentVisit.status === "new" || mostRecentVisit.status === "queue")) && (
-    <Button  className="items-center flex" icon={ <MdPlayLesson /> } type='primary' onClick={handleStartVisit}  disabled={isButtonLoading || isBillPending} loading={isButtonLoading}>
+    <Button  className="items-center flex" icon={ <MdPlayLesson /> } size="large" type='primary' onClick={handleStartVisit}  disabled={isButtonLoading || isBillPending} loading={isButtonLoading}>
         {isButtonLoading ? 'Қабул бошлаяпти...' : 'Қабулни Бошлаш'}
     </Button>
 )}
 
 
 {mostRecentVisit && mostRecentVisit.status === "examined" && (
-    <Button className="items-center flex" icon={ <BsFillStopwatchFill /> }  type='primary' onClick={handleEndVisit} disabled={isButtonLoading} loading={isButtonLoading}>
+    <Button className="items-center flex" icon={ <BsFillStopwatchFill /> } size="large"  type='primary' onClick={handleEndVisit} disabled={isButtonLoading} loading={isButtonLoading}>
         {isButtonLoading ? 'Қабул Тугатяпти...' : 'Қабулни тугатиш'}
     </Button>
 )}
@@ -621,7 +621,7 @@ function PatientBioCard() {
                         <p className="mt-0 max-w-2xl text-sm leading-6 text-gray-500">Хозирги қабул рақами: {visitId}</p>
                       </div>
                     </div>
-                    <Button disabled={isButtonDisabled} onClick={showModal}>Беморни қабулга қушиш</Button>
+                    <Button type="primary" disabled={isButtonDisabled} onClick={showModal}>Беморни қабулга қушиш</Button>
                 <Modal centered title="Создать визит" visible={isModalVisible} onCancel={handleCancel} footer={[
                 <Button key="back" onClick={handleCancel}>
                     Отмена
@@ -803,7 +803,7 @@ function PatientBioCard() {
                     animated={true}
                     defaultActiveKey="1"
                     type="card"
-                    size="small"
+                    size="large"
                     items={items}
                 />
             </div>

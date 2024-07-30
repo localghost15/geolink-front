@@ -181,7 +181,7 @@ const Patients = () => {
       dataIndex: "visit_status",
       key: "visit_status",
       render: (visitStatus) => (
-          <Tag color={visitStatus ? statusColors[visitStatus.status] : 'default'}>
+          <Tag className="px-5 py-1" color={visitStatus ? statusColors[visitStatus.status] : 'default'}>
             {visitStatus ? statusLabels[visitStatus.status] : 'Статус неизвестен'}
           </Tag>
       ),
