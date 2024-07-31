@@ -3,12 +3,13 @@ import {Button, Popconfirm, Spin, Table, Tag, Tooltip, Typography, message, Inpu
 import { EyeOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import axiosInstance from "../../axios/axiosInstance";
 import PatientFormModal from "./components/PatientFormModal";
-import {FaAddressBook, FaEye, FaStreetView, FaUserEdit} from "react-icons/fa";
+import {FaAddressBook, FaClinicMedical, FaEye, FaStreetView, FaUserEdit} from "react-icons/fa";
 import {MdDelete} from "react-icons/md";
 import {RiUserSearchLine} from "react-icons/ri";
 import {LuSearch} from "react-icons/lu";
 import {BiDialpadAlt} from "react-icons/bi";
 import {Link} from "react-router-dom";
+import {UserGroupIcon} from "@heroicons/react/24/solid";
 
 const { Column } = Table;
 
@@ -238,18 +239,29 @@ const Patients = () => {
   return (
       <>
         <div className="px-10">
-          <Typography.Title level={3}>Барча беморлар</Typography.Title>
+          {/*<Typography.Title level={3}>Барча беморлар</Typography.Title>*/}
+          <div className="gap-5 flex items-center justify-between">
+            <div  className="gap-5 flex items-center ">
+              <div className="p-3 bg-gray-100 rounded-md">
+                <UserGroupIcon color="#00AA81" className="w-7 h-7"/>
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold mb-2">Барча беморлар</h1>
+                <div className="w-full flex items-center justify-between" style={{marginBottom: 16}}>
+                  <Input
+                      prefix={<BiDialpadAlt size="20"/>}
+                      size="large"
+                      placeholder="Беморни Қидириш"
+                      onChange={handleSearchChange}
+                      className="ant-input rounded-md"
+                      style={{width: 300}}
+                  />
 
-          <div className="w-full flex items-center justify-between" style={{marginBottom: 16}}>
-            <Input
-                prefix={<BiDialpadAlt  size="20"  />}
-                size="large"
-                placeholder="Беморни Қидириш"
-                onChange={handleSearchChange}
-                className="ant-input rounded-md"
-                style={{width: 300}}
-            />
-            <Button icon={<FaAddressBook size="20" />} className="text-sm flex items-center gap-1" size="large" type="primary" onClick={() => setIsModalVisible(true)}>
+                </div>
+              </div>
+            </div>
+            <Button icon={<FaAddressBook size="20"/>} className="text-sm flex items-center gap-1" size="large"
+                    type="primary" onClick={() => setIsModalVisible(true)}>
               Янги Бемор Қўшиш
             </Button>
           </div>

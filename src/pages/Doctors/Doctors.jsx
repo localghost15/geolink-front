@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useState } from 'react';
 import { useCountries } from "use-react-countries";
 import { MagnifyingGlassIcon, ChevronUpDownIcon } from "@heroicons/react/24/outline";
 import { Dialog, Transition } from '@headlessui/react';
-import { PencilIcon, TrashIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import {PencilIcon, RectangleStackIcon, TrashIcon, UserGroupIcon, UserPlusIcon} from "@heroicons/react/24/solid";
 import {
   Card,
   CardHeader,
@@ -183,18 +183,29 @@ export default function Doctors() {
   return (
       <Card className="h-full w-full rounded-none">
         <div className=" px-10">
-          <Typography.Title level={3}>Докторлар</Typography.Title>
           <div className="flex  justify-between gap-8">
-            <Input
-                prefix={<BiDialpadAlt  size="20"  />}
-                size="large"
-                placeholder="Беморни Қидириш"
-                className="ant-input rounded-md"
-                style={{width: 300}}
-            />
+            <div className="gap-5 flex items-center ">
+              <div className="p-3 bg-gray-100 rounded-md">
+                <RectangleStackIcon color="#00AA81" className="w-7 h-7"/>
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold mb-2 text-black">Врачлар</h1>
+                <div className="w-full flex items-center justify-between" style={{marginBottom: 16}}>
+                  <Input
+                      prefix={<BiDialpadAlt size="20"/>}
+                      size="large"
+                      placeholder="Беморни Қидириш"
+                      className="ant-input rounded-md"
+                      style={{width: 300}}
+                  />
+
+                </div>
+              </div>
+            </div>
             <div className="flex items-center shrink-0 flex-col gap-2 sm:flex-row">
-              <Button type="primary" onClick={openModal} className="flex items-center h-10 gap-3 normal-case font-normal" >
-                <UserPlusIcon strokeWidth={2} className="h-5 w-5 " /> Янги  қўшиш
+              <Button type="primary" onClick={openModal}
+                      className="flex items-center h-10 gap-3 normal-case font-normal">
+                <UserPlusIcon strokeWidth={2} className="h-5 w-5 "/> Янги қўшиш
               </Button>
               <Transition appear show={isOpen} as={Fragment}>
                 <Dialog as="div" className="relative z-10 " onClose={closeModal}>
@@ -207,7 +218,7 @@ export default function Doctors() {
                       leaveFrom="opacity-100"
                       leaveTo="opacity-0"
                   >
-                    <div className="fixed inset-0 bg-black/25" />
+                    <div className="fixed inset-0 bg-black/25"/>
                   </Transition.Child>
                   <div className="fixed inset-0 overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4 text-center">
@@ -220,7 +231,8 @@ export default function Doctors() {
                           leaveFrom="opacity-100 scale-100"
                           leaveTo="opacity-0 scale-95"
                       >
-                        <Dialog.Panel className="w-full max-w-4xl transform  rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                        <Dialog.Panel
+                            className="w-full max-w-4xl transform  rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                           <Dialog.Title
                               as="h3"
                               className="text-lg font-medium leading-6 text-gray-900"
@@ -322,7 +334,7 @@ export default function Doctors() {
                                         </Button>
                                       </MenuHandler>
                                       <MenuList className="max-h-[20rem] max-w-[18rem]">
-                                        {countries.map(({ name, flags, countryCallingCode }, index) => {
+                                        {countries.map(({name, flags, countryCallingCode}, index) => {
                                           return (
                                               <MenuItem
                                                   key={name}
@@ -366,7 +378,8 @@ export default function Doctors() {
                                       </Typography>
                                   )}
                                 </div>
-                                <RolesList value={formik.values.roles} onChange={(value) => formik.setFieldValue('roles', value)} />
+                                <RolesList value={formik.values.roles}
+                                           onChange={(value) => formik.setFieldValue('roles', value)}/>
 
                               </div>
                               <div className="mt-4 flex gap-4">
@@ -394,9 +407,11 @@ export default function Doctors() {
             <thead>
             <tr>
               {TABLE_HEAD.map((header, index) => (
-                  <th key={index} className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-                    <Typography variant="small" color="blue-gray" className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                      {header} <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
+                  <th key={index}
+                      className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                    <Typography variant="small" color="blue-gray"
+                                className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                      {header} <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
                     </Typography>
                   </th>
               ))}

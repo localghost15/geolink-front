@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import {Table, Tag, Space, Button, Input} from 'antd';
 import { getStationary} from "../services/stationaryService";
-import StationaryFormModal from "../StationaryFormModal";
+import StationaryFormModal from "../components/StationaryFormModal";
 import {IoIosBed} from "react-icons/io";
 import {FaClinicMedical} from "react-icons/fa";
+import {BiDialpadAlt} from "react-icons/bi";
 
 const StationaryTable = () => {
     const [dataSource, setDataSource] = useState([]);
@@ -78,7 +79,7 @@ const StationaryTable = () => {
             dataIndex: 'status',
             key: 'status',
             render: (status) => (
-                <Tag color={status === 'active' ? 'green' : 'red'}>
+                <Tag color={status === 'active' ? '#87d068' : 'red'}>
                     {status === 'active' ? 'Актив' : 'Нақил'}
                 </Tag>
             ),
@@ -113,18 +114,22 @@ const StationaryTable = () => {
                         </div>
                         <div>
                             <h1 className="text-xl font-semibold mb-2">Стационар</h1>
-                            <Input.Search
-                                placeholder="Беморни киритинг"
-                                allowClear
-                                enterButton="Излаш"
-                                style={{width: 300, marginBottom: 16}}
-                            />
+                            <div className="w-full flex items-center justify-between" style={{marginBottom: 16}}>
+                                <Input
+                                    prefix={<BiDialpadAlt size="20"/>}
+                                    size="large"
+                                    placeholder="Беморни Қидириш"
+                                    className="ant-input rounded-md"
+                                    style={{width: 300}}
+                                />
+
+                            </div>
                         </div>
 
                     </div>
                 </div>
 
-                <Button type="primary" onClick={handleAdd} style={{marginBottom: 16}}>
+                <Button size="large" className="text-sm" type="primary" onClick={handleAdd} style={{marginBottom: 16}}>
                     Янгидан қўшиш
                 </Button>
             </div>

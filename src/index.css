@@ -185,6 +185,19 @@ border-radius: 0px !important;
     margin: 10px !important;
 }
 
+.Rect:hover {
+    fill: #FFEB3B;
+    cursor: pointer;
+}
+
+.Text {
+    color: #37474F;
+}
+
+.Stage {
+    background-color: #ECEFF1;
+}
+
 .login-bg {
   background-image: url('/public/9.jpg');
   background-size: cover;
@@ -225,6 +238,8 @@ border-radius: 0px !important;
 .tag-icon {
     margin-right: 4px; /* Space between icon and text */
 }
+
+
 
 
 .fc-timeGridWeek-button, .fc-dayGridMonth-button, .fc-timeGridDay-button    {
@@ -287,6 +302,10 @@ box-shadow: none !important;
 
 .stdropdown-menu::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.ant-table-thead, .ant-table-cell {
+    background-color: #fff !important;
 }
 
 .stdropdown-input {

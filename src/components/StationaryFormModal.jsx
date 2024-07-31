@@ -88,7 +88,10 @@ const StationaryFormModal = ({ visible, onCancel, onSubmit, initialData }) => {
         const data = new FormData();
         data.append('patient_id', values.patient_id);
         data.append('doctor_id', values.doctor_id);
-        data.append('bed_id', values.bed_id);
+
+        const bedId = values.bed_id[1];
+        data.append('bed_id', bedId);
+
         data.append('start_at', values.start_at.format('YYYY-MM-DD HH:mm:ss'));
 
         try {
@@ -98,6 +101,7 @@ const StationaryFormModal = ({ visible, onCancel, onSubmit, initialData }) => {
                 await axiosInstance.post('/stationary', data);
             }
             message.success('Маълумот муваффақиятли сақланди');
+            form.resetFields();
             onSubmit();
         } catch (error) {
             console.error("Маълумотни сақлашда хатолик:", error);
@@ -105,20 +109,39 @@ const StationaryFormModal = ({ visible, onCancel, onSubmit, initialData }) => {
         }
     };
 
+    const apartmentTypeMap = {
+        standard: 'Стандарт',
+        semi: 'Яримлюкс',
+        lux: 'Люкс'
+    };
+
+    const bedStatusMap = {
+        available: 'Мавжуд',
+        busy: 'Банд'
+    };
+
     const apartmentOptions = apartments.map(apartment => ({
         value: apartment.id,
-        label: `Этаж ${apartment.floor} - ${apartment.type}`,
+        label: `${apartment.floor} Хона - ${apartmentTypeMap[apartment.type] || apartment.type}`,
         children: apartment.beds.map(bed => ({
             value: bed.id,
-            label: `Кровать ${bed.number} (${bed.status}) - ${bed.price} сум`,
+            label: `Ётоқ ${bed.number} (${bedStatusMap[bed.status] || bed.status}) - ${bed.price} сум`,
+            disabled: bed.status === 'busy', // Disable the option if the bed is busy
         })),
     }));
+
+    const filter = (inputValue, path) =>
+        path.some((option) => option.label.toLowerCase().indexOf(inputValue.toLowerCase()) > -1);
+
 
     return (
         <Modal
             visible={visible}
             title={initialData ? 'Маълумотни таҳрирлаш' : 'Янги маълумот қўшиш'}
-            onCancel={onCancel}
+            onCancel={() => {
+                form.resetFields(); // Resetting the form fields when the modal is closed
+                onCancel();
+            }}
             footer={null}
         >
             {isLoading ? (
@@ -152,6 +175,8 @@ const StationaryFormModal = ({ visible, onCancel, onSubmit, initialData }) => {
                             options={apartmentOptions}
                             onChange={onApartmentChange}
                             placeholder="Апартамент ва кровать танланг"
+                            showSearch={{ filter }}
+                            onSearch={(value) => console.log(value)}
                         />
                     </Form.Item>
                     <Form.Item label="Бошланиш санаси ва вақти" name="start_at" rules={[{ required: true, message: 'Илтимос, сана ва вақтни танланг' }]}>
