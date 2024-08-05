@@ -4,12 +4,14 @@ import { CheckCircleOutlined, CloseCircleOutlined, QuestionCircleOutlined, PlusO
 import { getApartments, createApartment, deleteApartment, updateApartment } from '../services/apartmentService';
 import { FaStreetView, FaUserEdit } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { MdDelete } from "react-icons/md";
+import {MdBedroomChild, MdDelete} from "react-icons/md";
 import { IoIosBed } from "react-icons/io";
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { BiDialpadAlt } from "react-icons/bi";
 import RoomProjection from "../components/RoomProjection";
 import {updateBed, deleteBed, createBed} from "../services/bedService";
+import {BsFillBookmarkCheckFill} from "react-icons/bs";
+import {IoBookmark, IoBookmarks} from "react-icons/io5";
 
 const { Option } = Select;
 
@@ -266,12 +268,12 @@ const Apartaments = () => {
                 dataIndex: 'status',
                 key: 'status',
                 render: (status) => (
-                    <Tag className={`border-none max-w-min px-4 ${status === 'free' ? 'tag-free' : 'tag-busy'}`}>
+                    <Tag className={`border-none  max-w-min px-4 ${status === 'free' ? 'tag-free' : 'tag-busy'}`}>
                         <span className="tag-icon">
                             {status === 'free' ? (
-                                <CheckCircleOutlined />
+                                <IoBookmarks   size="16"  />
                             ) : (
-                                <CloseCircleOutlined />
+                                <BsFillBookmarkCheckFill size="16"  />
                             )}
                         </span>
                         {status === 'free' ? 'Бўш' : 'Банд'}

@@ -26,6 +26,12 @@ const PatientFormModal = ({ visible, onClose, onSubmit, loading, initialValues }
         }
     }, [initialValues, form]);
 
+    useEffect(() => {
+        if (!visible) {
+            form.resetFields();
+        }
+    }, [visible, form]);
+
     const handleFinish = (values) => {
         onSubmit(values);
     };

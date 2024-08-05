@@ -206,11 +206,11 @@ border-radius: 0px !important;
 /* styles.css or a similar CSS file */
 
 .tag-free {
-    background-color: #e3fcef; /* Light green background */
-    color: #2e8b57; /* Dark green text */
+    background-color: #4BB34B; /* Light green background */
+    color: #fff; /* Dark green text */
     border-radius: 12px; /* Rounded corners */
     font-weight: 500; /* Slightly bold text */
-    padding: 4px 8px; /* Padding around text */
+    padding: 5px 10px; /* Padding around text */
     display: flex;
     align-items: center;
 }
@@ -226,11 +226,11 @@ border-radius: 0px !important;
 }
 
 .tag-busy {
-    background-color: #fef0f0; /* Light red background */
-    color: #d9534f; /* Dark red text */
+    background-color: #FFA000; /* Light red background */
+    color: #fff; /* Dark red text */
     border-radius: 12px; /* Rounded corners */
     font-weight: 500; /* Slightly bold text */
-    padding: 4px 8px; /* Padding around text */
+    padding: 5px 10px; /* Padding around text */
     display: flex;
     align-items: center;
 }

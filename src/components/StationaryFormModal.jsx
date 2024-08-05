@@ -1,7 +1,7 @@
 // StationaryFormModal.js
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Button, Select, DatePicker, Spin, message, Cascader } from 'antd';
-import axiosInstance from "./axios/axiosInstance";
+import axiosInstance from "../axios/axiosInstance";
 
 const { Option } = Select;
 
