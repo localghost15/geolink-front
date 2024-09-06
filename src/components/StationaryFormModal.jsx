@@ -13,6 +13,8 @@ const StationaryFormModal = ({ visible, onCancel, onSubmit, initialData }) => {
     const [beds, setBeds] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedApartmentId, setSelectedApartmentId] = useState(null);
+    const [primaryServices, setPrimaryServices] = useState([]);
+    const [selectedService, setSelectedService] = useState(null);
 
     useEffect(() => {
         const fetchDoctors = async () => {
@@ -28,6 +30,7 @@ const StationaryFormModal = ({ visible, onCancel, onSubmit, initialData }) => {
                 setIsLoading(false);
             }
         };
+
 
         const fetchPatients = async () => {
             setIsLoading(true);
@@ -55,10 +58,30 @@ const StationaryFormModal = ({ visible, onCancel, onSubmit, initialData }) => {
             }
         };
 
+        const fetchServices = async () => {
+            try {
+                const response = await axiosInstance.get("/admin/service?primary=1&type=stationary");
+                // Фильтруем услуги, где primary === 1
+                const primaryServices = response.data.data.filter(service => service.primary === 1);
+                // Сохраняем отфильтрованные услуги
+                setPrimaryServices(response.data.data);
+            } catch (error) {
+                console.error("Ошибка при получении списка услуг:", error);
+            }
+        };
+
+        fetchServices();
         fetchDoctors();
         fetchPatients();
         fetchApartments();
     }, []);
+
+
+
+
+    const handleServiceSelect = (selectedOption) => {
+        setSelectedService(selectedOption);
+    };
 
     useEffect(() => {
         if (initialData) {
@@ -66,6 +89,7 @@ const StationaryFormModal = ({ visible, onCancel, onSubmit, initialData }) => {
                 patient_id: initialData.patient_id,
                 doctor_id: initialData.doctor_id,
                 bed_id: initialData.bed_id,
+                type: initialData.type,
                 start_at: initialData.start_at ? new Date(initialData.start_at * 1000) : null,
             });
             // Загрузка кроватей при инициализации
@@ -91,6 +115,7 @@ const StationaryFormModal = ({ visible, onCancel, onSubmit, initialData }) => {
 
         const bedId = values.bed_id[1];
         data.append('bed_id', bedId);
+        data.append('service_id', values.service_id);
 
         data.append('start_at', values.start_at.format('YYYY-MM-DD HH:mm:ss'));
 
@@ -170,6 +195,16 @@ const StationaryFormModal = ({ visible, onCancel, onSubmit, initialData }) => {
                             ))}
                         </Select>
                     </Form.Item>
+                    <Form.Item label="Хизмат тури" name="service_id" rules={[{ required: true, message: 'Илтимос, хизмат турни танланг' }]}>
+                        <Select placeholder="Хизмат тури">
+                            {primaryServices.map(primaryService => (
+                                <Option key={primaryService.id} value={primaryService.id}>
+                                    {primaryService.name}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+
                     <Form.Item label="Апартамент ва кровать" name="bed_id" rules={[{ required: true, message: 'Илтимос, кроватьни танланг' }]}>
                         <Cascader
                             options={apartmentOptions}

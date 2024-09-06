@@ -185,6 +185,8 @@ border-radius: 0px !important;
     margin: 10px !important;
 }
 
+
+
 .Rect:hover {
     fill: #FFEB3B;
     cursor: pointer;
@@ -240,17 +242,23 @@ border-radius: 0px !important;
 }
 
 
+.fc-button-group {
+    display: flex;
+    gap: 5px;
+}
 
 
-.fc-timeGridWeek-button, .fc-dayGridMonth-button, .fc-timeGridDay-button    {
+.fc-timeGridWeek-button, .fc-dayGridMonth-button, .fc-timeGridDay-button , .fc-prev-button , .fc-next-button, .fc-today-button   {
 background-color: #00AA81 !important;
 text-transform: capitalize !important;
 font-size: 15px !important;
     font-weight: 500 !important;
 border-color: transparent !important;
-padding: 1em 2em !important;
-border-radius: 0px !important;
+padding: 0.5em 2em !important;
+border-radius: 5px !important;
 }
+
+
 .fc-timeGridWeek-button:focus, .fc-dayGridMonth-button:focus, .fc-timeGridDay-button:focus {
 box-shadow: none !important;
 }
@@ -259,7 +267,6 @@ box-shadow: none !important;
     background-color: #008567 !important;
 box-shadow: none !important;
 }
-
 
 
 

@@ -9,12 +9,13 @@ import {Button} from 'antd'
 const CreateVisit = ({patientId, mostRecentVisit, onUpdateVisits  }) => {
     const [openVisit, setOpenVisit] = React.useState(false);
     const [primaryServices, setPrimaryServices] = useState([]);
+    const [selectedService, setSelectedService] = useState(null);
     const [doctorId, setDoctorId] = useState('');
     const [doctors, setDoctors] = useState([]);
     const [selectedDoctor, setSelectedDoctor] = useState('');
     const openDrawer = () => setOpenVisit((cur) => !cur);
     const closeDrawer = () => setOpenVisit(false);
-    const [selectedService, setSelectedService] = useState(null);
+
     
 
     useEffect(() => {

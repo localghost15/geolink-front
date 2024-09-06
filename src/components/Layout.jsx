@@ -162,12 +162,7 @@ const Layout = () => {
       </MenuList>
     </Menu>
         {/* Profile dropdown */}
-        <div className="relative ml-3">
-          <div className="flex items-center">
-            <Button size="large" type="primary" icon={<IoPeopleCircle className="h-7 w-7"/>} onClick={handleLogout}>
-            </Button>
-          </div>
-        </div>
+
         <div className="relative ml-3">
           <div>
             <Button size="large" type="default" icon={<LuLogOut className="h-6 w-6"/>} onClick={handleLogout}>

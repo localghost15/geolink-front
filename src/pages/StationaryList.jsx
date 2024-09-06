@@ -6,6 +6,7 @@ import StationaryFormModal from "../components/StationaryFormModal";
 import {IoIosBed} from "react-icons/io";
 import {FaClinicMedical} from "react-icons/fa";
 import {BiDialpadAlt} from "react-icons/bi";
+import axiosInstance from "../axios/axiosInstance";
 
 const StationaryTable = () => {
     const [dataSource, setDataSource] = useState([]);
@@ -13,6 +14,8 @@ const StationaryTable = () => {
     const [error, setError] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [currentRecord, setCurrentRecord] = useState(null);
+
+
 
     const fetchStationary = async () => {
         try {
@@ -30,6 +33,8 @@ const StationaryTable = () => {
 
         fetchStationary();
     }, []);
+
+
 
     const handleEdit = (record) => {
         setCurrentRecord(record);

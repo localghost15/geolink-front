@@ -2,6 +2,7 @@
   "name": "router6",
   "version": "0.1.0",
   "private": true,
+  "main": "main.js",
   "dependencies": {
     "@ant-design/icons": "^5.3.7",
     "@fullcalendar/core": "^6.1.11",
@@ -16,6 +17,7 @@
     "antd": "^5.17.4",
     "axios": "^1.6.8",
     "browserslist": "^4.23.0",
+    "concurrently": "^8.2.2",
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.11",
     "formik": "^2.4.6",
@@ -52,7 +54,8 @@
     "start": "set PORT=3100 && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron-start": "concurrently \"npm run start\" \"wait-on http://localhost:3100 && electron .\""
   },
   "eslintConfig": {
     "extends": [
@@ -73,6 +76,8 @@
     ]
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.3"
+    "electron": "^31.3.1",
+    "tailwindcss": "^3.4.3",
+    "wait-on": "^7.2.0"
   }
 }

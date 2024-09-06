@@ -21,7 +21,7 @@ function Login() {
     // Установка таймера для спинера на 2 секунды
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 2000);
+    }, 1000);
 
     return () => clearTimeout(timer); // Очистка таймера при размонтировании
   }, []);

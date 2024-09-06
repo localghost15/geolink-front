@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { PencilIcon, TrashIcon, UserPlusIcon } from "@heroicons/react/24/solid";
-import { Dialog, Transition } from '@headlessui/react';
-import {Card,  Tooltip,  Switch, CardBody} from "@material-tailwind/react";
-import {Typography,Input, Button, Table, Pagination } from "antd";
+import { Modal, Tooltip, Switch, Input, Button, Table, Pagination, Typography, Card, Radio } from "antd";
+import {DeleteOutlined, UserAddOutlined } from "@ant-design/icons";
 import axiosInstance from "../axios/axiosInstance";
+import {IoPencilOutline} from "react-icons/io5";
 import {BiDialpadAlt} from "react-icons/bi";
-import {FaAddressBook} from "react-icons/fa";
+import {PencilIcon, TrashIcon} from "@heroicons/react/24/solid";
 
-const TABLE_HEAD = ["ID", "Номланиши", "Нархи", "Хизмат тури", "Харакат"];
+const { Title } = Typography;
+const { Search } = Input;
 
-export default function Services() {
-  const [isOpen, setIsOpen] = useState(false);
+const Services = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [services, setServices] = useState([]);
   const [newServiceName, setNewServiceName] = useState('');
   const [newServicePrice, setNewServicePrice] = useState('');
@@ -19,6 +19,7 @@ export default function Services() {
   const [searchText, setSearchText] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [serviceType, setServiceType] = useState('all');
 
   useEffect(() => {
     fetchServices();
@@ -34,31 +35,31 @@ export default function Services() {
   };
 
   const closeModal = () => {
-    setIsOpen(false);
+    setIsModalOpen(false);
     setEditServiceId(null);
     setNewServiceName('');
     setNewServicePrice('');
     setIsPrimary(false);
+    setServiceType('all');
   };
 
   const openModal = () => {
-    setIsOpen(true);
+    setIsModalOpen(true);
   };
 
   const handleSave = async () => {
     try {
+      const serviceData = {
+        name: newServiceName,
+        price: newServicePrice,
+        primary: isPrimary ? 1 : 0,
+        type: serviceType
+      };
+
       if (editServiceId) {
-        await axiosInstance.put(`/admin/service/${editServiceId}`, {
-          name: newServiceName,
-          price: newServicePrice,
-          primary: isPrimary ? 1 : 0
-        });
+        await axiosInstance.put(`/admin/service/${editServiceId}`, serviceData);
       } else {
-        await axiosInstance.post("/admin/service", {
-          name: newServiceName,
-          price: newServicePrice,
-          primary: isPrimary ? 1 : 0
-        });
+        await axiosInstance.post("/admin/service", serviceData);
       }
       fetchServices();
       closeModal();
@@ -72,6 +73,7 @@ export default function Services() {
     setNewServiceName(service.name);
     setNewServicePrice(service.price);
     setIsPrimary(service.primary);
+    setServiceType(service.type || 'all');
     openModal();
   };
 
@@ -84,33 +86,44 @@ export default function Services() {
     }
   };
 
-  const handleSearch = (e) => {
-    setSearchText(e.target.value);
+  const handleSearch = (value) => {
+    setSearchText(value);
   };
 
   const filteredServices = services.filter(service =>
       service.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
+  const getTypeName = (type) => {
+    switch (type) {
+      case 'all':
+        return 'Все';
+      case 'ambulatory':
+        return 'Амбулаторный';
+      case 'stationary':
+        return 'Стационарный';
+      default:
+        return '';
+    }
+  };
+
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
     { title: 'Номланиши', dataIndex: 'name', key: 'name' },
-    { title: 'Префикс', dataIndex: 'prefix', key: 'prefix' },
     { title: 'Нархи', dataIndex: 'price', key: 'price' },
+    { title: 'Хил', dataIndex: 'type', key: 'type', render: getTypeName },
     { title: 'Хизмат тури', dataIndex: 'primary', key: 'primary', render: text => text ? 'Основной' : 'Дополнительный' },
     {
       title: 'Харакат',
       key: 'action',
       render: (text, record) => (
           <div className="flex items-center gap-4">
-            <Tooltip className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўзгартириш">
-              <Button type="dashed" onClick={() => handleEdit(record)} variant="text">
-                <PencilIcon className="h-4 w-4" />
+            <Tooltip title="Ўзгартириш">
+              <Button type="primary" icon={ <PencilIcon className="h-4 w-4" />} onClick={() => handleEdit(record)}>
               </Button>
             </Tooltip>
-            <Tooltip className="border border-blue-gray-50 text-black bg-white px-4 py-3 shadow-xl shadow-black/10" content="Ўчириш">
-              <Button type="dashed" onClick={() => handleDelete(record.id)} variant="text">
-                <TrashIcon className="h-4 w-4" />
+            <Tooltip title="Ўчириш">
+              <Button icon={<TrashIcon className="h-4 w-4"/>} onClick={() => handleDelete(record.id)}>
               </Button>
             </Tooltip>
           </div>
@@ -119,95 +132,76 @@ export default function Services() {
   ];
 
   return (
-      <Card className="h-full w-full rounded-none pt-5">
+      <Card className="h-full w-full rounded-none border-none">
         <div className="px-10">
-          <Typography.Title level={3}>Асосий хизматлар</Typography.Title>
+          <Title level={3}>Асосий хизматлар</Title>
 
-          <div className="w-full flex items-center justify-between" style={{marginBottom: 16}}>
+          <div className="w-full flex items-center justify-between" style={{ marginBottom: 16 }}>
             <Input
-                prefix={<BiDialpadAlt  size="20"  />}
-                style={{width: 300}}
-                placeholder="Қидириш..."
+                prefix={<BiDialpadAlt size="20"/>}
+                size="large"
+                placeholder="Беморни Қидириш"
                 value={searchText}
-                onChange={handleSearch}
-                className="my-4"
+                onChange={e => handleSearch(e.target.value)}
+                className="ant-input rounded-md"
+                style={{width: 300}}
             />
-            <Button type="primary" onClick={openModal} className="flex h-10 items-center gap-3 normal-case font-normal"
-                    size="sm">
-              <UserPlusIcon strokeWidth={2} className="h-5 w-5"/> Янги қўшиш
+            <Button type="primary" onClick={openModal} className="flex h-10 items-center gap-3 normal-case font-normal" size="sm">
+              <UserAddOutlined />
+              Янги қўшиш
             </Button>
-            <Transition appear show={isOpen} as={React.Fragment}>
-              <Dialog as="div" className="relative z-10" onClose={closeModal}>
-                <Transition.Child
-                    as={React.Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                  <div className="fixed inset-0 bg-black/25"/>
-                </Transition.Child>
-                <div className="fixed inset-0 overflow-y-auto">
-                  <div className="flex min-h-full items-center justify-center p-4 text-center">
-                    <Transition.Child
-                        as={React.Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0 scale-95"
-                        enterTo="opacity-100 scale-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100 scale-100"
-                        leaveTo="opacity-0 scale-95"
-                    >
-                      <Dialog.Panel
-                          className="w-full max-w-xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                        <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
-                          Хизмат кўшиш
-                        </Dialog.Title>
-                        <div className="mt-2">
-                          <div className="grid grid-cols-1 gap-4">
-                            <Input placeholder="Хизмат номи: *" size="lg" value={newServiceName}
-                                   onChange={(e) => setNewServiceName(e.target.value)}/>
-                            <Input placeholder="Нархи: *" size="lg" value={newServicePrice}
-                                   onChange={(e) => setNewServicePrice(e.target.value)}/>
-                          </div>
-                          <div className="flex items-center mt-2 gap-4">
-                            <Switch label={isPrimary ? 'Основной' : 'Дополнительный'}
-                                    className="h-full w-full checked:bg-[#00AA81]"
-                                    containerProps={{
-                                      className: "w-11 h-6",
-                                    }}
-                                    circleProps={{
-                                      className: "before:hidden left-0.5 border-none",
-                                    }}
-                                    checked={isPrimary}
-                                    onChange={(e) => setIsPrimary(e.target.checked)}
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-4 w-full">
-                          <Button onClick={handleSave} type="primary" block>Сақлаш</Button>
-                        </div>
-                      </Dialog.Panel>
-                    </Transition.Child>
-                  </div>
-                </div>
-              </Dialog>
-            </Transition>
           </div>
         </div>
 
+        <Modal
+            centered
+            title={editServiceId ? "Хизматни таҳрирлаш" : "Хизмат кўшиш"}
+            visible={isModalOpen}
+            onCancel={closeModal}
+            footer={[
+              <Button key="cancel" onClick={closeModal}>
+                Бекор қилиш
+              </Button>,
+              <Button key="save" type="primary" onClick={handleSave}>
+                Сақлаш
+              </Button>
+            ]}
+        >
+          <div className="grid grid-cols-1 gap-4">
+            <Input
+                placeholder="Хизмат номи: *"
+                size="large"
+                value={newServiceName}
+                onChange={(e) => setNewServiceName(e.target.value)}
+            />
+            <Input
+                placeholder="Нархи: *"
+                size="large"
+                value={newServicePrice}
+                onChange={(e) => setNewServicePrice(e.target.value)}
+            />
+          </div>
+          <div className="mt-4">
+            <Radio.Group buttonStyle="solid" onChange={e => setServiceType(e.target.value)} value={serviceType}>
+              <Radio.Button value="all">Хаммаси</Radio.Button>
+              <Radio.Button value="ambulatory">Амбулаторный</Radio.Button>
+              <Radio.Button value="stationary">Стационарный</Radio.Button>
+            </Radio.Group>
+          </div>
+          <div className="flex items-center mt-4 gap-4">
+            <Switch checked={isPrimary} onChange={(checked) => setIsPrimary(checked)}/>
+            <span>{isPrimary ? 'Основной' : 'Дополнительный'}</span>
+          </div>
 
-        <CardBody>
+        </Modal>
 
-          <Table
-              columns={columns}
-              dataSource={filteredServices.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
-              pagination={false}
-              rowKey="id"
-          />
-        </CardBody>
+        <Table
+            columns={columns}
+            dataSource={filteredServices.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+            pagination={false}
+            rowKey="id"
+        />
+
         <Pagination
             current={currentPage}
             pageSize={pageSize}
@@ -218,4 +212,6 @@ export default function Services() {
         />
       </Card>
   );
-}
+};
+
+export default Services;

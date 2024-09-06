@@ -4,32 +4,31 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import uzLocale from '@fullcalendar/core/locales/uz-cy';
-import { Dialog, DialogHeader, DialogBody, DialogFooter, IconButton,} from '@material-tailwind/react';
+import {
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  IconButton,
+  Tooltip as Tool,
+  Typography
+} from '@material-tailwind/react';
 import {ArrowUpOnSquareIcon, ClockIcon, PhoneIcon, TrashIcon} from '@heroicons/react/24/solid';
 import axios from 'axios';
-import {Button, Modal, notification, TimePicker as TimePickerInput, Input} from "antd";
+import {Button, Modal, notification, TimePicker as TimePickerInput, Input, Tooltip} from "antd";
 import moment from 'moment';
 import 'moment/locale/uz';
+import allLocales from '@fullcalendar/core/locales-all'
 import axiosInstance from "../axios/axiosInstance";
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/high-res.css'
-
-function Icon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="h-full w-full scale-105"
-    >
-      <path
-        fillRule="evenodd"
-        d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
+import {HiBookmark} from "react-icons/hi2";
+import {FaCalendarWeek} from "react-icons/fa6";
+import {BsCalendar2WeekFill} from "react-icons/bs";
+import {FcCallback} from "react-icons/fc";
+import {IoCall} from "react-icons/io5";
+import {TbGridDots} from "react-icons/tb";
+import {MdPrivacyTip} from "react-icons/md";
 
 
 
@@ -278,35 +277,18 @@ export default function Calendar() {
   const renderEventContent = (eventInfo) => {
     const { title, phone, start_time } = eventInfo.event.extendedProps;
     return (
-        // <div >
-        //   <p className='flex font-semibold items-center text-xs gap-1'>
-        //    <div className="bg-white rounded-md p-1"><img src="/watch2.png" className='h-6 w-6' /></div>  {start_time}
-        //   </p>
-        //   <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'>
-        //     <div className="bg-white rounded-md p-1"><img src="/patient.png" className='h-6 w-6' alt=""/></div>
-        //     {title}</p>
-        // </div>
-
-        <div className="flex flex-col justify-center text-xs text-white bg-[#00AA81] rounded-md max-w-[319px]">
-          <div className="flex overflow-hidden relative flex-col px-4 py-3 w-full aspect-[2.33]">
-            <img
-                loading="lazy"
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/6c9086af62bd60c01abe617a3837f029e0a89ab60334f8892969364d7c6e7b2b?apiKey=0e60d26ffe404316aa35b6241738714a&"
-                className="object-cover absolute inset-0 size-full"
-            />
-            <div className="flex relative gap-5 justify-between px-0.5 text-sm font-semibold whitespace-nowrap">
-              <div className="my-auto">{start_time}</div>
-              <img
-                  loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/b378760b1d802bb67646e80faaec3f0b81d42d209110e43f6035386283b8b36d?apiKey=0e60d26ffe404316aa35b6241738714a&"
-                  className="shrink-0 w-6 aspect-square"
-              />
-            </div>
-            <div className="relative  font-medium">
-              {title}
-            </div>
-          </div>
-        </div>
+    <span
+        class="inline-flex capitalize w-full items-center gap-x-2.5 py-1.5 px-3 rounded text-xs font-medium bg-green-100/50 text-green-800">
+       <span class="flex relative items-center top-0 end-0 size-3 -me-1.5">
+    <span class="animate-ping absolute inline-flex size-full rounded bg-green-400 opacity-75 dark:bg-red-600"></span>
+    <span class="relative inline-flex rounded size-3 bg-green-500">
+    </span>
+  </span>
+     <div className="ml-1">
+        {title} <br/>
+       {start_time}
+     </div>
+    </span>
     );
   };
 
@@ -344,14 +326,18 @@ export default function Calendar() {
     return hasError;
   };
 
-
+  const formatPhoneNumber = (phone) => {
+    // Assuming phone number is a string like "998909099090"
+    return `+${phone.slice(0, 3)} ${phone.slice(3, 5)} ${phone.slice(5, 8)} ${phone.slice(8, 10)} ${phone.slice(10)}`;
+  };
   return (
       <div className="w-full ">
         <div className="flex w-full">
           <div className="w-1/5 ">
-            <h1 className="text-xl font-semibold mb-3 px-3 pb-1">Барча банд қилинган учрашувлар</h1>
+            <h1 className="text-lg font-semibold mb-3 px-3 pb-1">Барча банд қилинган учрашувлар</h1>
             <div className="px-3">
               <Input
+                  prefix={<TbGridDots />}
                   value={searchText}
                   onChange={handleSearchInputChange}
                   placeholder="Излаш..."
@@ -360,18 +346,38 @@ export default function Calendar() {
             </div>
             <div className="h-[50vh] overflow-y-auto">
               {filteredEvents.map(event => (
-                  <div className="fc-event12" key={event.id}>
-                    <p className='flex font-semibold items-center text-xs gap-1'>
-                      <img src="/watch2.png" className='h-4 w-4' alt=""/>
-                      {event.start_at} {event.start_time}
-                    </p>
-                    <p className='font-bold text-xs flex items-center gap-1 mt-1 capitalize'><img src="/patient.png"
-                                                                                                  className='h-4 w-4'
-                                                                                                  alt=""/> {event.title}
-                    </p>
-                    <p className='font-medium text-xs flex items-center gap-1 mt-1'><img src="/mobile4.png"
-                                                                                         className='h-4 w-4'
-                                                                                         alt=""/> {event.phone}</p>
+                  <div className="flex items-center gap-3 justify-start p-2 bg-white rounded-md "
+                       key={event.id}>
+                    <div className="bg-[#00AA81] bg-opacity-30 p-1 h-12 w-12 relative rounded-md">
+                      <HiBookmark className="text-[#00AA81]" size="25"/>
+                    </div>
+                    <div className="text-[#00263E]">
+                      <p className="text-sm font-bold capitalize">
+                        {event.title}
+                      </p>
+                      <Tool
+                          placement="bottom"
+                          className="border border-blue-gray-50 bg-white px-4 py-3 shadow-sm shadow-black/10"
+                          content={
+                            <div className="w-48">
+                              <Typography color="blue-gray" className="font-medium text-sm">
+                                Беморга телефон килиш
+                              </Typography>
+                            </div>
+                          }
+                      >
+                        <a href={`tel:${event.phone}`}
+                           className="text-sm flex items-center gap-1 font-medium hover:text-[#008567] text-[#00AA81]">
+                          <IoCall/>
+                          {formatPhoneNumber(event.phone)}
+                        </a>
+                      </Tool>
+                      <span
+                          class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ">
+                         {event.start_at} &nbsp;
+                        {event.start_time}
+                      </span>
+                    </div>
                   </div>
 
               ))}
@@ -379,42 +385,56 @@ export default function Calendar() {
           </div>
 
           <div className="w-full px-5">
-            <FullCalendar
-                locale={uzLocale}
-                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
-                headerToolbar={{
-                  start: 'prev,next today',
-                  center: '',
-                  end: 'dayGridMonth,timeGridWeek,timeGridDay',
-                }}
-                // dayMaxEvents={true}
-                themeSystem="lux"
-                editable={true}
-                height={'85vh'}
-                selectable={true}
-                selectMirror={true}
-                events={events.map(event => ({
-                  id: event.id,
-                  title: event.title,
-                  start: event.start_at,
-                  start_time: event.start_time,
-              end: event.end_at,
-              extendedProps: {
-                phone: event.phone,
-                title: event.title,
-                start: event.start_at,
-                start_time: event.start_time,
-              },
-            }))}
-            select={handleDateSelect}
-            eventContent={renderEventContent}
-            eventClick={handleEventClick}
-            eventDrop={handleEventDrop}
-        />
-      </div>
-    </div>
-      <Modal title="Бемор қўшиш" centered footer={[
+            <div className="calendar-container">
+              <FullCalendar
+                  locales={allLocales} locale={'uz'}
+
+                  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                  initialView="dayGridMonth"
+                  headerToolbar={{
+                    start: 'prev,next today',
+                    center: 'title',
+                    end: 'dayGridMonth,timeGridWeek,timeGridDay',
+                  }}
+                  // dayMaxEvents={true}
+                  themeSystem="standart"
+                  editable={true}
+                  height={'85vh'}
+                  selectable={true}
+                  selectMirror={true}
+                  events={events.map(event => ({
+                    id: event.id,
+                    title: event.title,
+                    start: event.start_at,
+                    start_time: event.start_time,
+                    end: event.end_at,
+                    extendedProps: {
+                      phone: event.phone,
+                      title: event.title,
+                      start: event.start_at,
+                      start_time: event.start_time,
+                    },
+                  }))}
+
+
+                  navLinks={true}
+                  nowIndicator={true}
+                  weekNumbers={false}
+                  showNonCurrentDates={false}
+                  dayHeaders={true}
+                  
+                  select={handleDateSelect}
+                  eventContent={renderEventContent}
+                  eventClick={handleEventClick}
+                  eventDrop={handleEventDrop}
+              />
+
+              {/* React Tooltip for event hover */}
+              <Tooltip id="eventTooltip" />
+            </div>
+          </div>
+        </div>
+        <Modal title="Бемор қўшиш" centered footer={[
           <div className="flex gap-3 justify-end">
             <Button type="primary" className='flex gap-x-1 items-center font-medium'
                     onClick={selectedEvent ? handleUpdateEvent : handleConfirmEvent}>
@@ -427,34 +447,34 @@ export default function Calendar() {
                 </Button>
             )}
           </div>
-      ]} className='w-min' open={openDialog} onCancel={handleDialogClose}>
-        <div className="mb-4">
-          <label htmlFor="time" className="block mb-1 text-sm font-medium text-gray-700">
-            ФИО:
-          </label>
-          <Input
-              name="name"
-              value={eventTitle}
-              onChange={handleTitleChange}
-              placeholder="ФИО: *"
-              labelProps={{
-                className: "hidden",
-              }}
-              containerProps={{className: "min-w-[100px]"}}
-              size="lg"
-
-              error={errors.eventTitle}
-          />
-          {errors.eventTitle && <p className="text-red-500 text-xs mt-1">{errors.eventTitle}</p>}
-          <div className="mt-4 ">
-            <label htmlFor="time" className="block text-sm font-medium text-gray-700">
-              Телефон раками:
+        ]} className='w-min' open={openDialog} onCancel={handleDialogClose}>
+          <div className="mb-4">
+            <label htmlFor="time" className="block mb-1 text-sm font-medium text-gray-700">
+              ФИО:
             </label>
-            <PhoneInput
-                dropdownClass="will-change-auto"
-                countryCodeEditable={false}
-                disableDropdown={true}
-                country={'uz'}
+            <Input
+                name="name"
+                value={eventTitle}
+                onChange={handleTitleChange}
+                placeholder="ФИО: *"
+                labelProps={{
+                  className: "hidden",
+                }}
+                containerProps={{className: "min-w-[100px]"}}
+                size="lg"
+
+                error={errors.eventTitle}
+            />
+            {errors.eventTitle && <p className="text-red-500 text-xs mt-1">{errors.eventTitle}</p>}
+            <div className="mt-4 ">
+              <label htmlFor="time" className="block text-sm font-medium text-gray-700">
+                Телефон раками:
+              </label>
+              <PhoneInput
+                  dropdownClass="will-change-auto"
+                  countryCodeEditable={false}
+                  disableDropdown={true}
+                  country={'uz'}
                 preferredCountries={['uz']}
                 onlyCountries={['uz']}
                 inputClass="ant-input"
