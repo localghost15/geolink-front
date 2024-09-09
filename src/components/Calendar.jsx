@@ -15,7 +15,7 @@ import {
 } from '@material-tailwind/react';
 import {ArrowUpOnSquareIcon, ClockIcon, PhoneIcon, TrashIcon} from '@heroicons/react/24/solid';
 import axios from 'axios';
-import {Button, Modal, notification, TimePicker as TimePickerInput, Input, Tooltip} from "antd";
+import {Button, Modal, notification, TimePicker as TimePickerInput, Input, Tooltip, Divider} from "antd";
 import moment from 'moment';
 import 'moment/locale/uz';
 import allLocales from '@fullcalendar/core/locales-all'
@@ -29,6 +29,7 @@ import {FcCallback} from "react-icons/fc";
 import {IoCall} from "react-icons/io5";
 import {TbGridDots} from "react-icons/tb";
 import {MdPrivacyTip} from "react-icons/md";
+import toast, {Toaster} from "react-hot-toast";
 
 
 
@@ -224,12 +225,7 @@ export default function Calendar() {
     try {
       const response = await axiosInstance.put(`/calendar/${event.id}`, updatedEvent);
       if (response.status === 200) {
-        notification.success({
-          message: 'Учрашув янгиланди',
-          description: `Учрашув "${event.title}" га янгиланди`,
-          duration: 2,
-          placement: 'bottomRight'
-        });
+      toast.success(`Учрашув санаси ўзгартирилди ${response.data.data.start_at}`)
         fetchEvents();
       } else {
         console.error("Error updating event:", response);
@@ -285,7 +281,7 @@ export default function Calendar() {
     </span>
   </span>
      <div className="ml-1">
-        {title} <br/>
+        <span className="text-black font-medium">{title}</span> <br/>
        {start_time}
      </div>
     </span>
@@ -326,16 +322,17 @@ export default function Calendar() {
     return hasError;
   };
 
+  const customDayHeaders = ['Душанба', 'Сешанба', 'Чоршанба', 'Пайшанба', 'Жума', 'Шанба', 'Якшанба'];
+
   const formatPhoneNumber = (phone) => {
-    // Assuming phone number is a string like "998909099090"
     return `+${phone.slice(0, 3)} ${phone.slice(3, 5)} ${phone.slice(5, 8)} ${phone.slice(8, 10)} ${phone.slice(10)}`;
   };
   return (
-      <div className="w-full ">
+      <div className="w-full">
         <div className="flex w-full">
-          <div className="w-1/5 ">
-            <h1 className="text-lg font-semibold mb-3 px-3 pb-1">Барча банд қилинган учрашувлар</h1>
-            <div className="px-3">
+          <div className="w-1/5 border-r px-3">
+            <h1 className="text-md font-semibold px-3 pb-3">Барча учрашувлар</h1>
+            <div className="">
               <Input
                   prefix={<TbGridDots />}
                   value={searchText}
@@ -346,15 +343,14 @@ export default function Calendar() {
             </div>
             <div className="h-[50vh] overflow-y-auto">
               {filteredEvents.map(event => (
-                  <div className="flex items-center gap-3 justify-start p-2 bg-white rounded-md "
-                       key={event.id}>
-                    <div className="bg-[#00AA81] bg-opacity-30 p-1 h-12 w-12 relative rounded-md">
-                      <HiBookmark className="text-[#00AA81]" size="25"/>
+                  <div
+                      className="flex mb-2 border-b items-center gap-3 cursor-pointer justify-start p-2  bg-white hover:bg-gray-100/50 rounded-md group"
+                      key={event.id}>
+                    <div className="bg-gray-300 bg-opacity-40 p-1 h-12 w-12 relative rounded-md">
+                      <BsCalendar2WeekFill  className="text-[#00AA81] transition-colors  group-hover:text-[#000]" size="23"/>
                     </div>
                     <div className="text-[#00263E]">
-                      <p className="text-sm font-bold capitalize">
-                        {event.title}
-                      </p>
+                      <p className="text-sm font-bold capitalize">{event.title}</p>
                       <Tool
                           placement="bottom"
                           className="border border-blue-gray-50 bg-white px-4 py-3 shadow-sm shadow-black/10"
@@ -373,18 +369,17 @@ export default function Calendar() {
                         </a>
                       </Tool>
                       <span
-                          class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ">
-                         {event.start_at} &nbsp;
-                        {event.start_time}
-                      </span>
+                          className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
+          {event.start_at} &nbsp; {event.start_time}
+        </span>
                     </div>
                   </div>
-
               ))}
+
             </div>
           </div>
 
-          <div className="w-full px-5">
+          <div className="w-full px-3">
             <div className="calendar-container">
               <FullCalendar
                   locales={allLocales} locale={'uz'}
@@ -422,10 +417,11 @@ export default function Calendar() {
                   weekNumbers={false}
                   showNonCurrentDates={false}
                   dayHeaders={true}
-                  
+
                   select={handleDateSelect}
                   eventContent={renderEventContent}
                   eventClick={handleEventClick}
+                  dayHeaderContent={(args) => customDayHeaders[args.date.getDay()]}
                   eventDrop={handleEventDrop}
               />
 

@@ -9,7 +9,8 @@ import {RiUserSearchLine} from "react-icons/ri";
 import {LuSearch} from "react-icons/lu";
 import {BiDialpadAlt} from "react-icons/bi";
 import {Link} from "react-router-dom";
-import {UserGroupIcon} from "@heroicons/react/24/solid";
+import {TrashIcon, UserGroupIcon} from "@heroicons/react/24/solid";
+import {IoIdCard} from "react-icons/io5";
 
 const { Column } = Table;
 
@@ -20,7 +21,7 @@ const statusLabels = {
   pending: 'Тўлов кутилмоқда',
   payed: 'Тўланган',
   revisit: 'Навбатда...',
-  default: 'Навбатда...'  // Дефолтная метка для null
+  default: 'Навбатда...'
 };
 
 const statusColors = {
@@ -30,7 +31,7 @@ const statusColors = {
   pending: 'orange',
   payed: 'purple',
   revisit: 'gold',
-  default: 'gold'  // Дефолтный цвет для null
+  default: 'gold'
 };
 
 const Patients = () => {
@@ -203,12 +204,49 @@ const Patients = () => {
       title: "Харакат",
       key: "action",
       render: (text, record) => (
-          <span className="flex items-center gap-1">
+
+//           <span className="flex items-center gap-3">
+//   <Tooltip title="Ўзгартириш">
+//      <button onClick={() => handleOpenUpdateDialog(record)} className="uk-button uk-button-default"><FaUserEdit
+//          size="25"/></button>
+//
+//
+//   </Tooltip>
+//
+//   <Tooltip title="Бемор картаси">
+//     <Link to={`/patient/${record.id}`}>
+//       <Button
+//           size="large"
+//           type="primary"
+//           icon={<FaStreetView size="25"/>}
+//           onClick={() => console.log(record.id)}
+//           className="bg-gradient-to-r from-green-500 to-teal-500 text-white border-none hover:bg-gradient-to-r hover:from-green-600 hover:to-teal-600 shadow-lg transition duration-300 ease-in-out"
+//       />
+//     </Link>
+//   </Tooltip>
+//
+//   <Popconfirm
+//       title="Ёзувни ўчириш"
+//       onConfirm={() => handleRemovePatient(record.id)}
+//       icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+//       okText="Ўчириш"
+//       cancelText="Бекор қилиш"
+//   >
+//     <Button
+//         size="large"
+//         type="primary"
+//         icon={<TrashIcon className="h-4 w-4"/>}
+//         className="bg-gradient-to-r from-red-500 to-pink-500 text-white hover:bg-gradient-to-r border-none hover:from-red-600 hover:to-pink-600 shadow-lg transition duration-300 ease-in-out"
+//     />
+//   </Popconfirm>
+// </span>
+
+    <span className="flex items-center gap-1">
           <Tooltip title="Ўзгартириш">
             <Button
                 size="large"
                 type="primary"
-                icon={<FaUserEdit size="25"  />}
+                icon={<FaUserEdit size="25"/>}
                 onClick={() => handleOpenUpdateDialog(record)}
             />
           </Tooltip>
@@ -217,7 +255,7 @@ const Patients = () => {
             <Button
                 size="large"
                 type="primary"
-                icon={<FaStreetView  size="25" />}
+                icon={<IoIdCard  size="25"/>}
                 onClick={() => console.log(record.id)}
             />
               </Link>
@@ -225,16 +263,17 @@ const Patients = () => {
           <Popconfirm
               title="Ёзувни ўчириш"
               onConfirm={() => handleRemovePatient(record.id)}
-              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+              icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
               okText="Ўчириш"
               cancelText="Бекор қилиш"
           >
-            <Button size="large" type="primary" icon={<MdDelete size="25"  />} />
+            <Button size="large" icon={<TrashIcon className="h-4 w-4"/>}/>
           </Popconfirm>
         </span>
-      ),
-    },
-  ];
+),
+},
+]
+  ;
 
   return (
       <>

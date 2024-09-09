@@ -217,6 +217,8 @@ border-radius: 0px !important;
     align-items: center;
 }
 
+
+
 .ant-cascader-menu-item {
     font-weight: normal;
     transition: none !important; /* Убираем анимации, которые могут вызывать мерцание */
@@ -393,7 +395,7 @@ box-shadow: none !important;
 
 .sidebar-icon {
     /*color: rgb(42 99 246);*/
-    color: #00AA81;
+    /*color: #000;*/
 }
 
 .sidebar-icon-bg {
@@ -422,6 +424,36 @@ box-shadow: none !important;
     background: #fff;
 }
 
+.ant-menu-light.ant-menu-root.ant-menu-inline {
+    border-inline-end: none;
+}
+
+/*.uk-alert {*/
+/*    transition: opacity 0.1s ease-in-out, visibility 0.1s ease-in-out;*/
+/*    opacity: 1; !* Show by default *!*/
+/*    visibility: visible; !* Show by default *!*/
+/*}*/
+
+/*.uk-alert.collapsed {*/
+/*    opacity: 0; !* Hide when collapsed *!*/
+/*    visibility: hidden; !* Prevent interaction when hidden *!*/
+/*}*/
+
+.logo-container {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    height: 100px; /* Adjust the height as needed */
+    width: 100%; /* Full width */
+    position: relative; /* Positioning context for logos */
+}
+
+.logo {
+    width: auto; /* Adjust the width as needed */
+    max-width: 100%; /* Prevent overflow */
+    transition: opacity 0.8s ease-in-out; /* Smooth transition */
+    position: absolute; /* Position both logos in the same place */
+}
 .info-logo::before {
     content: "";
     display: block;
@@ -565,7 +597,38 @@ box-shadow: none !important;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px;
+    /*padding: 10px;*/
+}
+
+.fc .fc-col-header-cell {
+    background-color: #f5f5f5; /* Light grey background */
+    padding: 10px; /* Space around text */
+    text-align: center; /* Center the text */
+    font-weight: 600; /* Bold text */
+    font-size: 0.9rem; /* Increase font size */
+    color: #000; /* Dark text color */
+    border-bottom: 1px solid #ddd; /* Bottom border */
+}
+
+.fc .fc-daygrid-day-top {
+    display: flex;
+    justify-content: flex-start; /* Center content */
+    align-items: center;
+    padding: 5px;
+    background-color: #fff;
+    border: none; /* Border around each day */
+    border-bottom: none; /* Remove bottom border */
+}
+
+.fc .fc-scrollgrid-section-header > td {
+    border-bottom: 1px solid #ddd; /* Bottom border */
+}
+
+/* Hover effect for day headers */
+.fc .fc-col-header-cell:hover {
+    background-color: #e2e8f0; /* Slightly darker on hover */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease; /* Smooth transition */
 }
 
 .sidebar.collapsed {
@@ -573,7 +636,7 @@ box-shadow: none !important;
 }
 
 .sidebar:not(.collapsed) {
-    width: 350px; /* Примерная ширина для развернутого состояния */
+    width: 300px; /* Примерная ширина для развернутого состояния */
 }
 
 /* Плавная анимация для меню */

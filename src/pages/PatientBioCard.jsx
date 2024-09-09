@@ -15,7 +15,8 @@ import {
     Collapse,
     Checkbox,
     Alert,
-    Descriptions, Image
+    Descriptions, Image,
+    Space
 } from 'antd';
 import { endVisit, fetchVisits, startVisit } from '../services/visitService';
 import { PaymentHistoryTable } from '../components/PaymentHistoryTable';
@@ -495,35 +496,63 @@ function PatientBioCard() {
           key: '1',
           label: 'Янги Қабул',
           children: <div>
-              <Divider orientation="left" orientationMargin="0">
-      Янги қабул холати
-    </Divider>
-     <Typography className='text-sm mb-2 font-semibold text-blue-gray-900'>
-    Жорий холат: <Tag bordered={false} color={color}>
-    {mostRecentVisit && statusNames[mostRecentVisit.status] || mostRecentVisit && mostRecentVisit.status}
-    </Tag>
-</Typography>
-    <Typography className='text-sm mb-2 font-semibold text-blue-gray-900'>
-    Қабул ташриф буюрган: <Tag bordered={false} color="processing">
-    {mostRecentVisit && mostRecentVisit.visit_at || mostRecentVisit && mostRecentVisit.visit_at}
-    </Tag>
-</Typography>
+ <div className="p-4 bg-white mb-3 border border-gray-200 rounded-md">
+      <Divider orientation="left" orientationMargin={0} className="text-sm font-semibold mb-3 text-gray-800">
+        Янги қабул ҳолати
+      </Divider>
 
-{(mostRecentVisit && (mostRecentVisit.status === "new" || mostRecentVisit.status === "queue")) && (
-    <Button  className="items-center flex" icon={ <MdPlayLesson /> } size="large" type='primary' onClick={handleStartVisit}  disabled={isButtonLoading || isBillPending} loading={isButtonLoading}>
-        {isButtonLoading ? 'Қабул бошлаяпти...' : 'Қабулни Бошлаш'}
-    </Button>
-)}
+      <Space direction="vertical" size="small" className="w-full mb-4">
+        <Typography.Text className="text-sm font-medium text-gray-700">
+          Жорий ҳолат:
+          <Tag bordered={false} color={color} className="ml-2 px-2 py-1 font-medium" style={{ backgroundColor: '#F3F4F6', color: '#333' }}>
+            {mostRecentVisit && statusNames[mostRecentVisit.status] || mostRecentVisit?.status}
+          </Tag>
+        </Typography.Text>
 
+        <Typography.Text className="text-sm font-medium text-gray-700">
+          Қабул ташриф буюрган:
+          <Tag bordered={false} color="processing" className="ml-2 px-2 py-1 font-medium" style={{ backgroundColor: '#E5F3FF', color: '#0052CC' }}>
+            {mostRecentVisit?.visit_at}
+          </Tag>
+        </Typography.Text>
+      </Space>
 
-{mostRecentVisit && mostRecentVisit.status === "examined" && (
-    <Button className="items-center flex" icon={ <BsFillStopwatchFill /> } size="large"  type='primary' onClick={handleEndVisit} disabled={isButtonLoading} loading={isButtonLoading}>
-        {isButtonLoading ? 'Қабул Тугатяпти...' : 'Қабулни тугатиш'}
-    </Button>
-)}
-              <Divider orientation="left" orientationMargin="0">
-              Бемор харакати
-    </Divider>
+      <Space direction="horizontal" size="small" className="w-full mb-4">
+        {(mostRecentVisit && (mostRecentVisit.status === "new" || mostRecentVisit.status === "queue")) && (
+          <Button
+            icon={<MdPlayLesson />}
+            size="middle"
+            type="primary"
+            className="bg-blue-600 border-none rounded-md hover:bg-blue-700"
+            onClick={handleStartVisit}
+            disabled={isButtonLoading || isBillPending}
+            loading={isButtonLoading}
+            style={{ fontWeight: 500 }}
+          >
+            {isButtonLoading ? 'Қабул бошлаяпти...' : 'Қабулни Бошлаш'}
+          </Button>
+        )}
+
+        {mostRecentVisit && mostRecentVisit.status === "examined" && (
+          <Button
+            icon={<BsFillStopwatchFill />}
+            size="middle"
+            type="primary"
+            className="bg-blue-600 border-none rounded-md hover:bg-blue-700"
+            onClick={handleEndVisit}
+            disabled={isButtonLoading}
+            loading={isButtonLoading}
+            style={{ fontWeight: 500 }}
+          >
+            {isButtonLoading ? 'Қабул Тугатяпти...' : 'Қабулни тугатиш'}
+          </Button>
+        )}
+      </Space>
+
+      <Divider orientation="left" orientationMargin={0} className="text-sm font-semibold mt-3 text-gray-800">
+        Бемор ҳаракати
+      </Divider>
+ </div>
               {patientData && shouldRenderAccordionIcon && mostRecentVisit ? (
                   <>
                       <AccordionCustomIcon
@@ -775,7 +804,6 @@ function PatientBioCard() {
                                         className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
                                     >
                                         Харакат
-
                                     </Typography>
                                 </th>
 

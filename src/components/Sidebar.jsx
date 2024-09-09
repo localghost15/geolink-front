@@ -130,28 +130,44 @@ const items = [
 ];
 
 export const Sidebar = ({collapsed}) => {
-
   const [isCollapsed, setIsCollapsed] = useState(collapsed);
+  const [selectedKey, setSelectedKey] = useState('1');
 
   const toggleCollapsed = () => {
     setIsCollapsed(!isCollapsed);
   };
 
   return (
-      <div className={`sidebar  ${collapsed ? 'collapsed' : ''}`}>
-        <img className="my-5" src="/logomain.svg"/>
+      <div className={`sidebar  h-screen border-r  ${collapsed ? 'collapsed' : ''}`}>
+        <div className="py-10 logo-container">
+          <img
+              className={`logo transition-opacity duration-500 ease-in-out ${collapsed ? 'opacity-0 hidden' : 'opacity-100'}`}
+              src="/logomain.svg"
+              alt="Logo"
+          />
+          {/* Logo for collapsed state */}
+          <img
+              className={`logo transition-opacity duration-500 ease-in-out ${collapsed ? 'opacity-100' : 'hidden  opacity-0'}`}
+              src="/logo1.svg"
+              alt="Logo Collapsed"
+          />
+        </div>
         <Menu
             style={{
               overflow: 'auto',
               position: 'sticky',
               top: 0,
             }}
-            className="h-[97vh]"
+            className="h-[100vh]"
             defaultSelectedKeys={['1']}
             mode="inline"
             inlineCollapsed={collapsed}
             items={items}
         />
+
+<div className="p-3 w-full">
+  <Button className="flex justify-between  flex-row-reverse items-center" icon={<FiLogOut size="20"/>} type="default" block ><span  className={`transition-opacity duration-500 ease-in-out ${collapsed ? 'opacity-0' : 'opacity-100'}`}>{collapsed ? '' : 'Тизимдан чиқиш'}</span></Button>
+</div>
       </div>
   );
 };

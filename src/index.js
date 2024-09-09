@@ -20,34 +20,43 @@ root.render(
         theme={{
         token: {
             colorPrimary: "#00AA81"
-        },
+        }
     }}>
         <VisitProvider>
       <App />
         </VisitProvider>
-      <Toaster
-  position="top-center"
-  reverseOrder={false}
-  gutter={8}
-  containerClassName=""
-  containerStyle={{zIndex: 99999}}
-  toastOptions={{
-    className: '',
-    duration: 5000,
-    style: {
-      background: '#000',
-      color: '#fff',
-    },
+        <Toaster
+            position='bottom-right'
+            reverseOrder={false}
+            gutter={8}
+            containerClassName=''
+            containerStyle={{}}
+            toastOptions={{
+                className: '',
+                duration: 5000,
+                style: {
+                    background: '#000',
+                    color: '#fff',
+                    fontSize: '14px',
+                },
 
-    success: {
-      duration: 3000,
-      theme: {
-        primary: 'green',
-        secondary: 'black',
-      },
-    },
-  }}
-/>
+                success: {
+                    duration: 2000,
+                    theme: {
+                        primary: 'green',
+                        secondary: 'black',
+                    },
+                },
+                error: {
+                    duration: 2000,
+                    theme: {
+                        primary: 'red',
+                        secondary: 'black',
+                    },
+                },
+            }}
+        />
+
     </ConfigProvider>
     </BrowserRouter>,
   document.getElementById('root')
